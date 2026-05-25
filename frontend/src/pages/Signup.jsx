@@ -22,7 +22,7 @@ function Signup() {
         setBackendStatus("online");
       } catch (err) {
         setBackendStatus("offline");
-        setError("Backend is not running. Please start Python Flask server on port 5000.");
+        setError("Backend connection failed. Please check Render backend service.");
       }
     };
     checkBackend();
@@ -35,7 +35,7 @@ function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (backendStatus === "offline") {
-      setError("Backend is not running. Please start Python Flask server on port 5000.");
+      setError("Backend connection failed. Please check Render backend service.");
       return;
     }
     setLoading(true);

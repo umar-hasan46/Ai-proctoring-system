@@ -21,7 +21,7 @@ function Login({ onLogin }) {
         }
       } catch (err) {
         setBackendStatus("offline");
-        setError("Backend server is not running. Please start Python backend.");
+        setError("Backend connection failed. Please check Render backend service.");
       }
     };
     checkBackend();
@@ -31,7 +31,7 @@ function Login({ onLogin }) {
     e.preventDefault();
 
     if (backendStatus === "offline") {
-      setError("Backend server is not running. Please start Python backend.");
+      setError("Backend connection failed. Please check Render backend service.");
       return;
     }
 
@@ -79,7 +79,7 @@ function Login({ onLogin }) {
       }
     } catch (err) {
       if (err.message && (err.message.includes("Failed to fetch") || err.message.includes("NetworkError"))) {
-        setError("Backend server is not running. Please start Python backend.");
+        setError("Backend connection failed. Please check Render backend service.");
       } else {
         setError(err.message || "Login failed. Please check your connection.");
       }
@@ -113,7 +113,7 @@ function Login({ onLogin }) {
 
       {backendStatus === "offline" && (
         <div className="alert alert-error" style={{ marginBottom: "1.5rem" }}>
-          <strong>Error:</strong> Backend server unreachable on port 5000.
+          <strong>Error:</strong> Backend connection failed. Please check Render backend service.
         </div>
       )}
 
