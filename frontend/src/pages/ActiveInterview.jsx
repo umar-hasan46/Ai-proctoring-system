@@ -25,7 +25,6 @@ function ActiveInterview({ user }) {
   const [submitting, setSubmitting] = useState(false);
   const [warningMessage, setWarningMessage] = useState('');
   const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
-  const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
   const [skippedIds, setSkippedIds] = useState(new Set());
   const [autosaveStatus, setAutosaveStatus] = useState('');
   const [liveStatus, setLiveStatus] = useState({

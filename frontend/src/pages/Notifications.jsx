@@ -132,7 +132,7 @@ function Notifications({ user }) {
       ) : (
         <div className="card" style={{ textAlign: 'center', padding: '4rem', color: '#a0aec0' }}>
           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔔</div>
-          <h3>No notifications available yet.</h3>
+          <h3>No notifications yet.</h3>
           <p>We'll notify you here when there's an update.</p>
         </div>
       )}

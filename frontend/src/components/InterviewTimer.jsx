@@ -64,7 +64,11 @@ function InterviewTimer({ onTimeUp, currentQuestionIdx, totalQuestions }) {
         }
       `}</style>
       <div style={timerStyle}>
-        <span>Question {currentQuestionIdx + 1} of {totalQuestions} | Time Left: {formatTime(timeLeft)}</span>
+        <span>
+          {currentQuestionIdx !== undefined && totalQuestions !== undefined
+            ? `Question ${currentQuestionIdx + 1} of ${totalQuestions} | Time Left: ${formatTime(timeLeft)}`
+            : `Time Left: ${formatTime(timeLeft)}`}
+        </span>
       </div>
     </>
   );

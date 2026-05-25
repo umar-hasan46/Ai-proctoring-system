@@ -56,7 +56,7 @@ function Results({ user: propUser }) {
   }, [email, selectedAttemptId]);
 
   const fetchData = async (showLoading = true, targetIntvId = null) => {
-    let intvId = targetIntvId || selectedAttemptId || interviewIdFromState || localStorage.getItem("currentInterviewId") || localStorage.getItem("active_interview_id");
+    let intvId = targetIntvId || selectedAttemptId || interviewIdFromState || localStorage.getItem("currentInterviewId") || localStorage.getItem("active_interview_id") || localStorage.getItem("interviewSessionId");
     if (!intvId && attempts.length > 0) {
       intvId = attempts[0].id;
     }
@@ -448,8 +448,8 @@ function Results({ user: propUser }) {
   if (!reportData) {
     return (
       <div className="card" style={{ textAlign: 'center', marginTop: '100px', padding: '50px' }}>
-        <h2>No assessment reports found.</h2>
-        <p style={{ color: '#64748b' }}>Please complete your interview first.</p>
+        <h2>No interview result found.</h2>
+        <p style={{ color: '#64748b' }}>Please complete an interview first.</p>
         <button className="btn btn-primary" style={{ marginTop: '20px' }} onClick={() => navigate('/dashboard')}>Go to Dashboard</button>
       </div>
     );
