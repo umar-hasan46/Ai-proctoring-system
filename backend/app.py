@@ -175,6 +175,53 @@ def api_login():
 def api_logout():
     return auth.logout()
 
+@app.route("/api/interview/start", methods=["POST"])
+def mock_interview_start():
+    import uuid
+    import random
+    data = request.get_json() or {}
+    role = data.get("role", "Software Engineer")
+    skills = data.get("skills", [])
+    
+    questions = []
+    for i in range(1, 31):
+        questions.append({
+            "id": f"q_{i}",
+            "text": f"Can you explain a concept related to {random.choice(skills) if skills else 'programming'}?",
+            "difficulty": "Easy" if i <= 10 else ("Medium" if i <= 20 else "Hard"),
+            "category": "Technical",
+            "expected_answer": "Expected logical response"
+        })
+        
+    return jsonify({
+        "success": True,
+        "interviewId": f"mock_intv_{uuid.uuid4().hex[:8]}",
+        "sessionId": f"mock_sess_{uuid.uuid4().hex[:8]}",
+        "questions": questions
+    })
+
+@app.route("/api/interview/report/<interview_id>", methods=["GET"])
+def mock_interview_report(interview_id):
+    return jsonify({
+        "success": True,
+        "candidate": {"name": "Demo User", "email": "demo@user.com", "role": "Engineer", "phone": "12345"},
+        "interview": {"id": interview_id, "start_time": "2024-01-01T10:00:00Z", "duration": "30 mins", "created_at": "2024-01-01T10:00:00Z"},
+        "performance": {"overall_score": 85, "technical_score": 88, "communication_score": 82, "confidence_score": 90, "total_questions": 30, "answered_questions": 30, "not_attempted": 0, "skipped_questions": 0},
+        "decision": "Shortlisted",
+        "summary": "Excellent performance overall.",
+        "skills": [{"skill": "React", "score": 90}],
+        "details": [{"question": "Q1", "user_answer": "Ans", "ai_score": 85, "ai_feedback": "Good"}],
+        "metrics": {"total_violations": 0, "audio_violations": 0, "video_violations": 0, "tab_switches": 0}
+    })
+
+@app.route("/api/interview/answer", methods=["POST"])
+def mock_interview_answer():
+    return jsonify({"success": True, "message": "Answer saved"})
+
+@app.route("/api/interview/finish", methods=["POST"])
+def mock_interview_finish():
+    return jsonify({"success": True, "message": "Interview finished"})
+
 @app.errorhandler(404)
 def not_found(e):
     return jsonify({"success": False, "message": "Resource not found (404)"}), 404

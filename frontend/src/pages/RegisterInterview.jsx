@@ -160,31 +160,62 @@ function RegisterInterview({ user }) {
             ))}
             {skills.length === 0 && <p style={{ color: '#e53e3e' }}>No skills detected. Please try with a better resume.</p>}
           </div>
-          <button onClick={() => {
-            // Hard reset: Clear all legacy questions, answers, index, and session states from cache
-            localStorage.removeItem("current_question_index");
-            localStorage.removeItem("currentIdx");
-            localStorage.removeItem("questionIndex");
-            localStorage.removeItem("answers");
-            localStorage.removeItem("active_session_id");
-            localStorage.removeItem("active_interview_id");
-            localStorage.removeItem("timeLeft");
-            sessionStorage.clear();
+          <button onClick={async () => {
+            setLoading(true);
+            try {
+              const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com";
+              const token = localStorage.getItem("token") || "";
+              
+              const res = await fetch(`${API_BASE_URL}/api/interview/start`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": token ? `Bearer ${token}` : ""
+                },
+                body: JSON.stringify({
+                  role: formData.role,
+                  skills: skills
+                })
+              });
+              
+              const data = await res.json();
+              if (data.success) {
+                // Hard reset legacy items
+                localStorage.removeItem("current_question_index");
+                localStorage.removeItem("currentIdx");
+                localStorage.removeItem("answers");
+                
+                // Store required elements from backend
+                const newId = data.interviewId || data.sessionId;
+                const newSessionId = data.sessionId || data.interviewId;
+                
+                localStorage.setItem("currentInterviewId", newId);
+                localStorage.setItem("interviewSessionId", newSessionId);
+                localStorage.setItem("active_interview_id", newId);
+                localStorage.setItem("active_session_id", newSessionId);
+                
+                localStorage.setItem("interviewQuestions", JSON.stringify(data.questions || []));
+                localStorage.setItem("interviewStartTime", Date.now().toString());
 
-            // Create a brand new unique sessionId
-            const newSessionId = "session_" + Date.now() + "_" + Math.random().toString(36).substring(2, 11);
-            localStorage.setItem("active_session_id", newSessionId);
-
-            // Navigate to the interview with clean parameters
-            navigate('/active-interview', { 
-              state: { 
-                interviewId, 
-                skills, 
-                sessionId: newSessionId,
-                role: formData.role
-              } 
-            });
-          }} className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem', padding: '1rem' }} disabled={skills.length === 0}>Start Interview</button>
+                navigate('/active-interview', { 
+                  state: { 
+                    interviewId: newId, 
+                    skills, 
+                    sessionId: newSessionId,
+                    role: formData.role
+                  } 
+                });
+              } else {
+                setError(data.message || "Failed to start interview.");
+              }
+            } catch (err) {
+              setError("Network error connecting to backend.");
+            } finally {
+              setLoading(false);
+            }
+          }} className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem', padding: '1rem' }} disabled={skills.length === 0 || loading}>
+            {loading ? 'Starting...' : 'Start Interview'}
+          </button>
         </div>
       )}
     </div>

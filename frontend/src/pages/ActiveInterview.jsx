@@ -11,10 +11,11 @@ function ActiveInterview({ user }) {
   const [interviewId, setInterviewId] = useState(() => location.state?.interviewId || localStorage.getItem("active_interview_id") || "");
   const [sessionId, setSessionId] = useState(() => location.state?.sessionId || localStorage.getItem("active_session_id") || "");
 
-  const [questions, setQuestions] = useState([]);
-  const [currentIdx, setCurrentIdx] = useState(0);
+  const storedQuestions = JSON.parse(localStorage.getItem("interviewQuestions") || "[]");
+  const [questions, setQuestions] = useState(storedQuestions);
+  const [currentIdx, setCurrentIdx] = useState(() => parseInt(localStorage.getItem("current_question_index") || "0", 10));
   const [highestIdx, setHighestIdx] = useState(0);
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useState(() => JSON.parse(localStorage.getItem("answers") || "{}"));
   const [warnings, setWarnings] = useState(0);
   const [starting, setStarting] = useState(false);
   const [startMessage, setStartMessage] = useState('');
@@ -62,6 +63,29 @@ function ActiveInterview({ user }) {
   const liveTranscriptSidebarRef = useRef(null);
   const liveTranscriptSidebarContainerRef = useRef(null);
   const liveTranscriptBottomRef = useRef(null);
+
+  const TOTAL_TIME = 30 * 60;
+  const getInitialTimeLeft = () => {
+    const startTime = localStorage.getItem("interviewStartTime");
+    if (!startTime) {
+      localStorage.setItem("interviewStartTime", Date.now().toString());
+      return TOTAL_TIME;
+    }
+    const elapsed = Math.floor((Date.now() - Number(startTime)) / 1000);
+    return Math.max(TOTAL_TIME - elapsed, 0);
+  };
+  const [timeLeft, setTimeLeft] = useState(getInitialTimeLeft);
+
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      handleFinalSubmit();
+      return;
+    }
+    const timer = setInterval(() => {
+      setTimeLeft(getInitialTimeLeft());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft]);
 
   const showAndSpeak = (text) => {
     window.speechSynthesis.cancel();
@@ -363,59 +387,15 @@ function ActiveInterview({ user }) {
   useEffect(() => {
     if (!email || backendStatus !== 'online') return;
 
-    const checkAndFetch = async () => {
-      if (isStarted || questions.length > 0) return; // Prevent duplicate fetching
-      try {
-        setLoading(true);
-        setDataError("");
-        if (!interviewId) {
-          setDataError("No active interview found.");
-          setLoading(false);
-          return;
-        }
-
-        // If sessionId is present in localStorage, check if we can resume the existing session questions
-        const activeSessionId = sessionId || localStorage.getItem("active_session_id");
-        if (activeSessionId) {
-          const res = await api.getSessionQuestions(activeSessionId);
-          if (res.success && res.questions && res.questions.length > 0) {
-            // Yes, active session questions are already generated. Resume them!
-            const mappedQuestions = res.questions.slice(0, 30).map(q => ({
-              id: q.id || q.question_id || `q_${q.questionNumber}`,
-              text: q.question || q.question_text || q.text || '',
-              difficulty: q.difficulty || 'Easy',
-              category: q.skill || q.question_type || q.type || 'Technical',
-              expected_answer: q.expected_answer || '',
-              skill: q.skill || '',
-              question_type: q.type || q.question_type || 'dynamic'
-            }));
-            setQuestions(mappedQuestions);
-            
-            // Restore previous index from localStorage if available
-            const storedIdx = parseInt(localStorage.getItem("currentIdx") || localStorage.getItem("current_question_index") || "0", 10);
-            setCurrentIdx(storedIdx);
-            setHighestIdx(storedIdx);
-            
-            setIsStarted(true);
-            setLoading(false);
-            startCamera(); // Start camera when resuming
-            return;
-          }
-        }
-
-        // Otherwise, if we don't have active session questions yet, we do NOT auto-start/auto-generate.
-        // We let the user click the "Start Interview Now" button which triggers handleStart.
-        setLoading(false);
-      } catch (err) {
-        console.error("Interview load error:", err);
-        // Do not block the page with a backend offline screen if it's just questions loading
-        setDataError("Could not load interview session. Please try starting the interview.");
-        setLoading(false);
-      }
-    };
-
-    checkAndFetch();
-  }, [interviewId, email, backendStatus, navigate, sessionId, isStarted, questions.length]);
+    if (questions.length === 0) {
+      setDataError("No interview questions found. Please start a new interview.");
+      setLoading(false);
+    } else {
+      setLoading(false);
+      setIsStarted(true);
+      startCamera();
+    }
+  }, [email, backendStatus, questions.length]);
 
   useEffect(() => {
     if (isStarted && streamRef.current && videoRef.current) {
@@ -875,254 +855,113 @@ function ActiveInterview({ user }) {
   };
 
   const handleNext = async () => {
-    syncTextareaToAnswers();
-
-    if (currentIdx < highestIdx) {
-      await saveCurrentAnswer();
-      const nextIdx = currentIdx + 1;
-      setCurrentIdx(nextIdx);
-      questionStartTimeRef.current = Date.now();
-      const q = questions[nextIdx];
-      if (q && q.text) {
-        showAndSpeak(`Moving to the next question: ${q.text}`);
-      }
-      return;
-    }
-
     setSubmitting(true);
     const q = questions[currentIdx];
     const ans = textareaRef.current ? textareaRef.current.value : (answers[q.id] || '');
-    const responseTime = Math.floor((Date.now() - questionStartTimeRef.current) / 1000);
+    
+    const newAnswers = { ...answers, [q.id]: ans };
+    setAnswers(newAnswers);
+    localStorage.setItem("answers", JSON.stringify(newAnswers));
 
     try {
-      const res = await api.nextQuestion({
-        interview_id: interviewId,
-        candidate_email: email,
-        role: location.state?.role || user?.role_applied || storedUser?.role_applied || 'Software Engineer',
-        current_question_no: currentIdx + 1,
-        current_question: q.text,
-        candidate_answer: ans,
-        expected_answer: q.expected_answer || '',
-        current_difficulty: q.difficulty || 'Easy',
-        response_time_seconds: responseTime
+      const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com";
+      await fetch(`${API_BASE_URL}/api/interview/answer`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": localStorage.getItem("token") ? `Bearer ${localStorage.getItem("token")}` : "",
+        },
+        body: JSON.stringify({
+          interviewId,
+          questionId: q.id,
+          answer: ans
+        })
       });
-
-      if (res.success) {
-        if (currentIdx === 0) {
-          try {
-            const detectRes = await api.detectSkills({
-              answer: ans,
-              role: location.state?.role || user?.role_applied || storedUser?.role_applied || 'Software Engineer',
-              resume_text: localStorage.getItem("resume_text") || ""
-            });
-             if (detectRes && detectRes.success) {
-              const raw = detectRes.detected_skills;
-              setDetectedSkillsState(
-                Array.isArray(raw) ? raw :
-                typeof raw === "string" ? raw.split(",").map(s => s.trim()) : []
-              );
-            }
-          } catch (e) {
-            console.error("Skill detection failed:", e);
-          }
-        }
-        
-        if (currentIdx >= questions.length - 1 || res.completed) {
-          const activeSessionId = sessionId || localStorage.getItem("active_session_id") || '';
-          if (activeSessionId) {
-            try {
-              await api.getSessionReport(activeSessionId);
-            } catch (reportErr) {
-              console.error("Failed to generate session report on next:", reportErr);
-            }
-          }
-          isCompletedRef.current = true;
-          cleanup();
-          navigate('/results/' + interviewId);
-        } else {
-          const nextIdx = currentIdx + 1;
-          const nextQ = questions[nextIdx];
-          
-          if (!answers[nextQ.id]) {
-            setAnswers(prev => ({ ...prev, [nextQ.id]: '' }));
-          }
-          setHighestIdx(Math.max(highestIdx, nextIdx));
-          setCurrentIdx(nextIdx);
-          questionStartTimeRef.current = Date.now();
-
-          let speechIntro = "";
-          if (res.evaluation) {
-            if (res.evaluation.ai_feedback && res.evaluation.ai_feedback.trim()) {
-              speechIntro = res.evaluation.ai_feedback.trim() + " ";
-            } else {
-              const score = res.evaluation.ai_score || 0;
-              if (score >= 80) {
-                speechIntro = "Good answer, moving to the next question. ";
-              } else if (score >= 50) {
-                speechIntro = "Good attempt. Try to explain with an example next time. ";
-              } else {
-                speechIntro = "Thank you for your response. Let us move on. ";
-              }
-            }
-          }
-          
-          speechIntro += `Here is your next question: ${nextQ.text}`;
-          showAndSpeak(speechIntro);
-        }
-      } else {
-        setWarningMessage(res.message || 'Failed to fetch next question. Please try again.');
-        setTimeout(() => setWarningMessage(''), 5000);
-      }
     } catch (err) {
-      setWarningMessage(err.message || 'Network error. Please check your connection.');
-      setTimeout(() => setWarningMessage(''), 5000);
-    } finally {
-      setSubmitting(false);
+      console.error("Backend error saving answer:", err);
+    }
+
+    setSubmitting(false);
+
+    if (currentIdx < questions.length - 1) {
+      const nextIdx = currentIdx + 1;
+      setCurrentIdx(nextIdx);
+      localStorage.setItem("current_question_index", nextIdx.toString());
+      if (textareaRef.current) {
+        textareaRef.current.value = newAnswers[questions[nextIdx]?.id] || '';
+      }
+    } else {
+      handleFinalSubmit();
     }
   };
 
   const handlePrev = async () => {
-    syncTextareaToAnswers();
-    await saveCurrentAnswer();
     if (currentIdx > 0) {
       const prevIdx = currentIdx - 1;
       setCurrentIdx(prevIdx);
-      questionStartTimeRef.current = Date.now();
-      const q = questions[prevIdx];
-      if (q && q.text) {
-        showAndSpeak(`Going back to the previous question: ${q.text}`);
+      localStorage.setItem("current_question_index", prevIdx.toString());
+      if (textareaRef.current) {
+        textareaRef.current.value = answers[questions[prevIdx]?.id] || '';
       }
     }
   };
 
   const handleSkip = async () => {
-    if (textareaRef.current) {
-      textareaRef.current.value = '';
-    }
-    setAnswers(prev => ({ ...prev, [questions[currentIdx].id]: '' }));
-    typedTextRef.current = '';
+    const q = questions[currentIdx];
+    const newAnswers = { ...answers, [q.id]: "" };
+    setAnswers(newAnswers);
+    localStorage.setItem("answers", JSON.stringify(newAnswers));
 
-    setSkippedIds(prev => {
-      const copy = new Set(prev);
-      copy.add(questions[currentIdx].id);
-      return copy;
-    });
-
-    if (currentIdx < highestIdx) {
-      await saveCurrentAnswer('skipped');
+    if (currentIdx < questions.length - 1) {
       const nextIdx = currentIdx + 1;
       setCurrentIdx(nextIdx);
-      questionStartTimeRef.current = Date.now();
-      const q = questions[nextIdx];
-      if (q && q.text) {
-        showAndSpeak(`Moving to the next question: ${q.text}`);
+      localStorage.setItem("current_question_index", nextIdx.toString());
+      if (textareaRef.current) {
+        textareaRef.current.value = newAnswers[questions[nextIdx]?.id] || '';
       }
-      return;
-    }
-
-    setSubmitting(true);
-    const q = questions[currentIdx];
-    const responseTime = Math.floor((Date.now() - questionStartTimeRef.current) / 1000);
-
-    try {
-      const res = await api.nextQuestion({
-        interview_id: interviewId,
-        candidate_email: email,
-        role: location.state?.role || user?.role_applied || storedUser?.role_applied || 'Software Engineer',
-        current_question_no: currentIdx + 1,
-        current_question: q.text,
-        candidate_answer: '',
-        expected_answer: q.expected_answer || '',
-        current_difficulty: q.difficulty || 'Easy',
-        response_time_seconds: responseTime,
-        question_status: 'Skipped',
-        status: 'skipped'
-      });
-
-      if (res.success) {
-        if (currentIdx >= questions.length - 1 || res.completed) {
-          const activeSessionId = sessionId || localStorage.getItem("active_session_id") || '';
-          if (activeSessionId) {
-            try {
-              await api.getSessionReport(activeSessionId);
-            } catch (reportErr) {
-              console.error("Failed to generate session report on skip:", reportErr);
-            }
-          }
-          isCompletedRef.current = true;
-          cleanup();
-          navigate('/results/' + interviewId);
-        } else {
-          const nextIdx = currentIdx + 1;
-          const nextQ = questions[nextIdx];
-          
-          if (!answers[nextQ.id]) {
-            setAnswers(prev => ({ ...prev, [nextQ.id]: '' }));
-          }
-          setHighestIdx(Math.max(highestIdx, nextIdx));
-          setCurrentIdx(nextIdx);
-          questionStartTimeRef.current = Date.now();
-
-          let speechIntro = "Okay, skipping that question. ";
-          speechIntro += `Here is your next question: ${nextQ.text}`;
-          showAndSpeak(speechIntro);
-        }
-      } else {
-        setWarningMessage('Failed to fetch next question. Please try again.');
-        setTimeout(() => setWarningMessage(''), 5000);
-      }
-    } catch (err) {
-      setWarningMessage('Network error. Please check your connection.');
-      setTimeout(() => setWarningMessage(''), 5000);
-    } finally {
-      setSubmitting(false);
+    } else {
+      handleFinalSubmit();
     }
   };
 
   const handleFinalSubmit = async () => {
-    syncTextareaToAnswers();
-
     if (submitLock.current) return;
-    setShowConfirmSubmit(false);
     submitLock.current = true;
     setSubmitting(true);
-
+    
     const q = questions[currentIdx];
-    const ans = textareaRef.current ? textareaRef.current.value : (answers[q.id] || '');
-    const responseTime = Math.floor((Date.now() - questionStartTimeRef.current) / 1000);
+    if (q) {
+      const ans = textareaRef.current ? textareaRef.current.value : (answers[q.id] || '');
+      const newAnswers = { ...answers, [q.id]: ans };
+      setAnswers(newAnswers);
+      localStorage.setItem("answers", JSON.stringify(newAnswers));
+    }
 
     try {
-      // First save the current answer for legacy and session
-      await saveCurrentAnswer();
-
-      // Submit session report if sessionId exists
-      const activeSessionId = sessionId || localStorage.getItem("active_session_id") || '';
-      if (activeSessionId) {
-        try {
-          await api.getSessionReport(activeSessionId);
-        } catch (reportErr) {
-          console.error("Session report generation failed on final submit:", reportErr);
-        }
-      }
-
-      // Keep legacy submit call just in case for other side-effects, but don't crash if it fails
-      try {
-        await api.submitInterview({ interview_id: interviewId });
-      } catch (submitErr) {
-        // legacy submit failed, not critical since getSessionReport syncs results
-      }
+      const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com";
+      await fetch(`${API_BASE_URL}/api/interview/finish`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": localStorage.getItem("token") ? `Bearer ${localStorage.getItem("token")}` : ""
+        },
+        body: JSON.stringify({
+          interviewId,
+          answers: JSON.parse(localStorage.getItem("answers") || "{}")
+        })
+      });
 
       isCompletedRef.current = true;
       cleanup();
       navigate('/results/' + interviewId);
     } catch (err) {
+      console.error(err);
       setWarningMessage('Could not submit interview. Please try again.');
       setTimeout(() => setWarningMessage(''), 5000);
       submitLock.current = false;
     } finally {
       setSubmitting(false);
     }
-    return '';
   };
 
   if (authLoading) {
@@ -1251,8 +1090,18 @@ function ActiveInterview({ user }) {
           </div>
         )}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <span style={{ fontWeight: 'bold', color: '#1e3a5f' }}>
-            Session: {currentQuestion?.category || 'General'} | Topic: {currentQuestion?.topic || 'General'} | Difficulty: <span style={{ color: currentQuestion?.difficulty === 'Easy' ? '#48bb78' : (currentQuestion?.difficulty === 'Medium' ? '#ecc94b' : '#f56565') }}>{currentQuestion?.difficulty || 'Easy'}</span>
+          <span style={{ fontWeight: 'bold', color: '#1e3a5f', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <span>Session: {currentQuestion?.category || 'General'} | Topic: {currentQuestion?.topic || 'General'}</span>
+            <span style={{ 
+              color: timeLeft <= 300 ? '#e53e3e' : '#3182ce',
+              background: timeLeft <= 300 ? '#fff5f5' : '#ebf8ff',
+              padding: '0.5rem 1rem',
+              borderRadius: '8px',
+              border: `1px solid ${timeLeft <= 300 ? '#e53e3e' : '#3182ce'}`,
+              animation: timeLeft <= 300 ? 'pulseGlow 1.5s infinite alternate' : 'none'
+            }}>
+              Question {currentIdx + 1} of 30 | Time Left: {formatTime(timeLeft)}
+            </span>
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <button
@@ -1379,7 +1228,7 @@ function ActiveInterview({ user }) {
             <button className="btn btn-outline" onClick={handleSkip} disabled={isTerminated || submitting}>Skip</button>
             {currentIdx < questions.length - 1 ? (
               <>
-                <button className="btn btn-primary" onClick={handleNext} disabled={isTerminated || submitting}>{submitting ? 'Saving...' : 'Next'}</button>
+                <button className="btn btn-primary" onClick={handleNextQuestion} disabled={isTerminated || submitting}>{submitting ? 'Saving...' : 'Next'}</button>
                 <button className="btn btn-primary" onClick={() => setShowConfirmSubmit(true)} disabled={submitting || isTerminated}>Submit Interview</button>
               </>
             ) : (

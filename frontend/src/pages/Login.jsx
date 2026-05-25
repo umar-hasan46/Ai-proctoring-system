@@ -68,11 +68,11 @@ function Login({ onLogin }) {
         };
 
         localStorage.setItem("role", role);
+        localStorage.setItem("userRole", data.user?.role || data.role || role || "user");
+        localStorage.setItem("userId", data.user?.id || data.userId || "");
         localStorage.setItem("email", userData.email);
         localStorage.setItem("user", JSON.stringify(userData));
-        if (data.token) {
-          localStorage.setItem("token", data.token);
-        }
+        localStorage.setItem("token", data.token || "");
 
         onLogin(userData);
 

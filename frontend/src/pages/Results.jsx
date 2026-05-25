@@ -70,7 +70,7 @@ function Results({ user: propUser }) {
     setError(null);
     try {
       const userId = user?.id || localStorage.getItem("userId") || "";
-      const userRole = role || localStorage.getItem("userRole") || "";
+      const userRole = localStorage.getItem("userRole") || localStorage.getItem("role") || "";
       const token = localStorage.getItem("token") || "";
       
       const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com";

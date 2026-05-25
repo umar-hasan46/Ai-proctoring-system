@@ -102,19 +102,19 @@ function Notifications({ user }) {
                   </span>
                   {n.status === 'unread' && <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#e53e3e' }}></span>}
                 </div>
-                <h4 style={{ margin: '5px 0', color: '#2d3748' }}>{n.title}</h4>
-                <p style={{ margin: '8px 0', color: '#4a5568', lineHeight: '1.5' }}>{n.message}</p>
+                <h4 style={{ margin: '5px 0', color: '#2d3748' }}>{n.title && n.title !== 'title' ? n.title : 'System Notification'}</h4>
+                <p style={{ margin: '8px 0', color: '#4a5568', lineHeight: '1.5' }}>{n.message && n.message !== 'message' ? n.message : 'No detailed message provided.'}</p>
                 
                 {(n.candidate_name || n.candidate_email || n.interview_id) && (
                   <div style={{ fontSize: '0.8rem', background: 'rgba(0,0,0,0.03)', padding: '8px', borderRadius: '4px', margin: '10px 0', display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
-                    {n.candidate_name && <span><strong>Student:</strong> {n.candidate_name}</span>}
-                    {n.candidate_email && <span><strong>Email:</strong> {n.candidate_email}</span>}
-                    {n.interview_id && <span><strong>ID:</strong> #{n.interview_id}</span>}
+                    {n.candidate_name && n.candidate_name !== 'candidate_name' && <span><strong>Student:</strong> {n.candidate_name}</span>}
+                    {n.candidate_email && n.candidate_email !== 'candidate_email' && <span><strong>Email:</strong> {n.candidate_email}</span>}
+                    {n.interview_id && n.interview_id !== 'interview_id' && <span><strong>ID:</strong> #{n.interview_id}</span>}
                   </div>
                 )}
 
                 <div style={{ fontSize: '0.75rem', color: '#a0aec0', fontWeight: 'bold', marginTop: '5px' }}>
-                  🕒 {n.created_at_ist} (IST)
+                  🕒 {n.created_at_ist || new Date().toLocaleString()}
                 </div>
               </div>
               {n.status === 'unread' && (
