@@ -9,11 +9,14 @@ def get_ist_time():
     return datetime.now(pytz.timezone('Asia/Kolkata'))
 
 def get_db_connection():
+    import os
+    db_url = os.getenv('DATABASE_URL')
     try:
-        conn = psycopg2.connect(**Config.DB_CONFIG)
-        return conn
+        if db_url:
+            return psycopg2.connect(db_url)
+        return psycopg2.connect(**Config.DB_CONFIG)
     except Exception as e:
-        
+        print("Database connection error:", e)
         return None
 
 def init_db():

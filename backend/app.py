@@ -74,6 +74,18 @@ def health_root():
         "message": "Backend health check passed"
     }, 200
 
+@app.route("/health/db", methods=["GET"])
+def db_health():
+    try:
+        from db import get_db_connection
+        conn = get_db_connection()
+        if conn is None:
+            return {"success": False, "message": "Database connection failed"}, 500
+        conn.close()
+        return {"success": True, "message": "Database connected successfully"}, 200
+    except Exception as e:
+        return {"success": False, "message": str(e)}, 500
+
 @app.route('/api/health', methods=['GET'])
 def health():
     return jsonify({"success": True, "message": "Backend running"})

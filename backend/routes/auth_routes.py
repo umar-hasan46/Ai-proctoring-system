@@ -17,6 +17,8 @@ def signup():
             return jsonify({"success": False, "message": "Email and password are required"}), 400
 
         conn = get_db_connection()
+        if conn is None:
+            return jsonify({"success": False, "message": "Database connection failed. Please check DATABASE_URL or database setup."}), 500
         cur = conn.cursor()
 
         cur.execute("SELECT id FROM users WHERE email = %s", (email,))
@@ -46,6 +48,8 @@ def login():
             return jsonify({"success": False, "message": "Email and password are required"}), 400
 
         conn = get_db_connection()
+        if conn is None:
+            return jsonify({"success": False, "message": "Database connection failed. Please check DATABASE_URL or database setup."}), 500
         cur = conn.cursor()
         cur.execute("SELECT id, full_name, email, phone, role, profile_pic, password_hash FROM users WHERE email = %s", (email,))
         user = cur.fetchone()
@@ -79,6 +83,8 @@ def admin_login():
             return jsonify({"success": False, "message": "Email and password are required"}), 400
 
         conn = get_db_connection()
+        if conn is None:
+            return jsonify({"success": False, "message": "Database connection failed. Please check DATABASE_URL or database setup."}), 500
         cur = conn.cursor()
         cur.execute("SELECT id, full_name, email, phone, role, profile_pic, password_hash FROM admins WHERE email = %s", (email,))
         admin = cur.fetchone()
@@ -112,6 +118,8 @@ def unified_login():
             return jsonify({"success": False, "message": "Email and password are required"}), 400
 
         conn = get_db_connection()
+        if conn is None:
+            return jsonify({"success": False, "message": "Database connection failed. Please check DATABASE_URL or database setup."}), 500
         cur = conn.cursor()
 
         if role == 'admin':
