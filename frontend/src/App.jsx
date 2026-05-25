@@ -142,11 +142,15 @@ function App() {
 
       <div className="container">
         <Routes>
-          <Route path="/" element={user ? (user.role === 'admin' ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/dashboard" replace />) : <Login onLogin={handleLogin} />} />
-          <Route path="/login" element={user ? (user.role === 'admin' ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/dashboard" replace />) : <Login onLogin={handleLogin} />} />
-          <Route path="/register" element={wrap("user", RegisterInterview, user)} />
+          <Route path="/" element={user ? (user.role === 'admin' ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/user/dashboard" replace />) : <Login onLogin={handleLogin} />} />
+          <Route path="/login" element={user ? (user.role === 'admin' ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/user/dashboard" replace />) : <Login onLogin={handleLogin} />} />
+          <Route path="/admin-login" element={user ? (user.role === 'admin' ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/user/dashboard" replace />) : <Login onLogin={handleLogin} />} />
+          <Route path="/signup" element={<Register />} />
           
-          <Route path="/dashboard" element={wrap("user", Dashboard, user)} />
+          <Route path="/user/dashboard" element={wrap("user", Dashboard, user)} />
+          <Route path="/dashboard" element={<Navigate to="/user/dashboard" replace />} />
+          
+          <Route path="/register" element={wrap("user", RegisterInterview, user)} />
           <Route path="/active-interview" element={wrap("user", ActiveInterview, user)} />
           <Route path="/results" element={wrap("user", Results, user)} />
           <Route path="/results/:id" element={wrap("user", Results, user)} />
@@ -160,7 +164,7 @@ function App() {
           <Route path="/admin/notifications" element={wrap("admin", AdminNotifications, user)} />
           <Route path="/admin/settings" element={wrap("admin", AdminSettings, user, handleLogin)} />
           
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </div>
       <AIChatbot user={user} />

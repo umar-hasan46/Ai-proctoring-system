@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { api } from "../api/api";
 
 function Login({ onLogin }) {
-  const [role, setRole] = useState("user");
+  const location = useLocation();
+  const [role, setRole] = useState(() => {
+    return location.pathname === "/admin-login" ? "admin" : "user";
+  });
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [backendStatus, setBackendStatus] = useState("checking");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setRole(location.pathname === "/admin-login" ? "admin" : "user");
+  }, [location.pathname]);
 
   useEffect(() => {
     const checkBackend = async () => {
@@ -72,7 +79,7 @@ function Login({ onLogin }) {
         if (role === "admin") {
           navigate("/admin/dashboard", { replace: true });
         } else {
-          navigate("/dashboard", { replace: true });
+          navigate("/user/dashboard", { replace: true });
         }
       } else {
         setError(data.message || "Invalid credentials. Please try again.");

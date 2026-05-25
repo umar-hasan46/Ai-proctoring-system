@@ -5,13 +5,17 @@ from werkzeug.security import generate_password_hash, check_password_hash
 bp = Blueprint('auth', __name__)
 
 @bp.route('/signup', methods=['POST'])
+@bp.route('/register', methods=['POST'])
 def signup():
     try:
         data = request.json
         email = data.get('email', '').strip().lower()
         password = data.get('password', '').strip()
-        full_name = data.get('full_name', '').strip()
+        full_name = (data.get('name') or data.get('full_name') or '').strip()
         phone = data.get('phone', '').strip()
+        role = data.get('role', 'user').strip().lower()
+        if role == 'candidate':
+            role = 'user'
 
         if not email or not password:
             return jsonify({"success": False, "message": "Email and password are required"}), 400
@@ -31,8 +35,8 @@ def signup():
             return jsonify({"success": False, "message": "Email already exists"}), 400
 
         hashed_pw = generate_password_hash(password)
-        cur.execute("INSERT INTO users (full_name, name, email, phone, password, password_hash, role, status) VALUES (%s, %s, %s, %s, %s, %s, 'user', 'active')",
-                    (full_name, full_name, email, phone, password, hashed_pw))
+        cur.execute("INSERT INTO users (full_name, name, email, phone, password, password_hash, role, status) VALUES (%s, %s, %s, %s, %s, %s, %s, 'active')",
+                    (full_name, full_name, email, phone, password, hashed_pw, role))
         conn.commit()
         cur.close()
         conn.close()
@@ -98,6 +102,7 @@ def login():
         return jsonify({"success": False, "message": f"Login failed: {str(e)}"}), 500
 
 @bp.route('/admin/login', methods=['POST'])
+@bp.route('/admin-login', methods=['POST'])
 def admin_login():
     try:
         data = request.json

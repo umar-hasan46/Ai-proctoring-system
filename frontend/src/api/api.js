@@ -52,9 +52,9 @@ const apiRequest = async (endpoint, options = {}) => {
 };
 
 export const api = {
-  login: (credentials) => apiRequest('/auth/login', { method: 'POST', body: JSON.stringify({ ...credentials, role: 'user' }) }),
-  adminLogin: (credentials) => apiRequest('/auth/login', { method: 'POST', body: JSON.stringify({ ...credentials, role: 'admin' }) }),
-  signup: (userData) => apiRequest('/signup', { method: 'POST', body: JSON.stringify(userData) }),
+  login: (credentials) => apiRequest('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
+  adminLogin: (credentials) => apiRequest('/auth/admin-login', { method: 'POST', body: JSON.stringify(credentials) }),
+  signup: (userData) => apiRequest('/auth/register', { method: 'POST', body: JSON.stringify(userData) }),
   logout: () => apiRequest('/logout', { method: 'POST' }),
 
   getAdminStats: () => apiRequest('/admin/stats'),

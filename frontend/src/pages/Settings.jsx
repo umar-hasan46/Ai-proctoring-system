@@ -25,6 +25,12 @@ function Settings({ user: propUser, onUpdate }) {
     phone: user?.phone || '',
     password: ''
   });
+  const [adminSettings, setAdminSettings] = useState({
+    emailAlerts: true,
+    securityFlags: true,
+    maintenanceMode: false,
+    autoEvaluate: true
+  });
   const [profilePic, setProfilePic] = useState(() => {
     try {
       const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -268,6 +274,54 @@ function Settings({ user: propUser, onUpdate }) {
               />
             </div>
           </div>
+
+          {user.role === 'admin' && (
+            <div style={{ marginTop: '30px', borderTop: '1px solid #e2e8f0', paddingTop: '20px' }}>
+              <h3 style={{ color: '#1e3a5f', marginBottom: '1.2rem', fontSize: '1.2rem' }}>Notification Settings</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: '#4a5568' }}>
+                  <input
+                    type="checkbox"
+                    checked={adminSettings.emailAlerts}
+                    onChange={(e) => setAdminSettings({ ...adminSettings, emailAlerts: e.target.checked })}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                  />
+                  <span>Receive email alerts for new student registrations and interview submissions</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: '#4a5568' }}>
+                  <input
+                    type="checkbox"
+                    checked={adminSettings.securityFlags}
+                    onChange={(e) => setAdminSettings({ ...adminSettings, securityFlags: e.target.checked })}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                  />
+                  <span>Trigger real-time notifications for active proctoring rule violations</span>
+                </label>
+              </div>
+
+              <h3 style={{ color: '#1e3a5f', marginBottom: '1.2rem', marginTop: '25px', fontSize: '1.2rem' }}>System Settings</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: '#4a5568' }}>
+                  <input
+                    type="checkbox"
+                    checked={adminSettings.maintenanceMode}
+                    onChange={(e) => setAdminSettings({ ...adminSettings, maintenanceMode: e.target.checked })}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                  />
+                  <span>Enable System Maintenance Mode (locks non-admin logins)</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: '#4a5568' }}>
+                  <input
+                    type="checkbox"
+                    checked={adminSettings.autoEvaluate}
+                    onChange={(e) => setAdminSettings({ ...adminSettings, autoEvaluate: e.target.checked })}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                  />
+                  <span>Automatically evaluate candidate answers using Gemini AI</span>
+                </label>
+              </div>
+            </div>
+          )}
 
           <div style={{ marginTop: '30px', display: 'flex', gap: '15px' }}>
             <button

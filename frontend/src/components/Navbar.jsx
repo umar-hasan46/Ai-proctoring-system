@@ -15,7 +15,7 @@ function Navbar({ user, onLogout }) {
   };
 
   const isActive = (path) => {
-    if (path === '/dashboard' && (location.pathname === '/user-dashboard' || location.pathname === '/admin-dashboard' || location.pathname === '/admin/dashboard')) return true;
+    if (path === '/user/dashboard' && location.pathname === '/dashboard') return true;
     return location.pathname === path;
   };
 
@@ -51,21 +51,22 @@ function Navbar({ user, onLogout }) {
       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
         {user?.role === 'admin' ? (
           <>
-            <Link to="/dashboard" style={navLinkStyle('/dashboard')}>Dashboard</Link>
-            <Link to="/admin/live-proctoring" style={navLinkStyle('/admin/live-proctoring')}>Live Proctoring</Link>
-            <Link to="/admin/students-dashboard" style={navLinkStyle('/admin/students-dashboard')}>Students Dashboard</Link>
-            <Link to="/admin/notifications" style={navLinkStyle('/admin/notifications')}>Notifications</Link>
+            <Link to="/admin/dashboard" style={navLinkStyle('/admin/dashboard')}>Dashboard</Link>
+            <Link to="/admin/students-dashboard" style={navLinkStyle('/admin/students-dashboard')}>Users</Link>
+            <Link to="/admin/live-proctoring" style={navLinkStyle('/admin/live-proctoring')}>Interviews</Link>
+            <Link to="/admin/reports" style={navLinkStyle('/admin/reports')}>Reports</Link>
+            <Link to="/admin/settings" style={navLinkStyle('/admin/settings')}>Settings</Link>
           </>
         ) : (
           <>
-            <Link to="/dashboard" style={navLinkStyle('/dashboard')}>Dashboard</Link>
+            <Link to="/user/dashboard" style={navLinkStyle('/user/dashboard')}>Dashboard</Link>
             <Link to="/register" style={navLinkStyle('/register')}>Register</Link>
             <Link to="/active-interview" style={navLinkStyle('/active-interview')}>Start Interview</Link>
             <Link to="/results" style={navLinkStyle('/results')}>Results</Link>
             <Link to="/notifications" style={navLinkStyle('/notifications')}>Notifications</Link>
+            <Link to="/settings" style={navLinkStyle('/settings')}>Settings</Link>
           </>
         )}
-        <Link to="/settings" style={navLinkStyle('/settings')}>Settings</Link>
         <div style={{ margin: '0 10px', height: '24px', width: '1px', background: 'rgba(255,255,255,0.2)' }}></div>
         <NotificationBell user={user} />
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: '10px' }}>
