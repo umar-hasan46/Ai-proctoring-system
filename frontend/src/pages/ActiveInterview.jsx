@@ -1228,7 +1228,7 @@ function ActiveInterview({ user }) {
             <button className="btn btn-outline" onClick={handleSkip} disabled={isTerminated || submitting}>Skip</button>
             {currentIdx < questions.length - 1 ? (
               <>
-                <button className="btn btn-primary" onClick={handleNextQuestion} disabled={isTerminated || submitting}>{submitting ? 'Saving...' : 'Next'}</button>
+                <button className="btn btn-primary" onClick={handleNext} disabled={isTerminated || submitting}>{submitting ? 'Saving...' : 'Next'}</button>
                 <button className="btn btn-primary" onClick={() => setShowConfirmSubmit(true)} disabled={submitting || isTerminated}>Submit Interview</button>
               </>
             ) : (
