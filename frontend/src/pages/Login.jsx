@@ -1,0 +1,172 @@
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { api } from "../api/api";
+
+function Login({ onLogin }) {
+  const [role, setRole] = useState("user");
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [backendStatus, setBackendStatus] = useState("checking");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkBackend = async () => {
+      try {
+        const health = await api.checkHealth();
+        if (health.success) {
+          setBackendStatus("online");
+        } else {
+          throw new Error("Health check returned failure.");
+        }
+      } catch (err) {
+        setBackendStatus("offline");
+        setError("Backend server is not running. Please start Python backend.");
+      }
+    };
+    checkBackend();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (backendStatus === "offline") {
+      setError("Backend server is not running. Please start Python backend.");
+      return;
+    }
+
+    if (backendStatus === "checking") {
+      setError("Still checking backend status... Please wait a moment.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const data =
+        role === "admin"
+          ? await api.adminLogin(formData)
+          : await api.login(formData);
+
+      if (data.success) {
+        const userData = {
+          id: data.user.id,
+          name: data.user.name || data.user.full_name || "",
+          email: data.user.email || "",
+          phone: data.user.phone || "",
+          role: role,
+          profile_pic: data.user.profile_pic || null,
+          token: data.token
+        };
+
+        localStorage.setItem("role", role);
+        localStorage.setItem("email", userData.email);
+        localStorage.setItem("user", JSON.stringify(userData));
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+        }
+
+        onLogin(userData);
+
+        if (role === "admin") {
+          navigate("/admin/dashboard", { replace: true });
+        } else {
+          navigate("/dashboard", { replace: true });
+        }
+      } else {
+        setError(data.message || "Invalid credentials. Please try again.");
+      }
+    } catch (err) {
+      if (err.message && (err.message.includes("Failed to fetch") || err.message.includes("NetworkError"))) {
+        setError("Backend server is not running. Please start Python backend.");
+      } else {
+        setError(err.message || "Login failed. Please check your connection.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ maxWidth: "450px", margin: "100px auto" }} className="card">
+      <h1 style={{ textAlign: "center", color: "#1e3a5f", marginBottom: "1.5rem" }}>
+        AI Proctoring System
+      </h1>
+
+      <div style={{ display: "flex", gap: "1rem", marginBottom: "2rem" }}>
+        <button
+          className={`btn ${role === "user" ? "btn-primary" : "btn-outline"}`}
+          style={{ flex: 1 }}
+          onClick={() => { setRole("user"); setError(""); }}
+        >
+          User Login
+        </button>
+        <button
+          className={`btn ${role === "admin" ? "btn-primary" : "btn-outline"}`}
+          style={{ flex: 1 }}
+          onClick={() => { setRole("admin"); setError(""); }}
+        >
+          Admin Login
+        </button>
+      </div>
+
+      {backendStatus === "offline" && (
+        <div className="alert alert-error" style={{ marginBottom: "1.5rem" }}>
+          <strong>Error:</strong> Backend server unreachable on port 5000.
+        </div>
+      )}
+
+      {error && <div className="alert alert-error" style={{ marginBottom: "1.5rem" }}>{error}</div>}
+
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label>Email Address</label>
+          <input
+            type="email"
+            placeholder="Enter your email"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            required
+            autoComplete="email"
+            disabled={loading}
+          />
+        </div>
+        <div className="form-group">
+          <label>Password</label>
+          <input
+            type="password"
+            placeholder="Enter your password"
+            value={formData.password}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            required
+            autoComplete="current-password"
+            disabled={loading}
+          />
+        </div>
+        <button
+          type="submit"
+          className="btn btn-primary"
+          style={{ width: "100%", height: "45px", fontSize: "1rem" }}
+          disabled={loading || backendStatus === "checking"}
+        >
+          {backendStatus === "checking" ? "Checking Server..." : (loading ? "Authenticating..." : "Login")}
+        </button>
+      </form>
+
+      <div style={{ marginTop: "1.5rem", textAlign: "center" }}>
+        {role === "user" ? (
+          <p>
+            New user? <Link to="/signup">Create an account</Link>
+          </p>
+        ) : (
+          <p className="hint" style={{ color: "#718096", fontSize: "0.85rem" }}>
+            Default Admin: <strong>admin@gmail.com / admin123</strong>
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default Login;
