@@ -1151,7 +1151,7 @@ function ActiveInterview({ user }) {
             </span>
           )}
         </div>
-        <p style={{ fontSize: '1.2rem', margin: '1.5rem 0', padding: '1.5rem', background: '#f7fafc', borderRadius: '8px' }}>
+        <p style={{ fontSize: '1.2rem', margin: '1.5rem 0', padding: '1.5rem', background: '#f7fafc', borderRadius: '8px', color: '#1a202c' }}>
           {currentQuestion?.text}
         </p>
         <div style={{ marginBottom: '0.5rem' }}>
