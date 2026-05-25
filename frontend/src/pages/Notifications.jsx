@@ -9,16 +9,29 @@ function Notifications({ user }) {
   const fetchNotifications = async () => {
     if (!user) return;
     try {
-      const res = user.role === 'admin'
-        ? await api.getAdminNotifications()
-        : await api.getUserNotifications(user.email);
+      setLoading(true);
+      const userId = user?.id || localStorage.getItem("userId") || "";
+      const userRole = user?.role || localStorage.getItem("userRole") || "";
+      const token = localStorage.getItem("token") || "";
+      const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com";
+
+      const res = await fetch(`${API_BASE_URL}/api/notifications`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token ? `Bearer ${token}` : "",
+          "X-User-Id": userId,
+          "X-User-Role": userRole
+        }
+      });
+      const data = await res.json();
       
-      if (res.success) {
-        setNotifications(res.notifications || []);
-        setUnreadCount(res.unread_count || 0);
+      if (data.success) {
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.unread_count || 0);
       }
     } catch (err) {
-      
+      console.error(err);
     } finally {
       setLoading(false);
     }

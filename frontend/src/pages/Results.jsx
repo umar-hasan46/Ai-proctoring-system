@@ -20,7 +20,7 @@ function Results({ user: propUser }) {
   const [techDifficultyFilter, setTechDifficultyFilter] = useState('All');
   const [techStatusFilter, setTechStatusFilter] = useState('All');
 
-  const interviewIdFromState = id || location.state?.interviewId || localStorage.getItem("currentInterviewId") || localStorage.getItem("active_interview_id");
+  const interviewIdFromState = id || location.state?.interviewId;
   const user = propUser || JSON.parse(localStorage.getItem("user") || "null");
   const email = user?.email || localStorage.getItem("email") || "";
 
@@ -56,7 +56,7 @@ function Results({ user: propUser }) {
   }, [email, selectedAttemptId]);
 
   const fetchData = async (showLoading = true, targetIntvId = null) => {
-    let intvId = targetIntvId || selectedAttemptId || interviewIdFromState;
+    let intvId = targetIntvId || selectedAttemptId || interviewIdFromState || localStorage.getItem("currentInterviewId") || localStorage.getItem("active_interview_id");
     if (!intvId && attempts.length > 0) {
       intvId = attempts[0].id;
     }
@@ -69,14 +69,30 @@ function Results({ user: propUser }) {
     }
     setError(null);
     try {
-      const res = await api.getUserDetailedResults(intvId, email);
-      if (res.success && res.data) {
-        setReportData(res.data);
+      const userId = user?.id || localStorage.getItem("userId") || "";
+      const userRole = role || localStorage.getItem("userRole") || "";
+      const token = localStorage.getItem("token") || "";
+      
+      const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com";
+      const response = await fetch(`${API_BASE_URL}/api/interview/report/${intvId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token ? `Bearer ${token}` : "",
+          "X-User-Id": userId,
+          "X-User-Role": userRole
+        }
+      });
+      
+      const res = await response.json();
+      
+      if (res.success) {
+        setReportData(res);
       } else {
         setError(res.message || "Failed to load detailed results.");
       }
     } catch (err) {
-      setError("An error occurred while fetching details.");
+      setError(err.message || "An error occurred while fetching details.");
     } finally {
       setLoading(false);
     }

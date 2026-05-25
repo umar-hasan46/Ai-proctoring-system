@@ -22,15 +22,46 @@ def ensure_ist(notif):
 
 @bp.route('/', methods=['GET'])
 def get_all_notifications():
+    from flask import request
+    user_id = request.headers.get("X-User-Id")
+    role = request.headers.get("X-User-Role")
+    
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM notifications ORDER BY created_at DESC")
+    
+    if role == 'admin':
+        cur.execute("SELECT * FROM notifications WHERE target_role = 'admin' OR target_role = 'all' ORDER BY created_at DESC")
+    else:
+        # Get email for the user
+        email = ""
+        if user_id:
+            cur.execute("SELECT email FROM users WHERE id = %s", (user_id,))
+            user_row = cur.fetchone()
+            if user_row:
+                email = user_row[0]
+        cur.execute("SELECT * FROM notifications WHERE user_email = %s OR target_role = 'all' ORDER BY created_at DESC", (email,))
+        
     rows = cur.fetchall()
     cols = [d[0] for d in cur.description]
     notifications = [ensure_ist(dict(zip(cols, row))) for row in rows]
+    
+    if role == 'admin':
+        cur.execute("SELECT COUNT(*) FROM notifications WHERE target_role = 'admin' AND status = 'unread'")
+    else:
+        email = ""
+        if user_id:
+            cur.execute("SELECT email FROM users WHERE id = %s", (user_id,))
+            user_row = cur.fetchone()
+            if user_row:
+                email = user_row[0]
+        cur.execute("SELECT COUNT(*) FROM notifications WHERE user_email = %s AND status = 'unread'", (email,))
+        
+    unread_count_row = cur.fetchone()
+    unread_count = unread_count_row[0] if unread_count_row else 0
+    
     cur.close()
     conn.close()
-    return jsonify({"success": True, "notifications": notifications})
+    return jsonify({"success": True, "notifications": notifications, "unread_count": unread_count})
 
 @bp.route('/user/<email>', methods=['GET'])
 def get_user_notifications(email):

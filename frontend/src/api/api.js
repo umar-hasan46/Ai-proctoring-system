@@ -159,18 +159,7 @@ export const api = {
     window.location.href = BASE_URL + '/admin/download-timer-report';
   },
   getDetailedInterviewReport: (id) => apiRequest('/admin/interview-detail/' + id),
-  getUserDetailedResults: (id, email) => {
-    const userId = localStorage.getItem("userId") || "";
-    const role = localStorage.getItem("userRole") || localStorage.getItem("role") || "";
-    const token = localStorage.getItem("token") || "";
-    return apiRequest('/interview/my-results/' + id + '?email=' + encodeURIComponent(email), {
-      headers: {
-        "X-User-Id": userId,
-        "X-User-Role": role,
-        ...(token ? { "Authorization": `Bearer ${token}` } : {})
-      }
-    });
-  },
+  getUserDetailedResults: (id, email) => apiRequest('/interview/my-results/' + id + '?email=' + encodeURIComponent(email)),
   getUserFullDetail: (userId) => apiRequest('/admin/user-full-detail/' + userId),
   updateAdminStatus: (data) => apiRequest('/admin/update-status', { method: 'PUT', body: JSON.stringify(data) }),
   updateUserStatus: (userId, data) => apiRequest('/users/' + userId + '/status', { method: 'PUT', body: JSON.stringify(data) }),

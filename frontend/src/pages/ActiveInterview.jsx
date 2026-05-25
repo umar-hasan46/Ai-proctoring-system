@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../api/api';
 import { formatToIST } from '../utils/dateUtils';
 import InterviewTimer from '../components/InterviewTimer';
+import { formatTime } from '../utils/time';
 
 function ActiveInterview({ user }) {
   const location = useLocation();
@@ -23,6 +24,7 @@ function ActiveInterview({ user }) {
   const [terminationHandled, setTerminationHandled] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [warningMessage, setWarningMessage] = useState('');
+  const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
   const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
   const [skippedIds, setSkippedIds] = useState(new Set());
   const [autosaveStatus, setAutosaveStatus] = useState('');
@@ -354,10 +356,6 @@ function ActiveInterview({ user }) {
       } else {
         setInterviewId(activeId);
       }
-
-      if (!activeId) {
-        navigate("/register");
-      }
     };
 
     checkAndInit();
@@ -372,7 +370,8 @@ function ActiveInterview({ user }) {
         setLoading(true);
         setDataError("");
         if (!interviewId) {
-          navigate("/register");
+          setDataError("No active interview found.");
+          setLoading(false);
           return;
         }
 
@@ -486,14 +485,8 @@ function ActiveInterview({ user }) {
   }, [isTerminated, terminationHandled, interviewId, navigate]);
 
   useEffect(() => {
-    if (isTerminated && terminationHandled && interviewId) {
-      const timer = setTimeout(() => {
-        cleanup();
-        navigate('/results/' + interviewId);
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [isTerminated, terminationHandled, interviewId, navigate]);
+    // Timer synchronization and tracking is now delegated to InterviewTimer component.
+  }, [isStarted, isTerminated, interviewId]);
 
   useEffect(() => {
     let autosaveInterval;
@@ -729,7 +722,6 @@ function ActiveInterview({ user }) {
     localStorage.removeItem("lastQuestion");
     localStorage.removeItem("active_question_no");
     localStorage.removeItem("answers");
-    localStorage.removeItem("timeLeft");
     sessionStorage.clear();
     setCurrentIdx(0);
     setHighestIdx(0);
@@ -806,10 +798,6 @@ function ActiveInterview({ user }) {
 
       setIsStarted(true);
       startTimeRef.current = Date.now();
-      localStorage.setItem("interviewStartTime", Date.now().toString());
-      localStorage.setItem("currentInterviewId", activeId || interviewId);
-      localStorage.setItem("userId", user?.id || storedUser?.id || "");
-      localStorage.setItem("userRole", roleApplied);
       logAIEvent('Positive Communication', 'Candidate started the interview.', 90, 'Low');
     } catch (err) {
       console.error("Failed to start interview:", err);
@@ -1135,7 +1123,9 @@ function ActiveInterview({ user }) {
     } finally {
       setSubmitting(false);
     }
+    return '';
   };
+
   if (authLoading) {
     return (
       <div className="card" style={{ maxWidth: '400px', margin: '100px auto', textAlign: 'center', padding: '3rem' }}>
@@ -1176,7 +1166,11 @@ function ActiveInterview({ user }) {
     return (
       <div className="card" style={{ maxWidth: '400px', margin: '100px auto', textAlign: 'center', padding: '3rem' }}>
         <h3 style={{ color: '#e53e3e' }}>{dataError}</h3>
-        <button className="btn btn-primary" onClick={() => window.location.reload()} style={{ marginTop: '1rem' }}>Retry</button>
+        {dataError.includes("No active interview") ? (
+          <button className="btn btn-primary" onClick={() => navigate('/dashboard')} style={{ marginTop: '1rem' }}>Go to Dashboard</button>
+        ) : (
+          <button className="btn btn-primary" onClick={() => window.location.reload()} style={{ marginTop: '1rem' }}>Retry</button>
+        )}
       </div>
     );
   }
@@ -1294,38 +1288,13 @@ function ActiveInterview({ user }) {
             >
               {voiceEnabled ? '🔊 Voice On' : '🔇 Voice Off'}
             </button>
-            <InterviewTimer totalSeconds={1800} onTimeUp={handleAutoSubmit} />
-            <span style={{ color: warnings >= 3 ? 'red' : 'orange', fontWeight: 'bold' }}>Warnings: {warnings}/3</span>
           </div>
         </div>
         {safeSkills.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#4a5568' }}>Detected Skills:</span>
-            {safeSkills.map((skill, sIdx) => {
-              const cleaned = skill.trim();
-              if (!cleaned) return null;
-              return (
-                <span 
-                  key={sIdx} 
-                  style={{
-                    backgroundColor: '#e2e8f0', 
-                    color: '#4a5568', 
-                    padding: '0.2rem 0.6rem', 
-                    borderRadius: '9999px', 
-                    fontSize: '0.75rem', 
-                    fontWeight: '600'
-                  }}
-                >
-                  {cleaned}
-                </span>
-              );
-            })}
+          <div style={{ height: '8px', background: '#e2e8f0', borderRadius: '4px', marginBottom: '2rem' }}>
+            <div style={{ height: '100%', background: '#3182ce', width: `${progress}%`, borderRadius: '4px', transition: 'width 0.3s' }}></div>
           </div>
         )}
-
-        <div style={{ height: '8px', background: '#e2e8f0', borderRadius: '4px', marginBottom: '2rem' }}>
-          <div style={{ height: '100%', background: '#3182ce', width: `${progress}%`, borderRadius: '4px', transition: 'width 0.3s' }}></div>
-        </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2>Question {currentIdx + 1}/{questions.length}</h2>
           {autosaveStatus && (
@@ -1423,12 +1392,12 @@ function ActiveInterview({ user }) {
       <div>
         <div className="card" style={{ padding: '10px' }}>
           <video
-  ref={videoRef}
-  autoPlay
-  muted
-  playsInline
-  style={{ width: "100%", borderRadius: 10, transform: "scaleX(-1)", background: "#0d0d14" }}
-/>
+            ref={videoRef}
+            autoPlay
+            muted
+            playsInline
+            style={{ width: "100%", borderRadius: 10, transform: "scaleX(-1)", background: "#0d0d14" }}
+          />
           <div style={{ marginTop: '1rem', fontSize: '0.85rem', fontWeight: 'bold' }}>
             <p style={{ color: liveStatus.camera === 'active' ? '#10b981' : '#ef4444', margin: '5px 0' }}>
               <span style={{ marginRight: '6px' }}>●</span>
@@ -1475,9 +1444,12 @@ function ActiveInterview({ user }) {
                 <span style={{ color: '#4a5568', fontWeight: '500' }}>Not Attempted Questions</span>
                 <span style={{ color: '#e53e3e', fontWeight: 'bold' }}>{computeCounts().notAttempted}</span>
               </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                <span style={{ fontWeight: 'bold', color: '#4a5568' }}>Question {currentIdx + 1} of 30</span>
+              </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: '#4a5568', fontWeight: '500' }}>Time Left</span>
-                <span style={{ color: '#3182ce', fontWeight: 'bold' }}>{formatTime(timeLeft)}</span>
+                <span style={{ color: '#3182ce', fontWeight: 'bold' }}><InterviewTimer /></span>
               </div>
             </div>
             
@@ -1620,9 +1592,9 @@ function ActiveInterview({ user }) {
         <div ref={liveTranscriptBottomRef} style={{flex:1,color:"#93c5fd",fontSize:"0.78rem",fontStyle:"italic",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
           Click Turn On Mic to start speaking
         </div>
-        <span style={{color:"#6b7280",fontSize:"0.75rem",flexShrink:0}}>
-          Q{currentIdx + 1}/30 | {formatTime(timeLeft)}
-        </span>
+        <div style={{ padding: '1rem', background: '#e2e8f0', color: '#4a5568', fontWeight: 'bold', textAlign: 'center' }}>
+          Q{currentIdx + 1}/30
+        </div>
       </div>
     </div>
   );

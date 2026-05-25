@@ -3500,8 +3500,7 @@ def get_my_results(interview_id):
         cols = [d[0] for d in cur.description]
         intv = dict(zip(cols, row))
         
-        user_role = request.headers.get("X-User-Role", "").lower()
-        if intv.get("user_email") != email and user_role not in ["admin", "recruiter"]:
+        if intv.get("user_email") != email:
             return jsonify({"success": False, "message": "Unauthorized access to this interview", "data": None}), 200
 
         ist = pytz.timezone('Asia/Kolkata')
@@ -4252,6 +4251,82 @@ def get_session_report(sessionId):
     except Exception as e:
         conn.rollback()
         print("Error generating session report:", e)
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cur.close()
+        conn.close()
+
+
+@bp.route('/interview/report/<string:interview_id>', methods=['GET'])
+@bp.route('/interview/report', methods=['GET'])
+def get_interview_report(interview_id=None):
+    from flask import request
+    user_id = request.headers.get("X-User-Id")
+    role = request.headers.get("X-User-Role")
+    
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"success": False, "message": "Database connection failed"}), 500
+    cur = conn.cursor()
+    try:
+        if not interview_id:
+            if not user_id:
+                return jsonify({"success": False, "message": "No interviewId provided and user not identified."}), 404
+            cur.execute("SELECT id FROM interviews WHERE user_id = %s ORDER BY created_at DESC LIMIT 1", (user_id,))
+            row = cur.fetchone()
+            if not row:
+                return jsonify({"success": False, "message": "No interview found."}), 404
+            interview_id = row[0]
+            
+        cur.execute("SELECT user_id FROM interviews WHERE id = %s", (interview_id,))
+        intv_row = cur.fetchone()
+        if not intv_row:
+            return jsonify({"success": False, "message": "Interview not found."}), 404
+            
+        owner_id = str(intv_row[0])
+        
+        # RBAC: Only admin, recruiter, or the owner can view
+        if role not in ['admin', 'recruiter'] and str(user_id) != owner_id:
+            return jsonify({"success": False, "message": "Unauthorized to view this interview report."}), 403
+            
+        # We fetch real data from legacy results just to satisfy the JSON structure, 
+        # or we just return success with the correct structure mapped from existing DB
+        cur.execute("SELECT full_name, email, role_applied, phone FROM users WHERE id = %s", (owner_id,))
+        cand_row = cur.fetchone()
+        candidate = {
+            "name": cand_row[0] if cand_row else "Unknown",
+            "email": cand_row[1] if cand_row else "",
+            "role": cand_row[2] if cand_row else "",
+            "phone": cand_row[3] if cand_row else ""
+        }
+        
+        cur.execute("SELECT technical_score, communication_score, final_percentage, result_status FROM results WHERE interview_id = %s", (interview_id,))
+        res_row = cur.fetchone()
+        scores = {
+            "technical": res_row[0] if res_row else 0,
+            "communication": res_row[1] if res_row else 0,
+            "overall": res_row[2] if res_row else 0
+        }
+        final_result = res_row[3] if res_row else "Review"
+        
+        # Get questions and answers if available
+        questions = []
+        answers = []
+        cur.execute("SELECT question_text, candidate_answer, content_score FROM ai_evaluation WHERE interview_id = %s", (interview_id,))
+        for q in cur.fetchall():
+            questions.append({"text": q[0]})
+            answers.append({"text": q[1], "score": q[2]})
+            
+        return jsonify({
+            "success": True,
+            "interviewId": interview_id,
+            "candidate": candidate,
+            "questions": questions,
+            "answers": answers,
+            "scores": scores,
+            "finalResult": final_result
+        })
+    except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
     finally:
         cur.close()
