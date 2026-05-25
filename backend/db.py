@@ -498,6 +498,12 @@ def init_db():
         cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS password VARCHAR(255);")
         cur.execute("ALTER TABLE admins ADD COLUMN IF NOT EXISTS password VARCHAR(255);")
         cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS parsed_resume JSONB;")
+        
+        # New results migrations
+        cur.execute("ALTER TABLE results ADD COLUMN IF NOT EXISTS final_recommendation TEXT DEFAULT 'Review';")
+        cur.execute("ALTER TABLE results ADD COLUMN IF NOT EXISTS overall_score INTEGER DEFAULT 0;")
+        cur.execute("ALTER TABLE results ADD COLUMN IF NOT EXISTS technical_score INTEGER DEFAULT 0;")
+        cur.execute("ALTER TABLE results ADD COLUMN IF NOT EXISTS communication_score INTEGER DEFAULT 0;")
 
 
         cur.execute("""
