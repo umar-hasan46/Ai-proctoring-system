@@ -58,6 +58,21 @@ app.register_blueprint(settings.bp, url_prefix='/api')
 app.register_blueprint(dashboard.bp, url_prefix='/api/dashboard')
 app.register_blueprint(ai_features.bp, url_prefix='/api')
 
+@app.route("/", methods=["GET"])
+def home():
+    return {
+        "success": True,
+        "message": "AI Proctoring backend running successfully"
+    }, 200
+
+@app.route("/health", methods=["GET"])
+def health_root():
+    return {
+        "success": True,
+        "status": "healthy",
+        "message": "Backend health check passed"
+    }, 200
+
 @app.route('/api/health', methods=['GET'])
 def health():
     return jsonify({"success": True, "message": "Backend running"})
