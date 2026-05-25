@@ -3500,7 +3500,8 @@ def get_my_results(interview_id):
         cols = [d[0] for d in cur.description]
         intv = dict(zip(cols, row))
         
-        if intv.get("user_email") != email:
+        user_role = request.headers.get("X-User-Role", "").lower()
+        if intv.get("user_email") != email and user_role not in ["admin", "recruiter"]:
             return jsonify({"success": False, "message": "Unauthorized access to this interview", "data": None}), 200
 
         ist = pytz.timezone('Asia/Kolkata')

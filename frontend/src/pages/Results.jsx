@@ -20,7 +20,7 @@ function Results({ user: propUser }) {
   const [techDifficultyFilter, setTechDifficultyFilter] = useState('All');
   const [techStatusFilter, setTechStatusFilter] = useState('All');
 
-  const interviewIdFromState = id || location.state?.interviewId;
+  const interviewIdFromState = id || location.state?.interviewId || localStorage.getItem("currentInterviewId") || localStorage.getItem("active_interview_id");
   const user = propUser || JSON.parse(localStorage.getItem("user") || "null");
   const email = user?.email || localStorage.getItem("email") || "";
 

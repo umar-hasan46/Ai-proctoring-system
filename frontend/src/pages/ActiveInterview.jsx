@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../api/api';
 import { formatToIST } from '../utils/dateUtils';
+import InterviewTimer from '../components/InterviewTimer';
 
 function ActiveInterview({ user }) {
   const location = useLocation();
@@ -23,7 +24,6 @@ function ActiveInterview({ user }) {
   const [submitting, setSubmitting] = useState(false);
   const [warningMessage, setWarningMessage] = useState('');
   const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(1800);
   const [skippedIds, setSkippedIds] = useState(new Set());
   const [autosaveStatus, setAutosaveStatus] = useState('');
   const [liveStatus, setLiveStatus] = useState({
@@ -486,38 +486,14 @@ function ActiveInterview({ user }) {
   }, [isTerminated, terminationHandled, interviewId, navigate]);
 
   useEffect(() => {
-    let timerId;
-    let syncId;
-
-    if (isStarted && !isTerminated && interviewId) {
-      const syncTimer = async () => {
-        try {
-          const res = await api.getTimerStatus(interviewId);
-          if (res && res.success && res.remaining_seconds !== undefined) {
-            setTimeLeft(res.remaining_seconds);
-          }
-        } catch (e) {}
-      };
-
-      syncTimer();
-      syncId = setInterval(syncTimer, 10000);
-
-      timerId = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            handleAutoSubmit();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+    if (isTerminated && terminationHandled && interviewId) {
+      const timer = setTimeout(() => {
+        cleanup();
+        navigate('/results/' + interviewId);
+      }, 3000);
+      return () => clearTimeout(timer);
     }
-
-    return () => {
-      if (timerId) clearInterval(timerId);
-      if (syncId) clearInterval(syncId);
-    };
-  }, [isStarted, isTerminated, interviewId]);
+  }, [isTerminated, terminationHandled, interviewId, navigate]);
 
   useEffect(() => {
     let autosaveInterval;
@@ -760,7 +736,6 @@ function ActiveInterview({ user }) {
     setAnswers({});
     setSkippedIds(new Set());
     setWarnings(0);
-    setTimeLeft(1800);
     setIsTerminated(false);
     setTerminationHandled(false);
     setQuestions([]);
@@ -831,6 +806,10 @@ function ActiveInterview({ user }) {
 
       setIsStarted(true);
       startTimeRef.current = Date.now();
+      localStorage.setItem("interviewStartTime", Date.now().toString());
+      localStorage.setItem("currentInterviewId", activeId || interviewId);
+      localStorage.setItem("userId", user?.id || storedUser?.id || "");
+      localStorage.setItem("userRole", roleApplied);
       logAIEvent('Positive Communication', 'Candidate started the interview.', 90, 'Low');
     } catch (err) {
       console.error("Failed to start interview:", err);
@@ -1157,13 +1136,6 @@ function ActiveInterview({ user }) {
       setSubmitting(false);
     }
   };
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
   if (authLoading) {
     return (
       <div className="card" style={{ maxWidth: '400px', margin: '100px auto', textAlign: 'center', padding: '3rem' }}>
@@ -1253,31 +1225,6 @@ function ActiveInterview({ user }) {
     return { answered, skipped, notAttempted };
   };
 
-  const getTimeWarning = () => {
-    if (timeLeft <= 60 && timeLeft > 0) {
-      return "🚨 CRITICAL WARNING: Less than 1 minute remaining! Submit now!";
-    } else if (timeLeft <= 300 && timeLeft > 0) {
-      return "⚠️ WARNING: Less than 5 minutes remaining! Manage your time.";
-    } else if (timeLeft <= 600 && timeLeft > 0) {
-      return "ℹ️ NOTE: Less than 10 minutes remaining.";
-    }
-    return "";
-  };
-
-  const timerStyle = {
-    padding: '0.5rem 1rem',
-    borderRadius: '8px',
-    backgroundColor: timeLeft < 300 ? '#fff5f5' : '#f7fafc',
-    color: timeLeft < 300 ? '#e53e3e' : '#2b6cb0',
-    border: timeLeft < 300 ? '2px solid #e53e3e' : '1px solid #e2e8f0',
-    fontWeight: 'bold',
-    fontSize: '1.1rem',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    animation: timeLeft < 300 ? 'pulseGlow 1.5s infinite alternate' : 'none'
-  };
-
   const safeSkills = Array.isArray(detectedSkillsState)
     ? detectedSkillsState
     : typeof detectedSkillsState === "string" && detectedSkillsState.trim()
@@ -1347,9 +1294,7 @@ function ActiveInterview({ user }) {
             >
               {voiceEnabled ? '🔊 Voice On' : '🔇 Voice Off'}
             </button>
-            <div style={timerStyle}>
-              ⏰ {formatTime(timeLeft)}
-            </div>
+            <InterviewTimer totalSeconds={1800} onTimeUp={handleAutoSubmit} />
             <span style={{ color: warnings >= 3 ? 'red' : 'orange', fontWeight: 'bold' }}>Warnings: {warnings}/3</span>
           </div>
         </div>
@@ -1375,24 +1320,6 @@ function ActiveInterview({ user }) {
                 </span>
               );
             })}
-          </div>
-        )}
-        
-        {getTimeWarning() && (
-          <div style={{ 
-            padding: '0.75rem', 
-            backgroundColor: timeLeft <= 60 ? '#fff5f5' : (timeLeft <= 300 ? '#fffaf0' : '#ebf8ff'), 
-            border: timeLeft <= 60 ? '1px solid #fed7d7' : (timeLeft <= 300 ? '1px solid #feebc8' : '1px solid #bee3f8'), 
-            borderRadius: '8px', 
-            color: timeLeft <= 60 ? '#c53030' : (timeLeft <= 300 ? '#dd6b20' : '#2b6cb0'), 
-            textAlign: 'center', 
-            fontWeight: 'bold', 
-            fontSize: '0.9rem', 
-            marginBottom: '1rem', 
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
-            animation: timeLeft <= 300 ? 'pulseGlow 1.5s infinite alternate' : 'none' 
-          }}>
-            {getTimeWarning()}
           </div>
         )}
 
