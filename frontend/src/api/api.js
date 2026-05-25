@@ -6,12 +6,21 @@ const apiRequest = async (endpoint, options = {}) => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 90000);
 
+  const headers = {
+    'Accept': 'application/json',
+  };
+  if (options.body && !(options.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  } else if (!options.body) {
+    headers['Content-Type'] = 'application/json';
+  }
+
   const defaultOptions = {
     credentials: 'include',
     signal: controller.signal,
     headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      ...headers,
+      ...options.headers,
     },
     ...options,
   };
@@ -90,7 +99,16 @@ export const api = {
     headers: {}
   }),
 
-  checkHealth: () => apiRequest('/health'),
+  checkHealth: async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/health`);
+      const data = await response.json();
+      return { success: data.success === true };
+    } catch (error) {
+      console.error("Backend connection failed:", error);
+      return { success: false };
+    }
+  },
 
   registerInterview: (data) => apiRequest('/interviews/register', { method: 'POST', body: JSON.stringify(data) }),
   detectSkills: (data) => apiRequest('/interviews/detect-skills', { method: 'POST', body: JSON.stringify(data) }),
