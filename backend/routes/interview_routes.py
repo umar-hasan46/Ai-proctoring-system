@@ -3888,33 +3888,23 @@ def start_interview_session():
     if isinstance(detected_skills, str):
         detected_skills = [s.strip() for s in detected_skills.split(',') if s.strip()]
 
-    # Generate EXACTLY 30 questions
-    questions = []
-    
-    # First 3 fixed
-    questions.append({"questionNumber": 1, "id": "q_1", "question": "Are you ready for the interview?", "type": "Introductory", "skill": "General", "difficulty": "Easy", "expected_answer": "Yes"})
-    questions.append({"questionNumber": 2, "id": "q_2", "question": "Please introduce yourself.", "type": "Introductory", "skill": "General", "difficulty": "Easy", "expected_answer": "Introduction details"})
-    questions.append({"questionNumber": 3, "id": "q_3", "question": "Tell me about your education background.", "type": "Introductory", "skill": "General", "difficulty": "Easy", "expected_answer": "Education details"})
-    
-    # Q4 to Q30
-    skills_pool = detected_skills if detected_skills else ["Programming", "Problem Solving", "Communication", "Software Engineering"]
-    for i in range(4, 31):
-        sk = random.choice(skills_pool)
-        difficulty = "Easy" if i <= 10 else ("Medium" if i <= 20 else "Hard")
-        questions.append({
-            "questionNumber": i,
-            "id": f"q_{i}",
-            "question": f"Can you explain a concept related to {sk}?",
-            "type": "Technical",
-            "skill": sk,
-            "difficulty": difficulty,
-            "expected_answer": f"Expected logical response regarding {sk}"
-        })
-
     conn = get_db_connection()
     if conn:
         cur = conn.cursor()
         try:
+            # 1. Fetch user history for uniqueness
+            user_history = []
+            if user_id:
+                try:
+                    cur.execute("SELECT question_text FROM interview_questions WHERE user_id = %s LIMIT 50", (user_id,))
+                    user_history = [row[0] for row in cur.fetchall() if row[0]]
+                except:
+                    pass
+
+            # 2. Generate exactly 30 unique questions via Gemini AI
+            from services.ai_service import generate_30_questions
+            questions = generate_30_questions(resume_text, detected_skills, role, user_history, session_id)
+
             detected_skills_str = ", ".join(detected_skills) if isinstance(detected_skills, list) else detected_skills
             cur.execute("""
                 INSERT INTO interview_sessions (id, user_id, resume_id, target_role, detected_skills, status)
@@ -3934,6 +3924,7 @@ def start_interview_session():
                     VALUES (%s, %s, %s, %s, %s, %s, 'unasked')
                 """, (session_id, user_id, q['questionNumber'], q['question'], q['type'], q['skill']))
             conn.commit()
+
             # Support active record in the legacy 'interviews' table to support legacy camera/proctoring integrations!
             cur.execute("SELECT full_name, phone FROM users WHERE id = %s", (user_id,))
             u_row = cur.fetchone()
@@ -3953,20 +3944,23 @@ def start_interview_session():
                 legacy_id = cur.fetchone()[0]
             conn.commit()
 
+            return jsonify({
+                "success": True,
+                "message": "Session started",
+                "sessionId": session_id,
+                "interviewId": legacy_id,
+                "questions": questions
+            })
+
         except Exception as e:
             conn.rollback()
             print("DB error in start_session:", e)
+            return jsonify({"success": False, "message": str(e)}), 500
         finally:
             cur.close()
             conn.close()
 
-    return jsonify({
-        "success": True,
-        "message": "Session started",
-        "sessionId": session_id,
-        "interviewId": session_id,
-        "questions": questions
-    })
+    return jsonify({"success": False, "message": "Database connection failed"}), 500
 
 @bp.route('/interview/<string:sessionId>/questions', methods=['GET'])
 @bp.route('/interviews/<string:sessionId>/questions', methods=['GET'])
