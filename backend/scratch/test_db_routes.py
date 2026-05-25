@@ -18,6 +18,8 @@ print("--- Testing /health/db ---")
 res = client.get('/health/db')
 print("Status:", res.status_code)
 print("Data:", res.get_json())
+assert res.status_code == 500
+assert res.get_json()['message'] == "Database connection failed"
 
 print("\n--- Testing /api/auth/signup ---")
 res = client.post('/api/auth/signup', 
@@ -25,6 +27,8 @@ res = client.post('/api/auth/signup',
                   content_type='application/json')
 print("Status:", res.status_code)
 print("Data:", res.get_json())
+assert res.status_code == 500
+assert res.get_json()['message'] == "Database connection failed. Please check DATABASE_URL."
 
 print("\n--- Testing /api/auth/user/login ---")
 res = client.post('/api/auth/user/login', 
@@ -32,6 +36,8 @@ res = client.post('/api/auth/user/login',
                   content_type='application/json')
 print("Status:", res.status_code)
 print("Data:", res.get_json())
+assert res.status_code == 500
+assert res.get_json()['message'] == "Database connection failed. Please check DATABASE_URL."
 
 print("\n--- Testing /api/auth/admin/login ---")
 res = client.post('/api/auth/admin/login', 
@@ -39,6 +45,8 @@ res = client.post('/api/auth/admin/login',
                   content_type='application/json')
 print("Status:", res.status_code)
 print("Data:", res.get_json())
+assert res.status_code == 500
+assert res.get_json()['message'] == "Database connection failed. Please check DATABASE_URL."
 
 print("\n--- Testing /api/auth/login (unified login) ---")
 res = client.post('/api/auth/login', 
@@ -46,3 +54,7 @@ res = client.post('/api/auth/login',
                   content_type='application/json')
 print("Status:", res.status_code)
 print("Data:", res.get_json())
+assert res.status_code == 500
+assert res.get_json()['message'] == "Database connection failed. Please check DATABASE_URL."
+
+print("\nALL OFFLINE DATABASE CONNECTION TESTS PASSED SUCCESSFULLY!")

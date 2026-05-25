@@ -2,7 +2,7 @@ import os
 from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
 from config import Config
-from db import init_db
+from db import init_db, get_db_connection
 import routes.auth_routes as auth
 import routes.admin_routes as admin
 import routes.interview_routes as interview
@@ -77,14 +77,27 @@ def health_root():
 @app.route("/health/db", methods=["GET"])
 def db_health():
     try:
-        from db import get_db_connection
         conn = get_db_connection()
         if conn is None:
-            return {"success": False, "message": "Database connection failed"}, 500
+            return {
+                "success": False,
+                "message": "Database connection failed"
+            }, 500
+
+        cur = conn.cursor()
+        cur.execute("SELECT 1")
+        cur.close()
         conn.close()
-        return {"success": True, "message": "Database connected successfully"}, 200
+
+        return {
+            "success": True,
+            "message": "Database connected successfully"
+        }, 200
     except Exception as e:
-        return {"success": False, "message": str(e)}, 500
+        return {
+            "success": False,
+            "message": str(e)
+        }, 500
 
 @app.route('/api/health', methods=['GET'])
 def health():

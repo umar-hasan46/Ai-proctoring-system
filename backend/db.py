@@ -1,20 +1,38 @@
 import psycopg2
 from psycopg2 import sql
+import psycopg2.extras
 from config import Config
 from werkzeug.security import generate_password_hash
 from datetime import datetime
 import pytz
+import os
+
+class HybridRow(psycopg2.extras.RealDictRow):
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return list(self.values())[key]
+        return super().__getitem__(key)
+
+class RealDictCursor(psycopg2.extras.RealDictCursor):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.row_factory = HybridRow
 
 def get_ist_time():
     return datetime.now(pytz.timezone('Asia/Kolkata'))
 
 def get_db_connection():
-    import os
-    db_url = os.getenv('DATABASE_URL')
     try:
-        if db_url:
-            return psycopg2.connect(db_url)
-        return psycopg2.connect(**Config.DB_CONFIG)
+        database_url = os.environ.get("DATABASE_URL")
+        if not database_url:
+            print("DATABASE_URL not found")
+            return None
+
+        conn = psycopg2.connect(
+            database_url,
+            cursor_factory=RealDictCursor
+        )
+        return conn
     except Exception as e:
         print("Database connection error:", e)
         return None
@@ -31,8 +49,10 @@ def init_db():
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
                 full_name VARCHAR(255),
+                name VARCHAR(255),
                 email VARCHAR(255) UNIQUE,
                 phone VARCHAR(20),
+                password VARCHAR(255),
                 password_hash TEXT,
                 role VARCHAR(50) DEFAULT 'user',
                 status VARCHAR(50) DEFAULT 'active',
@@ -46,7 +66,9 @@ def init_db():
             CREATE TABLE IF NOT EXISTS admins (
                 id SERIAL PRIMARY KEY,
                 full_name VARCHAR(255),
+                name VARCHAR(255),
                 email VARCHAR(255) UNIQUE,
+                password VARCHAR(255),
                 password_hash TEXT,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
@@ -473,6 +495,8 @@ def init_db():
         for name, query in tables:
             cur.execute(query)
 
+        cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS password VARCHAR(255);")
+        cur.execute("ALTER TABLE admins ADD COLUMN IF NOT EXISTS password VARCHAR(255);")
         cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS parsed_resume JSONB;")
 
 
@@ -1574,12 +1598,15 @@ def init_db():
             UPDATE interviews SET ai_suggestions = '' WHERE ai_suggestions IS NULL;
         """)
 
-        cur.execute("SELECT password_hash FROM admins WHERE email = %s", ('admin@gmail.com',))
+        cur.execute("SELECT email FROM admins WHERE email = %s", ('admin@gmail.com',))
         admin_data = cur.fetchone()
         hashed_pw = generate_password_hash('admin123')
         if not admin_data:
-            cur.execute("INSERT INTO admins (full_name, name, email, password_hash, role) VALUES (%s, %s, %s, %s, %s)",
-                        ('Admin', 'Admin', 'admin@gmail.com', hashed_pw, 'admin'))
+            cur.execute("INSERT INTO admins (full_name, name, email, password, password_hash, role) VALUES (%s, %s, %s, %s, %s, %s)",
+                        ('Admin', 'Admin', 'admin@gmail.com', 'admin123', hashed_pw, 'admin'))
+        else:
+            cur.execute("UPDATE admins SET password = %s, password_hash = %s WHERE email = %s",
+                        ('admin123', hashed_pw, 'admin@gmail.com'))
 
         cur.execute("SELECT COUNT(*) FROM questions")
         if cur.fetchone()[0] == 0:

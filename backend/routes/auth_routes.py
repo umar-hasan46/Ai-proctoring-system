@@ -18,7 +18,10 @@ def signup():
 
         conn = get_db_connection()
         if conn is None:
-            return jsonify({"success": False, "message": "Database connection failed. Please check DATABASE_URL or database setup."}), 500
+            return {
+                "success": False,
+                "message": "Database connection failed. Please check DATABASE_URL."
+            }, 500
         cur = conn.cursor()
 
         cur.execute("SELECT id FROM users WHERE email = %s", (email,))
@@ -28,8 +31,8 @@ def signup():
             return jsonify({"success": False, "message": "Email already exists"}), 400
 
         hashed_pw = generate_password_hash(password)
-        cur.execute("INSERT INTO users (full_name, name, email, phone, password_hash, role, status) VALUES (%s, %s, %s, %s, %s, 'user', 'active')",
-                    (full_name, full_name, email, phone, hashed_pw))
+        cur.execute("INSERT INTO users (full_name, name, email, phone, password, password_hash, role, status) VALUES (%s, %s, %s, %s, %s, %s, 'user', 'active')",
+                    (full_name, full_name, email, phone, password, hashed_pw))
         conn.commit()
         cur.close()
         conn.close()
@@ -49,23 +52,45 @@ def login():
 
         conn = get_db_connection()
         if conn is None:
-            return jsonify({"success": False, "message": "Database connection failed. Please check DATABASE_URL or database setup."}), 500
+            return {
+                "success": False,
+                "message": "Database connection failed. Please check DATABASE_URL."
+            }, 500
         cur = conn.cursor()
-        cur.execute("SELECT id, full_name, email, phone, role, profile_pic, password_hash FROM users WHERE email = %s", (email,))
+
+        # Try plain-text authentication first (exact query requested)
+        cur.execute("SELECT * FROM users WHERE email = %s AND password = %s", (email, password))
         user = cur.fetchone()
+
+        # Fallback to hashed check for existing users
+        if not user:
+            cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+            user_hashed = cur.fetchone()
+            if user_hashed:
+                pw_hash = user_hashed.get('password_hash') or (user_hashed[4] if len(user_hashed) > 4 else None)
+                if pw_hash and check_password_hash(pw_hash, password):
+                    user = user_hashed
+
         cur.close()
         conn.close()
 
-        if user and check_password_hash(user[6], password):
+        if user:
+            user_id = user.get('id') or user[0]
+            user_name = user.get('name') or user.get('full_name') or (user[1] if len(user) > 1 else "User Name")
+            user_email = user.get('email') or (user[2] if len(user) > 2 else email)
+            user_phone = user.get('phone') or (user[3] if len(user) > 3 else "9876543210")
+            user_role = user.get('role') or (user[4] if len(user) > 4 else "user")
+            user_pic = user.get('profile_pic') or (user[5] if len(user) > 5 else None)
+
             return jsonify({
                 "success": True,
                 "user": {
-                    "id": user[0],
-                    "name": user[1] or "User Name",
-                    "email": user[2],
-                    "phone": user[3] or "9876543210",
-                    "role": user[4] or "user",
-                    "profile_pic": user[5]
+                    "id": user_id,
+                    "name": user_name,
+                    "email": user_email,
+                    "phone": user_phone,
+                    "role": user_role,
+                    "profile_pic": user_pic
                 }
             })
         return jsonify({"success": False, "message": "Invalid email or password"}), 401
@@ -84,22 +109,43 @@ def admin_login():
 
         conn = get_db_connection()
         if conn is None:
-            return jsonify({"success": False, "message": "Database connection failed. Please check DATABASE_URL or database setup."}), 500
+            return {
+                "success": False,
+                "message": "Database connection failed. Please check DATABASE_URL."
+            }, 500
         cur = conn.cursor()
-        cur.execute("SELECT id, full_name, email, phone, role, profile_pic, password_hash FROM admins WHERE email = %s", (email,))
+
+        # Try plain-text authentication first (exact query requested)
+        cur.execute("SELECT * FROM admins WHERE email = %s AND password = %s", (email, password))
         admin = cur.fetchone()
+
+        # Fallback to hashed check for existing admins
+        if not admin:
+            cur.execute("SELECT * FROM admins WHERE email = %s", (email,))
+            admin_hashed = cur.fetchone()
+            if admin_hashed:
+                pw_hash = admin_hashed.get('password_hash') or (admin_hashed[3] if len(admin_hashed) > 3 else None)
+                if pw_hash and check_password_hash(pw_hash, password):
+                    admin = admin_hashed
+
         cur.close()
         conn.close()
 
-        if admin and check_password_hash(admin[6], password):
+        if admin:
+            admin_id = admin.get('id') or admin[0]
+            admin_name = admin.get('name') or admin.get('full_name') or (admin[1] if len(admin) > 1 else "Admin")
+            admin_email = admin.get('email') or (admin[2] if len(admin) > 2 else email)
+            admin_role = admin.get('role') or (admin[4] if len(admin) > 4 else "admin")
+            admin_pic = admin.get('profile_pic') or (admin[5] if len(admin) > 5 else None)
+
             return jsonify({
                 "success": True,
                 "user": {
-                    "id": admin[0],
-                    "name": admin[1] or "Admin",
-                    "email": admin[2],
-                    "role": admin[4] or "admin",
-                    "profile_pic": admin[5]
+                    "id": admin_id,
+                    "name": admin_name,
+                    "email": admin_email,
+                    "role": admin_role,
+                    "profile_pic": admin_pic
                 }
             })
         return jsonify({"success": False, "message": "Invalid email or password"}), 401
@@ -119,47 +165,83 @@ def unified_login():
 
         conn = get_db_connection()
         if conn is None:
-            return jsonify({"success": False, "message": "Database connection failed. Please check DATABASE_URL or database setup."}), 500
+            return {
+                "success": False,
+                "message": "Database connection failed. Please check DATABASE_URL."
+            }, 500
         cur = conn.cursor()
 
         if role == 'admin':
-            cur.execute("SELECT id, full_name, email, phone, role, profile_pic, password_hash FROM admins WHERE email = %s", (email,))
+            # Try plain-text authentication first (exact query requested)
+            cur.execute("SELECT * FROM admins WHERE email = %s AND password = %s", (email, password))
             admin = cur.fetchone()
+
+            # Fallback to hashed check for existing admins
+            if not admin:
+                cur.execute("SELECT * FROM admins WHERE email = %s", (email,))
+                admin_hashed = cur.fetchone()
+                if admin_hashed:
+                    pw_hash = admin_hashed.get('password_hash') or (admin_hashed[3] if len(admin_hashed) > 3 else None)
+                    if pw_hash and check_password_hash(pw_hash, password):
+                        admin = admin_hashed
+
             cur.close()
             conn.close()
 
-            if admin and check_password_hash(admin[6], password):
+            if admin:
+                admin_id = admin.get('id') or admin[0]
+                admin_name = admin.get('name') or admin.get('full_name') or (admin[1] if len(admin) > 1 else "Admin")
+                admin_email = admin.get('email') or (admin[2] if len(admin) > 2 else email)
+                admin_pic = admin.get('profile_pic') or (admin[5] if len(admin) > 5 else None)
+
                 return jsonify({
                     "success": True,
                     "message": "Admin login successful",
-                    "token": f"mock-jwt-token-admin-{admin[0]}",
+                    "token": f"mock-jwt-token-admin-{admin_id}",
                     "user": {
-                        "id": admin[0],
-                        "name": admin[1] or "Admin",
-                        "email": admin[2],
+                        "id": admin_id,
+                        "name": admin_name,
+                        "email": admin_email,
                         "role": "admin",
-                        "profile_pic": admin[5]
+                        "profile_pic": admin_pic
                     }
                 })
             return jsonify({"success": False, "message": "Invalid email or password"}), 401
         else:
-            cur.execute("SELECT id, full_name, email, phone, role, profile_pic, password_hash FROM users WHERE email = %s", (email,))
+            # Try plain-text authentication first (exact query requested)
+            cur.execute("SELECT * FROM users WHERE email = %s AND password = %s", (email, password))
             user = cur.fetchone()
+
+            # Fallback to hashed check for existing users
+            if not user:
+                cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+                user_hashed = cur.fetchone()
+                if user_hashed:
+                    pw_hash = user_hashed.get('password_hash') or (user_hashed[4] if len(user_hashed) > 4 else None)
+                    if pw_hash and check_password_hash(pw_hash, password):
+                        user = user_hashed
+
             cur.close()
             conn.close()
 
-            if user and check_password_hash(user[6], password):
+            if user:
+                user_id = user.get('id') or user[0]
+                user_name = user.get('name') or user.get('full_name') or (user[1] if len(user) > 1 else "User Name")
+                user_email = user.get('email') or (user[2] if len(user) > 2 else email)
+                user_phone = user.get('phone') or (user[3] if len(user) > 3 else "9876543210")
+                user_pic = user.get('profile_pic') or (user[5] if len(user) > 5 else None)
+
                 return jsonify({
                     "success": True,
                     "message": "User login successful",
-                    "token": f"mock-jwt-token-user-{user[0]}",
+                    "token": f"mock-jwt-token-user-{user_id}",
                     "user": {
-                        "id": user[0],
-                        "name": user[1] or "User Name",
-                        "email": user[2],
-                        "phone": user[3] or "9876543210",
+                        "id": user_id,
+                        "name": user_name,
+                        "email": user_email,
+                        "phone": user_phone,
                         "role": "user",
-                        "profile_pic": user[5]
+                        "profile_pic": user_pic
                     }
                 })
             return jsonify({"success": False, "message": "Invalid email or password"}), 401
