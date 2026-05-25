@@ -1,4 +1,5 @@
 import React from 'react';
+import API_BASE_URL from '../config/api';
 
 const Avatar = ({ name, email, profile_pic, size = 40 }) => {
   const [imgError, setImgError] = React.useState(false);
@@ -20,7 +21,7 @@ const Avatar = ({ name, email, profile_pic, size = 40 }) => {
   const getFullImageUrl = (path) => {
     if (!path || path === 'null' || path === 'undefined') return null;
     if (path.startsWith('http')) return path;
-    const baseUrl = 'http://127.0.0.1:5000';
+    const baseUrl = API_BASE_URL;
     return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
   };
 

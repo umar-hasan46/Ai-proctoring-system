@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/api';
+import API_BASE_URL from '../config/api';
 import { formatToIST, formatToDDMMYYYY } from '../utils/dateUtils';
 
 function AIReport() {
@@ -146,7 +147,7 @@ function AIReport() {
               ref={videoRef}
               controls
               style={{ width: '100%', display: 'block', maxHeight: '480px' }}
-              src={`http://127.0.0.1:5000/uploads/recordings/interview_${id}.mp4`}
+              src={`${API_BASE_URL}/uploads/recordings/interview_${id}.mp4`}
             >
               Your browser does not support the video tag.
             </video>

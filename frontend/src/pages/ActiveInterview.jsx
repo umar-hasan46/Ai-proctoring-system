@@ -392,7 +392,7 @@ function ActiveInterview({ user }) {
         }
       } catch (err) {
         console.error("Interview load error:", err);
-        setDataError(err.message || 'Failed to load interview');
+        setDataError('Backend connection failed. Please check Render backend service.');
       } finally {
         setLoading(false);
       }

@@ -18,6 +18,7 @@ import RegisterInterview from "./pages/RegisterInterview";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AIChatbot from "./components/AIChatbot";
 import { api } from "./api/api";
+import API_BASE_URL from "./config/api";
 
 class ErrorBoundary extends React.Component {
   constructor(props) { super(props); this.state = { hasError: false, error: "" }; }
@@ -81,6 +82,15 @@ function App() {
 
   const [toast, setToast] = React.useState(null);
   const shownNotifIds = React.useRef(new Set());
+
+  React.useEffect(() => {
+    fetch(`${API_BASE_URL}/health`)
+      .then(res => res.json())
+      .then(data => console.log("Backend health check:", data))
+      .catch(err => {
+        console.error("Backend not connected. Please check Render backend service.", err);
+      });
+  }, []);
 
   React.useEffect(() => {
     let interval;

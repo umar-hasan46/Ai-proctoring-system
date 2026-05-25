@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/api';
 import { useNavigate } from 'react-router-dom';
+import API_BASE_URL from '../config/api';
 
 function Profile({ user: propUser }) {
   const [profile, setProfile] = useState(null);
@@ -99,7 +100,7 @@ function Profile({ user: propUser }) {
         <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', marginTop: '50px' }}>
           <div style={{ display: 'inline-block', position: 'relative' }}>
             <img
-              src={profile.profile_pic ? (profile.profile_pic.startsWith('http') ? profile.profile_pic : `http://127.0.0.1:5000${profile.profile_pic}`) : defaultAvatar}
+              src={profile.profile_pic ? (profile.profile_pic.startsWith('http') ? profile.profile_pic : `${API_BASE_URL}${profile.profile_pic}`) : defaultAvatar}
               alt="Profile"
               onError={(e) => { e.target.src = defaultAvatar; }}
               style={{ width: '180px', height: '180px', borderRadius: '50%', objectFit: 'cover', border: '8px solid #fff', boxShadow: '0 5px 15px rgba(0,0,0,0.1)', background: '#fff' }}

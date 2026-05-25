@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/api';
-import { API_BASE_URL } from '../config/api';
+import API_BASE_URL from '../config/api';
 
 function RegisterInterview({ user }) {
   // Initialize form fields; email is read‑only as it comes from logged‑in user
