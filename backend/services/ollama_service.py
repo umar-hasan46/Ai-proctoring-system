@@ -2,11 +2,34 @@ import requests
 import json
 import re
 
+import time
+
 OLLAMA_URL = "http://localhost:11434/api/generate"
 MODELS = ["llama3", "mistral"]
 
+_OLLAMA_ALIVE_CACHE = {"status": None, "last_check": 0}
+
+def check_ollama_alive():
+    global _OLLAMA_ALIVE_CACHE
+    now = time.time()
+    if now - _OLLAMA_ALIVE_CACHE["last_check"] < 120:  # cache for 2 mins
+        if _OLLAMA_ALIVE_CACHE["status"] is not None:
+            return _OLLAMA_ALIVE_CACHE["status"]
+            
+    try:
+        resp = requests.get("http://localhost:11434/", timeout=2)
+        is_alive = resp.status_code == 200
+    except Exception:
+        is_alive = False
+        
+    _OLLAMA_ALIVE_CACHE["status"] = is_alive
+    _OLLAMA_ALIVE_CACHE["last_check"] = now
+    return is_alive
 
 def generate_with_ollama(prompt, timeout=30):
+    if not check_ollama_alive():
+        return ""
+        
     for model in MODELS:
         try:
             resp = requests.post(

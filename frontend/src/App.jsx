@@ -3,14 +3,14 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "r
 import Login from "./pages/Login";
 import Register from "./pages/Signup";
 import Dashboard from "./pages/UserDashboard";
-import ActiveInterview from "./pages/ActiveInterview";
-import Results from "./pages/Results";
+const ActiveInterview = React.lazy(() => import("./pages/ActiveInterview"));
+const Results = React.lazy(() => import("./pages/Results"));
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
-import AdminDashboard from "./pages/AdminDashboard";
+const AdminDashboard = React.lazy(() => import("./pages/AdminDashboard"));
 import LiveProctoring from "./pages/LiveProctoring";
 import Reports from "./pages/AllResults";
-import StudentsDashboard from "./pages/StudentsDashboard";
+const StudentsDashboard = React.lazy(() => import("./pages/StudentsDashboard"));
 import AdminNotifications from "./pages/Notifications";
 import AdminSettings from "./pages/Settings";
 import Navbar from "./components/Navbar";
@@ -141,31 +141,38 @@ function App() {
       )}
 
       <div className="container">
-        <Routes>
-          <Route path="/" element={user ? (user.role === 'admin' ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/user/dashboard" replace />) : <Login onLogin={handleLogin} />} />
-          <Route path="/login" element={user ? (user.role === 'admin' ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/user/dashboard" replace />) : <Login onLogin={handleLogin} />} />
-          <Route path="/admin-login" element={user ? (user.role === 'admin' ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/user/dashboard" replace />) : <Login onLogin={handleLogin} />} />
-          <Route path="/signup" element={<Register />} />
-          
-          <Route path="/user/dashboard" element={wrap("user", Dashboard, user)} />
-          <Route path="/dashboard" element={<Navigate to="/user/dashboard" replace />} />
-          
-          <Route path="/register" element={wrap("user", RegisterInterview, user)} />
-          <Route path="/active-interview" element={wrap("user", ActiveInterview, user)} />
-          <Route path="/results" element={wrap("user", Results, user)} />
-          <Route path="/results/:id" element={wrap("user", Results, user)} />
-          <Route path="/notifications" element={wrap("user", Notifications, user)} />
-          <Route path="/settings" element={wrap("user", Settings, user, handleLogin)} />
-          
-          <Route path="/admin/dashboard" element={wrap("admin", AdminDashboard, user)} />
-          <Route path="/admin/live-proctoring" element={wrap("admin", LiveProctoring, user)} />
-          <Route path="/admin/reports" element={wrap("admin", Reports, user)} />
-          <Route path="/admin/students-dashboard" element={wrap("admin", StudentsDashboard, user)} />
-          <Route path="/admin/notifications" element={wrap("admin", AdminNotifications, user)} />
-          <Route path="/admin/settings" element={wrap("admin", AdminSettings, user, handleLogin)} />
-          
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
+        <React.Suspense fallback={
+          <div className="card" style={{ maxWidth: '400px', margin: '100px auto', textAlign: 'center', padding: '3rem' }}>
+            <h3 style={{ color: '#1e3a5f' }}>Loading...</h3>
+            <p style={{ color: '#718096', marginTop: '10px' }}>Preparing component resources...</p>
+          </div>
+        }>
+          <Routes>
+            <Route path="/" element={user ? (user.role === 'admin' ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/user/dashboard" replace />) : <Login onLogin={handleLogin} />} />
+            <Route path="/login" element={user ? (user.role === 'admin' ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/user/dashboard" replace />) : <Login onLogin={handleLogin} />} />
+            <Route path="/admin-login" element={user ? (user.role === 'admin' ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/user/dashboard" replace />) : <Login onLogin={handleLogin} />} />
+            <Route path="/signup" element={<Register />} />
+            
+            <Route path="/user/dashboard" element={wrap("user", Dashboard, user)} />
+            <Route path="/dashboard" element={<Navigate to="/user/dashboard" replace />} />
+            
+            <Route path="/register" element={wrap("user", RegisterInterview, user)} />
+            <Route path="/active-interview" element={wrap("user", ActiveInterview, user)} />
+            <Route path="/results" element={wrap("user", Results, user)} />
+            <Route path="/results/:id" element={wrap("user", Results, user)} />
+            <Route path="/notifications" element={wrap("user", Notifications, user)} />
+            <Route path="/settings" element={wrap("user", Settings, user, handleLogin)} />
+            
+            <Route path="/admin/dashboard" element={wrap("admin", AdminDashboard, user)} />
+            <Route path="/admin/live-proctoring" element={wrap("admin", LiveProctoring, user)} />
+            <Route path="/admin/reports" element={wrap("admin", Reports, user)} />
+            <Route path="/admin/students-dashboard" element={wrap("admin", StudentsDashboard, user)} />
+            <Route path="/admin/notifications" element={wrap("admin", AdminNotifications, user)} />
+            <Route path="/admin/settings" element={wrap("admin", AdminSettings, user, handleLogin)} />
+            
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </React.Suspense>
       </div>
       <AIChatbot user={user} />
     </>

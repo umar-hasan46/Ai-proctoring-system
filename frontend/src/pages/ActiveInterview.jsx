@@ -269,6 +269,26 @@ function ActiveInterview({ user }) {
   const [authError, setAuthError] = useState('');
   const [backendError, setBackendError] = useState('');
   const [dataError, setDataError] = useState('');
+  const [backendStatus, setBackendStatus] = useState('checking'); // 'checking', 'online', 'offline'
+
+  const checkBackendHealth = async () => {
+    try {
+      setBackendStatus('checking');
+      const health = await api.checkHealth();
+      if (health.success) {
+        setBackendStatus('online');
+        setBackendError('');
+      } else {
+        setBackendStatus('offline');
+      }
+    } catch (err) {
+      setBackendStatus('offline');
+    }
+  };
+
+  useEffect(() => {
+    checkBackendHealth();
+  }, []);
 
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -344,9 +364,10 @@ function ActiveInterview({ user }) {
   }, [location.state, email, authLoading, navigate]);
 
   useEffect(() => {
-    if (!email) return;
+    if (!email || backendStatus !== 'online') return;
 
     const checkAndFetch = async () => {
+      if (isStarted || questions.length > 0) return; // Prevent duplicate fetching
       try {
         setLoading(true);
         setDataError("");
@@ -355,51 +376,48 @@ function ActiveInterview({ user }) {
           return;
         }
 
-        const questionsRes = await api.getQuestions(interviewId);
-        if (questionsRes.success && questionsRes.questions && questionsRes.questions.length >= 30) {
-          const mappedQuestions = questionsRes.questions.slice(0, 30).map(q => ({
-            id: q.question_id || q.id || `q_${q.question_no}`,
-            text: q.question_text,
-            difficulty: q.difficulty || 'Easy',
-            category: q.category || q.topic || 'Technical',
-            expected_answer: q.expected_answer || ''
-          }));
-          setQuestions(mappedQuestions);
-          setCurrentIdx(0);
-          setIsStarted(true);
-        } else {
-          const startRes = await api.startInterview({
-            user_email: email,
-            role: role,
-            resume_text: "",
-            skills: Array.isArray(detectedSkillsState) ? detectedSkillsState.join(', ') : detectedSkillsState
-          });
-          if (startRes.success && startRes.questions && startRes.questions.length >= 1) {
-            setInterviewId(startRes.interview_id || interviewId);
-            const mappedQuestions = startRes.questions.slice(0, 30).map(q => ({
-              id: q.question_id || q.id || `q_${q.question_no}`,
-              text: q.question_text,
+        // If sessionId is present in localStorage, check if we can resume the existing session questions
+        const activeSessionId = sessionId || localStorage.getItem("active_session_id");
+        if (activeSessionId) {
+          const res = await api.getSessionQuestions(activeSessionId);
+          if (res.success && res.questions && res.questions.length > 0) {
+            // Yes, active session questions are already generated. Resume them!
+            const mappedQuestions = res.questions.slice(0, 30).map(q => ({
+              id: q.id || q.question_id || `q_${q.questionNumber}`,
+              text: q.question || q.question_text || q.text || '',
               difficulty: q.difficulty || 'Easy',
-              category: q.category || q.topic || 'Technical',
-              expected_answer: q.expected_answer || ''
+              category: q.skill || q.question_type || q.type || 'Technical',
+              expected_answer: q.expected_answer || '',
+              skill: q.skill || '',
+              question_type: q.type || q.question_type || 'dynamic'
             }));
             setQuestions(mappedQuestions);
-            setCurrentIdx(0);
+            
+            // Restore previous index from localStorage if available
+            const storedIdx = parseInt(localStorage.getItem("currentIdx") || localStorage.getItem("current_question_index") || "0", 10);
+            setCurrentIdx(storedIdx);
+            setHighestIdx(storedIdx);
+            
             setIsStarted(true);
-          } else {
-            throw new Error("Failed to load interview questions. Please retry.");
+            setLoading(false);
+            startCamera(); // Start camera when resuming
+            return;
           }
         }
+
+        // Otherwise, if we don't have active session questions yet, we do NOT auto-start/auto-generate.
+        // We let the user click the "Start Interview Now" button which triggers handleStart.
+        setLoading(false);
       } catch (err) {
         console.error("Interview load error:", err);
-        setDataError('Backend connection failed. Please check Render backend service.');
-      } finally {
+        // Do not block the page with a backend offline screen if it's just questions loading
+        setDataError("Could not load interview session. Please try starting the interview.");
         setLoading(false);
       }
     };
 
     checkAndFetch();
-  }, [interviewId, email, navigate]);
+  }, [interviewId, email, backendStatus, navigate, sessionId, isStarted, questions.length]);
 
   useEffect(() => {
     if (isStarted && streamRef.current && videoRef.current) {
@@ -723,7 +741,7 @@ function ActiveInterview({ user }) {
   }
 
   useEffect(() => {
-    startCamera();
+    // startCamera is now called only when user starts or resumes the interview
     return () => stopCamera();
   }, []);
 
@@ -1162,11 +1180,22 @@ function ActiveInterview({ user }) {
     );
   }
 
-  if (backendError) {
+  if (backendStatus === 'checking') {
+    return (
+      <div className="card" style={{ maxWidth: '450px', margin: '100px auto', textAlign: 'center', padding: '3rem' }}>
+        <h3 style={{ color: '#1e3a5f' }}>Connecting to Server...</h3>
+        <p style={{ color: '#718096', marginTop: '10px' }}>Please wait while we establish a connection.</p>
+        <p style={{ fontSize: '0.85rem', color: '#a0aec0', marginTop: '1rem' }}>Note: Free tier servers may take up to 50 seconds to wake up.</p>
+      </div>
+    );
+  }
+
+  if (backendStatus === 'offline' || backendError) {
     return (
       <div className="card" style={{ maxWidth: '400px', margin: '100px auto', textAlign: 'center', padding: '3rem' }}>
-        <h3 style={{ color: '#e53e3e' }}>{backendError}</h3>
-        <button className="btn btn-primary" onClick={() => window.location.reload()} style={{ marginTop: '1rem' }}>Retry</button>
+        <h3 style={{ color: '#e53e3e' }}>{backendError || 'Backend Server Offline'}</h3>
+        <p style={{ color: '#718096', marginTop: '10px' }}>Could not connect to the backend server. It might be sleeping or down.</p>
+        <button className="btn btn-primary" onClick={checkBackendHealth} style={{ marginTop: '1rem' }}>Retry Connection</button>
       </div>
     );
   }
