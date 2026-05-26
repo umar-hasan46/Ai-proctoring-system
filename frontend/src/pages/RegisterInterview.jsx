@@ -17,6 +17,7 @@ function RegisterInterview({ user }) {
   const [registered, setRegistered] = useState(false);
   const [error, setError] = useState('');
   const [skills, setSkills] = useState(null);
+  const [targetRole, setTargetRole] = useState(localStorage.getItem('targetRole') || localStorage.getItem('userRole') || 'Software Engineer');
   const [interviewId, setInterviewId] = useState(null);
   const navigate = useNavigate();
 
@@ -190,11 +191,15 @@ function RegisterInterview({ user }) {
           <button onClick={async () => {
             setLoading(true);
             try {
+              const safeTargetRole = targetRole || localStorage.getItem("targetRole") || localStorage.getItem("userRole") || "Software Engineer";
+              const safeDetectedSkills = Array.isArray(skills) && skills.length > 0 ? skills : ["Python", "JavaScript", "SQL", "HTML", "CSS", "Git"];
+              
               const payload = {
                 userId: localStorage.getItem("userId") || "",
                 role: localStorage.getItem("userRole") || "user",
-                skills: JSON.parse(localStorage.getItem("detectedSkills") || "[]"),
-                targetRole: localStorage.getItem("targetRole") || "Software Engineer"
+                skills: safeDetectedSkills,
+                targetRole: safeTargetRole,
+                resumeAnalysis: JSON.parse(localStorage.getItem("resumeAnalysis") || "{}")
               };
 
               const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com";
@@ -215,9 +220,9 @@ function RegisterInterview({ user }) {
               }
 
               localStorage.setItem("interviewRegistered", "true");
-              localStorage.setItem("detectedSkills", JSON.stringify(skills));
-              localStorage.setItem("targetRole", targetRole || "Software Engineer");
-              localStorage.setItem("resumeAnalysis", JSON.stringify(resumeAnalysis || {}));
+              localStorage.setItem("detectedSkills", JSON.stringify(safeDetectedSkills));
+              localStorage.setItem("targetRole", safeTargetRole);
+              localStorage.setItem("resumeAnalysis", localStorage.getItem("resumeAnalysis") || "{}");
 
               localStorage.setItem("currentInterviewId", data.interviewId || data.sessionId);
               localStorage.setItem("interviewSessionId", data.sessionId || data.interviewId);
