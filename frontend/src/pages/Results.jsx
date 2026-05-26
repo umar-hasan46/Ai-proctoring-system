@@ -166,7 +166,6 @@ function Results({ user: propUser }) {
             start_time: localStorage.getItem("interviewStartTime") ? new Date(parseInt(localStorage.getItem("interviewStartTime"))).toISOString() : new Date().toISOString(),
             warning_count: localWarnings.length
           },
-          warnings: localWarnings,
           warningCount: localWarnings.length,
           candidate: { name: user?.name || user?.full_name || "Candidate", email: email, role: localStorage.getItem("targetRole") || "Software Engineer" },
           decision: answeredCount >= 15 ? "Shortlisted" : "Review",

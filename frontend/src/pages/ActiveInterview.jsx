@@ -825,6 +825,11 @@ function ActiveInterview({ user }) {
     if (isTerminated) return;
     const q = questions[currentIdx];
     const ans = textareaRef.current ? textareaRef.current.value : (answers[q.id] || '');
+    if (q) {
+      const newAnswers = { ...answers, [q.id]: ans };
+      setAnswers(newAnswers);
+      localStorage.setItem("interviewAnswers", JSON.stringify(newAnswers));
+    }
     try {
       // Save via legacy endpoint for proctoring compatibility
       await api.saveAnswer({
@@ -872,49 +877,6 @@ function ActiveInterview({ user }) {
     }
     setSubmitting(false);
   };
-    setAnswers(newAnswers);
-    localStorage.setItem("interviewAnswers", JSON.stringify(newAnswers));
-
-    try {
-      const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com";
-      const res = await fetch(`${API_BASE_URL}/api/interview/evaluate-answer`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": localStorage.getItem("token") ? `Bearer ${localStorage.getItem("token")}` : "",
-        },
-        body: JSON.stringify({
-          interviewId,
-          questionId: q.id,
-          questionNumber: currentIdx + 1,
-          question: q.question || q.question_text || q.text,
-          answer: ans,
-          skill: q.skill || q.skill_tag || "General",
-          userId: user?.id || ""
-        })
-      });
-      const data = await res.json();
-      const evals = JSON.parse(localStorage.getItem("interviewEvaluations") || "{}");
-      if (data.success) {
-        evals[q.id] = data;
-      } else {
-        evals[q.id] = { score: 5, feedback: "Answer saved." };
-      }
-      localStorage.setItem("interviewEvaluations", JSON.stringify(evals));
-    } catch (err) {}
-    
-    setSubmitting(false);
-
-    if (currentIdx < questions.length - 1) {
-      const nextIndex = currentIdx + 1;
-      setCurrentIdx(nextIndex);
-      localStorage.setItem("currentQuestionIndex", String(nextIndex));
-      if (textareaRef.current) textareaRef.current.value = "";
-      setLiveTranscript("");
-    } else {
-      terminateInterview("Completed");
-    }
-  };
 const handlePrev = async () => {
     if (currentIdx > 0) {
       const prevIdx = currentIdx - 1;
@@ -941,16 +903,6 @@ const handlePrev = async () => {
       }
     } else {
       handleSubmitInterview();
-    }
-  };
-
-  const saveCurrentAnswer = async () => {
-    const q = questions[currentIdx];
-    if (q) {
-      const ans = textareaRef.current ? textareaRef.current.value : (answers[q.id] || '');
-      const newAnswers = { ...answers, [q.id]: ans };
-      setAnswers(newAnswers);
-      localStorage.setItem("interviewAnswers", JSON.stringify(newAnswers));
     }
   };
 
