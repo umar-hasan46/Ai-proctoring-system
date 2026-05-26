@@ -223,6 +223,9 @@ function RegisterInterview({ user }) {
               localStorage.setItem("interviewAnswers", "{}");
               localStorage.setItem("interviewEvaluations", "[]");
               localStorage.setItem("interviewWarnings", "[]");
+              localStorage.setItem("currentQuestionIndex", "0");
+              localStorage.removeItem("interviewTerminated");
+              localStorage.removeItem("terminationReason");
 
               navigate("/active-interview");
             } catch (error) {

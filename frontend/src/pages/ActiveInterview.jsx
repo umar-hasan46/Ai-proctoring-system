@@ -23,6 +23,9 @@ function ActiveInterview({ user }) {
   const [questions, setQuestions] = useState(() => localStorage.getItem("active_interview_id") ? storedQuestions : []);
   const [currentIdx, setCurrentIdx] = useState(() => Number(localStorage.getItem("currentQuestionIndex") || 0));
   const [highestIdx, setHighestIdx] = useState(0);
+  useEffect(() => {
+    localStorage.setItem("currentQuestionIndex", String(currentIdx));
+  }, [currentIdx]);
   const [answers, setAnswers] = useState(() => JSON.parse(localStorage.getItem("answers") || "{}"));
   const [warnings, setWarnings] = useState(0);
   const [warningsList, setWarningsList] = useState(() => JSON.parse(localStorage.getItem("interviewWarnings") || "[]"));
@@ -173,7 +176,7 @@ function ActiveInterview({ user }) {
   };
 
   const speakQuestion = (questionText, explanation, questionNumber) => {
-    if (!questionText) return;
+    if (!questionText || !window.speechSynthesis) return;
     stopListening();
     window.speechSynthesis.cancel();
     setAssistantSpeaking(true);
@@ -392,7 +395,7 @@ function ActiveInterview({ user }) {
     if (isStarted && !isTerminated && email) {
       // setupListeners removed
       statusInterval = setInterval(sendLiveUpdate, 5000);
-      behaviorInterval = setInterval(checkBehavior, 10000);
+      // behaviorInterval removed
 
       adminActionInterval = setInterval(async () => {
         try {
@@ -531,6 +534,7 @@ function ActiveInterview({ user }) {
 
   const addWarning = (message) => {
     setWarningCount(prev => {
+      if (prev >= MAX_WARNINGS) return prev;
       const newCount = prev + 1;
       localStorage.setItem("warningCount", String(newCount));
       const warning = {
