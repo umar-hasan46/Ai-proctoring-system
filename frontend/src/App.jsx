@@ -16,6 +16,7 @@ import AdminSettings from "./pages/Settings";
 import Navbar from "./components/Navbar";
 import RegisterInterview from "./pages/RegisterInterview";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import AIChatbot from "./components/AIChatbot";
 import { api } from "./api/api";
 import API_BASE_URL from "./config/api";
@@ -35,12 +36,20 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-const wrap = (role, Component, user, onUpdate) => (
-  <ProtectedRoute allowedRole={role} role={role}>
+const userWrap = (Component, user, onUpdate) => (
+  <ProtectedRoute>
     <ErrorBoundary>
       <Component user={user} onUpdate={onUpdate} />
     </ErrorBoundary>
   </ProtectedRoute>
+);
+
+const adminWrap = (Component, user, onUpdate) => (
+  <AdminProtectedRoute>
+    <ErrorBoundary>
+      <Component user={user} onUpdate={onUpdate} />
+    </ErrorBoundary>
+  </AdminProtectedRoute>
 );
 
 function App() {
@@ -160,24 +169,23 @@ function App() {
             <Route path="/admin-login" element={user ? (user.role === 'admin' ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/user/dashboard" replace />) : <Login onLogin={handleLogin} />} />
             <Route path="/signup" element={<Register />} />
             
-            <Route path="/user/dashboard" element={wrap("user", Dashboard, user)} />
+            <Route path="/user/dashboard" element={userWrap(Dashboard, user)} />
             <Route path="/dashboard" element={<Navigate to="/user/dashboard" replace />} />
             
-            <Route path="/register" element={wrap("user", RegisterInterview, user)} />
-            <Route path="/active-interview" element={wrap("user", ActiveInterview, user)} />
-            <Route path="/results" element={wrap("user", Results, user)} />
-            <Route path="/results/:interviewId" element={wrap("user", Results, user)} />
-            <Route path="/notifications" element={wrap("user", Notifications, user)} />
-            <Route path="/settings" element={wrap("user", Settings, user, handleLogin)} />
+            <Route path="/register" element={userWrap(RegisterInterview, user)} />
+            <Route path="/active-interview" element={userWrap(ActiveInterview, user)} />
+            <Route path="/results" element={userWrap(Results, user)} />
+            <Route path="/results/:interviewId" element={userWrap(Results, user)} />
+            <Route path="/notifications" element={userWrap(Notifications, user)} />
+            <Route path="/settings" element={userWrap(Settings, user, handleLogin)} />
             
-            <Route path="/admin/dashboard" element={wrap("admin", AdminDashboard, user)} />
-            <Route path="/admin/live-proctoring" element={wrap("admin", LiveProctoring, user)} />
-            <Route path="/admin/reports" element={wrap("admin", Reports, user)} />
-            <Route path="/admin/students-dashboard" element={wrap("admin", StudentsDashboard, user)} />
-            <Route path="/admin/users" element={wrap("admin", StudentsDashboard, user)} />
-            <Route path="/admin/interviews" element={wrap("admin", LiveProctoring, user)} />
-            <Route path="/admin/notifications" element={wrap("admin", AdminNotifications, user)} />
-            <Route path="/admin/settings" element={wrap("admin", AdminSettings, user, handleLogin)} />
+            <Route path="/admin/dashboard" element={adminWrap(AdminDashboard, user)} />
+            <Route path="/admin/live-proctoring" element={adminWrap(LiveProctoring, user)} />
+            <Route path="/admin/reports" element={adminWrap(Reports, user)} />
+            <Route path="/admin/recent-interviews" element={adminWrap(StudentsDashboard, user)} />
+            <Route path="/admin/users" element={adminWrap(StudentsDashboard, user)} />
+            <Route path="/admin/notifications" element={adminWrap(AdminNotifications, user)} />
+            <Route path="/admin/settings" element={adminWrap(AdminSettings, user, handleLogin)} />
             
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>

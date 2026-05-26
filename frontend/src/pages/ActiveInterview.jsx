@@ -113,7 +113,7 @@ function ActiveInterview({ user }) {
       recognitionRef.current.stop();
     }
     setIsListening(false);
-    setIsMicEnabled(false);
+    
   };
 
   const startListening = () => {
@@ -138,6 +138,7 @@ function ActiveInterview({ user }) {
     };
 
     recognition.onresult = (event) => {
+      if (assistantSpeakingRef.current) return;
       let interimText = "";
       let finalText = "";
 
@@ -174,7 +175,7 @@ function ActiveInterview({ user }) {
 
     recognition.onerror = (event) => {
       setIsListening(false);
-      setIsMicEnabled(false);
+      
       if (event.error === "not-allowed") {
         addWarning("Microphone permission denied.");
       }
@@ -182,7 +183,7 @@ function ActiveInterview({ user }) {
 
     recognition.onend = () => {
       setIsListening(false);
-      setIsMicEnabled(false);
+      
 
       if (shouldKeepListeningRef.current && !assistantSpeaking) {
         setTimeout(() => {
@@ -203,10 +204,10 @@ function ActiveInterview({ user }) {
 
   const speakQuestion = (questionText, explanation, questionNumber) => {
     if (!questionText || !window.speechSynthesis) return;
-    stopListening();
     window.speechSynthesis.cancel();
     setAssistantSpeaking(true);
-    setIsMicEnabled(false);
+    assistantSpeakingRef.current = true;
+    
 
     const spokenText = `Question ${questionNumber}. ${questionText}. ${explanation || ""} Please answer clearly.`;
     const utterance = new SpeechSynthesisUtterance(spokenText);
@@ -217,14 +218,14 @@ function ActiveInterview({ user }) {
 
     utterance.onend = () => {
       setAssistantSpeaking(false);
-      setIsMicEnabled(false);
-      setIsListening(false);
+      assistantSpeakingRef.current = false;
+      /* Mic stays on continuously */
     };
 
     utterance.onerror = () => {
       setAssistantSpeaking(false);
-      setIsMicEnabled(false);
-      setIsListening(false);
+      assistantSpeakingRef.current = false;
+      /* Mic stays on continuously */
     };
 
     window.speechSynthesis.speak(utterance);
@@ -295,6 +296,7 @@ function ActiveInterview({ user }) {
   const questionStartTimeRef = useRef(Date.now());
   const submitLock = useRef(false);
   const isCompletedRef = useRef(false);
+  const assistantSpeakingRef = useRef(false);
 
   const getStoredUser = () => {
     try {

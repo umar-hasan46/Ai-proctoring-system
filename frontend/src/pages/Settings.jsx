@@ -29,7 +29,10 @@ function Settings({ user: propUser, onUpdate }) {
     emailAlerts: true,
     securityFlags: true,
     maintenanceMode: false,
-    autoEvaluate: true
+    autoEvaluate: true,
+    tabSwitchDetection: true,
+    faceDetection: true,
+    audioMonitoring: true
   });
   const [profilePic, setProfilePic] = useState(() => {
     try {
@@ -318,6 +321,34 @@ function Settings({ user: propUser, onUpdate }) {
                     style={{ width: '18px', height: '18px', cursor: 'pointer' }}
                   />
                   <span>Automatically evaluate candidate answers using Gemini AI</span>
+                </label>
+                <h3 style={{ color: '#1e3a5f', marginBottom: '1.2rem', marginTop: '25px', fontSize: '1.2rem' }}>Proctoring Settings</h3>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: '#4a5568' }}>
+                  <input
+                    type="checkbox"
+                    checked={adminSettings.tabSwitchDetection}
+                    onChange={(e) => setAdminSettings({ ...adminSettings, tabSwitchDetection: e.target.checked })}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                  />
+                  <span>Enable Tab-Switch Detection</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: '#4a5568' }}>
+                  <input
+                    type="checkbox"
+                    checked={adminSettings.faceDetection}
+                    onChange={(e) => setAdminSettings({ ...adminSettings, faceDetection: e.target.checked })}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                  />
+                  <span>Enable Face Detection</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: '#4a5568' }}>
+                  <input
+                    type="checkbox"
+                    checked={adminSettings.audioMonitoring}
+                    onChange={(e) => setAdminSettings({ ...adminSettings, audioMonitoring: e.target.checked })}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                  />
+                  <span>Enable Audio Monitoring</span>
                 </label>
               </div>
             </div>
