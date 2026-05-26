@@ -190,85 +190,47 @@ function RegisterInterview({ user }) {
           <button onClick={async () => {
             setLoading(true);
             try {
+              const payload = {
+                userId: localStorage.getItem("userId") || "",
+                role: localStorage.getItem("userRole") || "user",
+                skills: JSON.parse(localStorage.getItem("detectedSkills") || "[]"),
+                targetRole: localStorage.getItem("targetRole") || "Software Engineer"
+              };
+
               const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com";
-              const token = localStorage.getItem("token") || "";
-              
-              const res = await fetch(`${API_BASE_URL}/api/interview/start`, {
+              const response = await fetch(`${API_BASE_URL}/api/interview/start`, {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
-                  "Authorization": token ? `Bearer ${token}` : ""
+                  "X-User-Id": localStorage.getItem("userId") || "",
+                  "X-User-Role": localStorage.getItem("userRole") || "user"
                 },
-                body: JSON.stringify({
-                  userId: localStorage.getItem("userId") || "",
-                  role: formData.role || localStorage.getItem("userRole") || "user",
-                  skills: skills,
-                  targetRole: formData.role || "Software Engineer"
-                })
+                body: JSON.stringify(payload)
               });
-              
-              const data = await res.json();
-              if (data.success) {
-                // Hard reset legacy items
-                localStorage.removeItem("current_question_index");
-                localStorage.removeItem("currentIdx");
-                localStorage.removeItem("answers");
-                
-                // Store required elements from backend
-                const newId = data.interviewId || data.sessionId;
-                const newSessionId = data.sessionId || data.interviewId;
 
-                let normalizedQuestions = (data.questions || []).map((q, index) => ({
-                  id: q.id || index + 1,
-                  questionNumber: q.questionNumber || q.question_number || index + 1,
-                  question: q.question || q.question_text || q.text || `Question ${index + 1}`,
-                  type: q.type || q.questionType || "technical",
-                  skill: q.skill || q.skill_tag || "General"
-                }));
+              const data = await response.json();
 
-                if (normalizedQuestions.length === 0) {
-                  const fallbackQuestions = [];
-                  for (let i = 0; i < 30; i++) {
-                    fallbackQuestions.push({
-                      id: i + 1,
-                      questionNumber: i + 1,
-                      question: i === 0 ? "Are you ready for the interview?" : i === 1 ? "Please introduce yourself." : i === 2 ? "Tell me about your education background." : "Can you explain a concept related to your skills?",
-                      type: i < 3 ? "mandatory" : "technical",
-                      skill: "General"
-                    });
-                  }
-                  normalizedQuestions = fallbackQuestions;
-                }
-                
-                localStorage.setItem("currentInterviewId", newId);
-                localStorage.setItem("interviewSessionId", newSessionId);
-                localStorage.setItem("active_interview_id", newId);
-                localStorage.setItem("active_session_id", newSessionId);
-                
-                localStorage.setItem("interviewQuestions", JSON.stringify(normalizedQuestions));
-                localStorage.setItem("interviewStartTime", Date.now().toString());
-                localStorage.setItem("warningCount", "0");
-                localStorage.setItem("interviewAnswers", "{}");
-                localStorage.setItem("interviewEvaluations", "[]");
-                localStorage.setItem("interviewWarnings", "[]");
-
-                navigate('/active-interview', { 
-                  state: { 
-                    interviewId: newId, 
-                    skills, 
-                    sessionId: newSessionId,
-                    role: formData.role
-                  } 
-                });
-              } else {
-                setError(data.message || "Failed to start interview.");
+              if (!response.ok || !data.success) {
+                throw new Error(data.message || "Failed to start interview");
               }
-            } catch (err) {
-              setError("Network error connecting to backend.");
+
+              localStorage.setItem("currentInterviewId", data.interviewId || data.sessionId);
+              localStorage.setItem("interviewSessionId", data.sessionId || data.interviewId);
+              localStorage.setItem("interviewQuestions", JSON.stringify(data.questions || []));
+              localStorage.setItem("interviewStartTime", Date.now().toString());
+              localStorage.setItem("warningCount", "0");
+              localStorage.setItem("interviewAnswers", "{}");
+              localStorage.setItem("interviewEvaluations", "[]");
+              localStorage.setItem("interviewWarnings", "[]");
+
+              navigate("/active-interview");
+            } catch (error) {
+              console.error("Start interview error:", error);
+              setError(error.message || "Network error connecting to backend.");
             } finally {
               setLoading(false);
             }
-          }} className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem', padding: '1rem' }} disabled={skills.length === 0 || loading}>
+          }} className="btn btn-primary"  style={{ width: '100%', marginTop: '1.5rem', padding: '1rem' }} disabled={skills.length === 0 || loading}>
             {loading ? 'Starting...' : 'Start Interview'}
           </button>
         </div>

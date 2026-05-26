@@ -3867,365 +3867,80 @@ def get_my_results(interview_id):
 # New Session-Based Unique Question System Endpoints
 # ==========================================================
 
-@bp.route('/interview/start', methods=['POST'])
-@bp.route('/interviews/start-session', methods=['POST'])
+@bp.route('/interview/start', methods=['POST', 'OPTIONS'])
 def start_interview_session():
-    import json
-    import random
     import uuid
-    data = request.json or {}
-    user_id = data.get('userId') or data.get('user_id')
-    resume_id = data.get('resumeId') or data.get('resume_id') or 1
-    role = data.get('role') or 'Software Engineer'
-    session_id = data.get('sessionId') or data.get('session_id')
-    detected_skills = data.get('detectedSkills') or data.get('skills') or []
-    resume_text = data.get('resumeText') or ''
-    email = data.get('email') or data.get('user_email') or ''
+    from flask import request, jsonify
+    try:
+        if request.method == "OPTIONS":
+            return jsonify({"success": True}), 200
 
-    if not session_id:
+        data = request.get_json(silent=True) or {}
+
+        user_id = data.get("userId") or request.headers.get("X-User-Id") or "guest"
+        role = data.get("role") or request.headers.get("X-User-Role") or "user"
+        skills = data.get("skills") or []
+        target_role = data.get("targetRole") or "Software Engineer"
+
+        if not isinstance(skills, list):
+            skills = []
+
         session_id = str(uuid.uuid4())
 
-    if isinstance(detected_skills, str):
-        detected_skills = [s.strip() for s in detected_skills.split(',') if s.strip()]
+        questions = [
+            {
+                "id": 1,
+                "questionNumber": 1,
+                "question": "Are you ready for the interview?",
+                "type": "mandatory",
+                "skill": "General",
+                "explanation": "This question confirms that you are ready to begin."
+            },
+            {
+                "id": 2,
+                "questionNumber": 2,
+                "question": "Please introduce yourself.",
+                "type": "mandatory",
+                "skill": "General",
+                "explanation": "This question checks your communication and self-introduction."
+            },
+            {
+                "id": 3,
+                "questionNumber": 3,
+                "question": "Tell me about your education background.",
+                "type": "mandatory",
+                "skill": "General",
+                "explanation": "This question checks your academic background."
+            }
+        ]
 
-    conn = get_db_connection()
-    if conn:
-        cur = conn.cursor()
-        try:
-            # 1. Fetch user history for uniqueness
-            user_history = []
-            if user_id:
-                try:
-                    cur.execute("SELECT question_text FROM interview_questions WHERE user_id = %s LIMIT 50", (user_id,))
-                    user_history = [row[0] for row in cur.fetchall() if row[0]]
-                except:
-                    pass
+        skill_list = skills if skills else ["Python", "JavaScript", "SQL", "Git", "Testing"]
 
-            # 2. Generate exactly 30 unique questions via Gemini AI
-            from services.ai_service import generate_30_questions
-            questions = generate_30_questions(resume_text, detected_skills, role, user_history, session_id)
-
-            detected_skills_str = ", ".join(detected_skills) if isinstance(detected_skills, list) else detected_skills
-            cur.execute("""
-                INSERT INTO interview_sessions (id, user_id, resume_id, target_role, detected_skills, status)
-                VALUES (%s, %s, %s, %s, %s, 'active')
-                ON CONFLICT (id) DO UPDATE SET 
-                    user_id = EXCLUDED.user_id,
-                    target_role = EXCLUDED.target_role,
-                    detected_skills = EXCLUDED.detected_skills,
-                    status = 'active'
-            """, (session_id, user_id, resume_id, role, detected_skills_str))
-            conn.commit()
-
-            cur.execute("DELETE FROM interview_questions WHERE session_id = %s", (session_id,))
-            for q in questions:
-                cur.execute("""
-                    INSERT INTO interview_questions (session_id, user_id, question_number, question_text, question_type, skill_tag, asked_status)
-                    VALUES (%s, %s, %s, %s, %s, %s, 'unasked')
-                """, (session_id, user_id, q['questionNumber'], q['question'], q['type'], q['skill']))
-            conn.commit()
-
-            # Support active record in the legacy 'interviews' table to support legacy camera/proctoring integrations!
-            cur.execute("SELECT full_name, phone FROM users WHERE id = %s", (user_id,))
-            u_row = cur.fetchone()
-            full_name = u_row[0] if u_row else (email.split('@')[0] if email else 'Candidate')
-            phone = u_row[1] if u_row else ''
-            
-            cur.execute("SELECT id FROM interviews WHERE user_email = %s ORDER BY created_at DESC LIMIT 1", (email,))
-            legacy_row = cur.fetchone()
-            if legacy_row:
-                legacy_id = legacy_row[0]
-                cur.execute("UPDATE interviews SET status = 'active', start_time = %s, session_id = %s, interview_id = %s WHERE id = %s", (get_ist_time(), session_id, session_id, legacy_id))
-            else:
-                cur.execute("""
-                    INSERT INTO interviews (user_id, user_email, full_name, phone, role_applied, status, start_time, remaining_time_seconds, current_question_no, session_id, interview_id)
-                    VALUES (%s, %s, %s, %s, %s, 'active', %s, 1800, 1, %s, %s) RETURNING id
-                """, (user_id, email, full_name, phone, role, get_ist_time(), session_id, session_id))
-                legacy_id = cur.fetchone()[0]
-            conn.commit()
-
-            return jsonify({
-                "success": True,
-                "message": "Session started",
-                "sessionId": session_id,
-                "interviewId": legacy_id,
-                "questions": questions
-            })
-
-        except Exception as e:
-            conn.rollback()
-            print("DB error in start_session:", e)
-            return jsonify({"success": False, "message": str(e)}), 500
-        finally:
-            cur.close()
-            conn.close()
-
-    return jsonify({"success": False, "message": "Database connection failed"}), 500
-
-@bp.route('/interview/<string:sessionId>/questions', methods=['GET'])
-@bp.route('/interviews/<string:sessionId>/questions', methods=['GET'])
-def get_session_questions(sessionId):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    try:
-        cur.execute("""
-            SELECT id, question_number, question_text, question_type, skill_tag, asked_status
-            FROM interview_questions
-            WHERE session_id = %s
-            ORDER BY question_number ASC
-        """, (sessionId,))
-        rows = cur.fetchall()
-        questions = []
-        for r in rows:
+        for i in range(4, 31):
+            skill = skill_list[(i - 4) % len(skill_list)]
             questions.append({
-                "id": r[0],
-                "question_id": r[0],
-                "question_no": r[1],
-                "questionNumber": r[1],
-                "question_text": r[2],
-                "text": r[2],
-                "question_type": r[3],
-                "type": r[3],
-                "skill_tag": r[4],
-                "skill": r[4],
-                "topic": r[4],
-                "category": r[4],
-                "asked_status": r[5]
+                "id": i,
+                "questionNumber": i,
+                "question": f"Explain your knowledge and practical experience in {skill}.",
+                "type": "technical",
+                "skill": skill,
+                "explanation": f"This question checks your understanding of {skill}."
             })
+
         return jsonify({
             "success": True,
+            "message": "Interview started successfully",
+            "interviewId": session_id,
+            "sessionId": session_id,
             "questions": questions
         }), 200
+
     except Exception as e:
-        print("Error fetching session questions:", e)
-        return jsonify({"success": False, "message": str(e)}), 500
-    finally:
-        cur.close()
-        conn.close()
-
-@bp.route('/interview/<string:sessionId>/answer', methods=['POST'])
-@bp.route('/interviews/<string:sessionId>/answer', methods=['POST'])
-def save_session_answer(sessionId):
-    data = request.json or {}
-    question_id = data.get('questionId') or data.get('question_id')
-    user_answer = data.get('userAnswer') or data.get('answer_text') or data.get('answer') or ''
-    user_id = data.get('userId') or data.get('user_id')
-
-    if not question_id:
-        return jsonify({"success": False, "message": "questionId is required"}), 400
-
-    conn = get_db_connection()
-    cur = conn.cursor()
-    try:
-        # Fetch question details
-        cur.execute("SELECT question_text, skill_tag, question_number, user_id FROM interview_questions WHERE id = %s", (question_id,))
-        q_row = cur.fetchone()
-        if not q_row:
-            return jsonify({"success": False, "message": "Question not found"}), 404
-        
-        q_text, skill_tag, q_num, db_user_id = q_row
-        final_user_id = user_id or db_user_id
-
-        # Fetch target role from session
-        cur.execute("SELECT target_role FROM interview_sessions WHERE id = %s", (sessionId,))
-        s_row = cur.fetchone()
-        target_role = s_row[0] if s_row else 'Software Engineer'
-
-        # Evaluate immediately using Gemini API
-        from services.ai_service import evaluate_answer as ai_evaluate, normalize_text
-        eval_res = ai_evaluate(q_text, user_answer, skill_tag, target_role)
-
-        # Save to interview_answers
-        cur.execute("""
-            INSERT INTO interview_answers (
-                session_id, question_id, user_id, answer_text, score, 
-                technical_score, communication_score, confidence_score, 
-                feedback, suggested_improvement
-            )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            RETURNING id
-        """, (
-            sessionId, question_id, final_user_id, user_answer,
-            eval_res["score"], eval_res["technicalScore"],
-            eval_res["communicationScore"], eval_res["confidenceScore"],
-            eval_res["feedback"], eval_res["suggestedImprovement"]
-        ))
-        ans_id = cur.fetchone()[0]
-
-        # Update asked_status in interview_questions
-        cur.execute("UPDATE interview_questions SET asked_status = 'asked' WHERE id = %s", (question_id,))
-
-        # Save to question_history to prevent repeating this question to this user
-        if final_user_id:
-            normalized = normalize_text(q_text)
-            cur.execute("""
-                INSERT INTO question_history (user_id, normalized_question_text, skill_tag)
-                VALUES (%s, %s, %s)
-            """, (final_user_id, normalized, skill_tag))
-        
-        # Keep legacy compatibility with 'answers' table for proctoring dashboard/results!
-        try:
-            cur.execute("SELECT id FROM interviews WHERE user_id = %s ORDER BY created_at DESC LIMIT 1", (final_user_id,))
-            intv_row = cur.fetchone()
-            if intv_row:
-                legacy_id = intv_row[0]
-                cur.execute("""
-                    INSERT INTO answers (
-                        interview_id, question_id, question_no, question_text, answer_text,
-                        status, ai_score, technical_score, communication_score, feedback, suggestion
-                    )
-                    VALUES (%s, %s, %s, %s, %s, 'Answered', %s, %s, %s, %s, %s)
-                """, (
-                    legacy_id, question_id, q_num, q_text, user_answer,
-                    eval_res["score"] * 10, eval_res["technicalScore"] * 10,
-                    eval_res["communicationScore"] * 10, eval_res["feedback"], eval_res["suggestedImprovement"]
-                ))
-        except Exception as err:
-            print("Legacy answers table save skipped:", err)
-
-        conn.commit()
+        print("Start interview error:", str(e))
         return jsonify({
-            "success": True,
-            "message": "Answer evaluated and saved successfully",
-            "answerId": ans_id,
-            "evaluation": eval_res
-        }), 200
-
-    except Exception as e:
-        conn.rollback()
-        print("Error saving session answer:", e)
-        return jsonify({"success": False, "message": str(e)}), 500
-    finally:
-        cur.close()
-        conn.close()
-
-@bp.route('/interview/<string:sessionId>/report', methods=['GET'])
-@bp.route('/interviews/<string:sessionId>/report', methods=['GET'])
-def get_session_report(sessionId):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    try:
-        # Fetch session info
-        cur.execute("SELECT user_id, resume_id, target_role, detected_skills, created_at FROM interview_sessions WHERE id = %s", (sessionId,))
-        s_row = cur.fetchone()
-        if not s_row:
-            return jsonify({"success": False, "message": "Session not found"}), 404
-        
-        user_id, resume_id, target_role, detected_skills, created_at = s_row
-
-        # Fetch questions and answers joined
-        cur.execute("""
-            SELECT q.id, q.question_number, q.question_text, q.question_type, q.skill_tag,
-                   a.answer_text, a.score, a.technical_score, a.communication_score, a.confidence_score,
-                   a.feedback, a.suggested_improvement
-            FROM interview_questions q
-            LEFT JOIN interview_answers a ON q.id = a.question_id AND a.session_id = %s
-            WHERE q.session_id = %s
-            ORDER BY q.question_number ASC
-        """, (sessionId, sessionId))
-        
-        rows = cur.fetchall()
-        report_questions = []
-        total_score = 0
-        total_tech = 0
-        total_comm = 0
-        total_conf = 0
-        answered_count = 0
-
-        for r in rows:
-            q_id, q_num, q_text, q_type, q_skill, ans_text, score, tech_score, comm_score, conf_score, feedback, suggestion = r
-            
-            has_answered = ans_text is not None and ans_text.strip() not in ["", "Skipped", "Not Attempted"]
-            if has_answered:
-                answered_count += 1
-                total_score += score or 0
-                total_tech += tech_score or 0
-                total_comm += comm_score or 0
-                total_conf += conf_score or 0
-
-            report_questions.append({
-                "questionId": q_id,
-                "questionNumber": q_num,
-                "questionText": q_text,
-                "questionType": q_type,
-                "skill": q_skill,
-                "userAnswer": ans_text or "",
-                "score": score or 0,
-                "technicalScore": tech_score or 0,
-                "communicationScore": comm_score or 0,
-                "confidenceScore": conf_score or 0,
-                "feedback": feedback or "No attempt recorded.",
-                "suggestedImprovement": suggestion or "N/A"
-            })
-
-        avg_score = round(total_score / answered_count, 1) if answered_count > 0 else 0.0
-        avg_tech = round(total_tech / answered_count, 1) if answered_count > 0 else 0.0
-        avg_comm = round(total_comm / answered_count, 1) if answered_count > 0 else 0.0
-        avg_conf = round(total_conf / answered_count, 1) if answered_count > 0 else 0.0
-
-        # Overall recommendation
-        result = "Good" if avg_score >= 7.0 else "Average" if avg_score >= 4.0 else "Poor"
-        recommendation = "Highly Recommended" if result == "Good" else "Recommended for Review" if result == "Average" else "Not Recommended"
-
-        report_data = {
-            "success": True,
-            "sessionId": sessionId,
-            "userId": user_id,
-            "resumeId": resume_id,
-            "targetRole": target_role,
-            "detectedSkills": detected_skills,
-            "createdAt": created_at,
-            "totalQuestions": len(report_questions),
-            "answeredQuestions": answered_count,
-            "overallScore": avg_score,
-            "technicalScore": avg_tech,
-            "communicationScore": avg_comm,
-            "confidenceScore": avg_conf,
-            "result": result,
-            "recommendation": recommendation,
-            "questions": report_questions
-        }
-        
-        # Save to legacy 'results' and update 'interviews' status to complete to support all admin overview dashboards!
-        try:
-            cur.execute("SELECT id FROM interviews WHERE user_id = %s ORDER BY created_at DESC LIMIT 1", (user_id,))
-            intv_row = cur.fetchone()
-            if intv_row:
-                legacy_id = intv_row[0]
-                cur.execute("UPDATE interviews SET status = 'completed', final_percentage = %s, technical_score = %s, communication_score = %s WHERE id = %s", 
-                            (avg_score * 10, avg_tech * 10, avg_comm * 10, legacy_id))
-                
-                cur.execute("""
-                    INSERT INTO results (
-                        interview_id, user_email, full_name, role_applied, status,
-                        warning_count, attended_count, skipped_count, unanswered_count,
-                        technical_score, communication_score, final_percentage, performance_summary, result_status
-                    )
-                    VALUES (%s, (SELECT email FROM users WHERE id = %s), (SELECT full_name FROM users WHERE id = %s), %s, 'completed',
-                            0, %s, 0, 30 - %s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (interview_id) DO UPDATE SET
-                        status = 'completed', final_percentage = EXCLUDED.final_percentage,
-                        technical_score = EXCLUDED.technical_score, communication_score = EXCLUDED.communication_score,
-                        result_status = EXCLUDED.result_status
-                """, (
-                    legacy_id, user_id, user_id, target_role, 
-                    answered_count, answered_count, int(avg_tech * 10), int(avg_comm * 10), avg_score * 10,
-                    f"Candidate completed {answered_count} questions. Performance: {result}.", result
-                ))
-        except Exception as legacy_err:
-            print("Legacy results table save skipped:", legacy_err)
-            
-        conn.commit()
-        return jsonify(report_data), 200
-
-    except Exception as e:
-        conn.rollback()
-        print("Error generating session report:", e)
-        return jsonify({"success": False, "message": str(e)}), 500
-    finally:
-        cur.close()
-        conn.close()
-
+            "success": False,
+            "message": f"Failed to start interview: {str(e)}"
+        }), 500
 
 @bp.route('/interview/report/<string:interview_id>', methods=['GET'])
 @bp.route('/interview/report', methods=['GET'])
