@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api/api';
 
+
+const DEMO_NOTIFICATIONS = [
+  { id: 1, title: "Interview Completed", message: "John Doe has completed the Software Engineer interview with a score of 85.", created_at_ist: "26 May 2026, 02:30 PM", status: "unread", event_type: "completion" },
+  { id: 2, title: "Integrity Violation", message: "Tab switch detected 4 times for Mike Johnson. Interview terminated.", created_at_ist: "26 May 2026, 11:45 AM", status: "read", event_type: "violation" },
+  { id: 3, title: "New Registration", message: "Jane Smith registered for Data Scientist interview.", created_at_ist: "26 May 2026, 09:00 AM", status: "unread", event_type: "registration" }
+];
+
 function Notifications({ user }) {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);

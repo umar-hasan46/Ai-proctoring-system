@@ -535,7 +535,7 @@ function ActiveInterview({ user }) {
 
   const addWarning = (message) => {
     setWarningCount(prev => {
-      if (prev >= MAX_WARNINGS) return prev;
+      if (prev > MAX_WARNINGS) return prev; // allow it to hit newCount = 4
       const newCount = prev + 1;
       localStorage.setItem("warningCount", String(newCount));
       const warning = {
