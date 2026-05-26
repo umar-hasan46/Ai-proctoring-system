@@ -9,13 +9,7 @@ function ActiveInterview({ user }) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const isRegistered = localStorage.getItem("interviewRegistered") === "true";
-    if (!isRegistered) {
-      alert("Please register for the interview before starting.");
-      navigate("/register");
-    }
-  }, [navigate]);
+  const isRegistered = localStorage.getItem("interviewRegistered") === "true";
   const [interviewId, setInterviewId] = useState(() => location.state?.interviewId || localStorage.getItem("active_interview_id") || "");
   const [sessionId, setSessionId] = useState(() => location.state?.sessionId || localStorage.getItem("active_session_id") || "");
 
@@ -209,7 +203,7 @@ function ActiveInterview({ user }) {
     const spokenText = `Question ${questionNumber}. ${questionText}. ${explanation || ""} Please answer clearly.`;
     const utterance = new SpeechSynthesisUtterance(spokenText);
     utterance.lang = "en-US";
-    utterance.rate = 0.9;
+    utterance.rate = 0.85;
     utterance.pitch = 1;
     utterance.volume = 1;
 
@@ -524,34 +518,9 @@ function ActiveInterview({ user }) {
 
   
   const terminateInterview = async (reason) => {
-    stopListening();
-    window.speechSynthesis.cancel();
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-    }
     localStorage.setItem("interviewTerminated", "true");
     localStorage.setItem("terminationReason", reason);
-
-    const activeId = localStorage.getItem("currentInterviewId") || localStorage.getItem("interviewSessionId");
-
-    await fetch(`${import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com"}/api/interview/finish`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-User-Id": localStorage.getItem("userId") || "",
-        "X-User-Role": localStorage.getItem("userRole") || "user"
-      },
-      body: JSON.stringify({
-        interviewId: activeId,
-        status: "terminated",
-        reason,
-        answers: JSON.parse(localStorage.getItem("interviewAnswers") || "{}"),
-        evaluations: JSON.parse(localStorage.getItem("interviewEvaluations") || "[]"),
-        warnings: JSON.parse(localStorage.getItem("interviewWarnings") || "[]")
-      })
-    }).catch(() => {});
-
-    navigate(`/results/${activeId}`);
+    await handleFinishInterview("terminated");
   };
 
   const addWarning = (message) => {
@@ -888,13 +857,21 @@ function ActiveInterview({ user }) {
   
   const handleNextQuestion = async () => {
     stopListening();
-    
-    const q = questions[currentIdx];
-    if (!q) return;
-
     setSubmitting(true);
-    const ans = textareaRef.current ? textareaRef.current.value : (answers[q.id] || '');
-    const newAnswers = { ...answers, [q.id]: ans };
+    await saveCurrentAnswer();
+    await evaluateCurrentAnswer();
+
+    if (currentIdx < questions.length - 1) {
+      const nextIndex = currentIdx + 1;
+      setCurrentIdx(nextIndex);
+      localStorage.setItem("currentQuestionIndex", String(nextIndex));
+      if (textareaRef.current) textareaRef.current.value = "";
+      setLiveTranscript("");
+    } else {
+      await handleFinishInterview("Completed");
+    }
+    setSubmitting(false);
+  };
     setAnswers(newAnswers);
     localStorage.setItem("interviewAnswers", JSON.stringify(newAnswers));
 
@@ -963,51 +940,91 @@ const handlePrev = async () => {
         textareaRef.current.value = newAnswers[questions[nextIdx]?.id] || '';
       }
     } else {
-      handleFinalSubmit();
+      handleSubmitInterview();
     }
   };
 
-  const handleFinalSubmit = async () => {
-    if (submitLock.current) return;
-    submitLock.current = true;
-    setSubmitting(true);
-    
+  const saveCurrentAnswer = async () => {
     const q = questions[currentIdx];
     if (q) {
       const ans = textareaRef.current ? textareaRef.current.value : (answers[q.id] || '');
       const newAnswers = { ...answers, [q.id]: ans };
       setAnswers(newAnswers);
-      localStorage.setItem("answers", JSON.stringify(newAnswers));
+      localStorage.setItem("interviewAnswers", JSON.stringify(newAnswers));
     }
+  };
+
+  const evaluateCurrentAnswer = async () => {
+    const q = questions[currentIdx];
+    if (!q) return;
+    const ans = textareaRef.current ? textareaRef.current.value : (answers[q.id] || '');
+    if (!ans.trim()) return;
 
     try {
       const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com";
-      await fetch(`${API_BASE_URL}/api/interview/finish`, {
+      const res = await fetch(`${API_BASE_URL}/api/interview/evaluate`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": localStorage.getItem("token") ? `Bearer ${localStorage.getItem("token")}` : ""
-        },
-        body: JSON.stringify({
-          interviewId,
-          answers: JSON.parse(localStorage.getItem("answers") || "{}"),
-          evaluations: JSON.parse(localStorage.getItem("interviewEvaluations") || "{}"),
-          warnings: JSON.parse(localStorage.getItem("interviewWarnings") || "[]"),
-          timeTaken: Math.floor((Date.now() - Number(localStorage.getItem("interviewStartTime"))) / 1000)
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q.question, answer: ans, skill: q.skill || "Technical" })
       });
+      const data = await res.json();
+      const evals = JSON.parse(localStorage.getItem("interviewEvaluations") || "[]");
+      const evalObj = Array.isArray(evals) ? evals : Object.values(evals);
+      
+      const existingIdx = evalObj.findIndex(e => e.questionId === q.id || e.id === q.id);
+      if (existingIdx !== -1) {
+        evalObj[existingIdx] = { ...data, questionId: q.id };
+      } else {
+        evalObj.push({ ...data, questionId: q.id });
+      }
+      localStorage.setItem("interviewEvaluations", JSON.stringify(evalObj));
+    } catch (e) {}
+  };
 
-      isCompletedRef.current = true;
-      cleanup();
-      navigate('/results/' + interviewId);
-    } catch (err) {
-      console.error(err);
-      setWarningMessage('Could not submit interview. Please try again.');
-      setTimeout(() => setWarningMessage(''), 5000);
-      submitLock.current = false;
-    } finally {
-      setSubmitting(false);
+  const handleFinishInterview = async (status = "Completed") => {
+    stopListening();
+    window.speechSynthesis.cancel();
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
     }
+
+    const activeId = localStorage.getItem("currentInterviewId") || localStorage.getItem("interviewSessionId") || interviewId;
+    const ansData = JSON.parse(localStorage.getItem("interviewAnswers") || "{}");
+    const evalsData = JSON.parse(localStorage.getItem("interviewEvaluations") || "[]");
+    const warnsData = JSON.parse(localStorage.getItem("interviewWarnings") || "[]");
+    const qsData = JSON.parse(localStorage.getItem("interviewQuestions") || "[]");
+
+    localStorage.setItem("interviewStatus", status);
+
+    const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com";
+    await fetch(`${API_BASE_URL}/api/interview/finish`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-User-Id": localStorage.getItem("userId") || "",
+        "X-User-Role": localStorage.getItem("userRole") || "user"
+      },
+      body: JSON.stringify({
+        interviewId: activeId,
+        status,
+        questions: qsData,
+        answers: ansData,
+        evaluations: evalsData,
+        warnings: warnsData
+      })
+    }).catch(() => {});
+
+    navigate(`/results/${activeId}`);
+  };
+
+  const handleSubmitInterview = async () => {
+    if (submitLock.current) return;
+    submitLock.current = true;
+    setSubmitting(true);
+    stopListening();
+    await saveCurrentAnswer();
+    await evaluateCurrentAnswer();
+    await handleFinishInterview("Completed");
   };
 
   if (authLoading) {
@@ -1371,7 +1388,7 @@ const handlePrev = async () => {
             
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
               <button className="btn btn-outline" onClick={() => setShowConfirmSubmit(false)} style={{ padding: '0.75rem 1.5rem', borderRadius: '8px' }}>Cancel</button>
-              <button className="btn btn-primary" onClick={handleFinalSubmit} style={{ padding: '0.75rem 1.5rem', borderRadius: '8px' }}>Submit Interview</button>
+              <button className="btn btn-primary" onClick={handleSubmitInterview} style={{ padding: '0.75rem 1.5rem', borderRadius: '8px' }}>Submit Interview</button>
             </div>
           </div>
         </div>

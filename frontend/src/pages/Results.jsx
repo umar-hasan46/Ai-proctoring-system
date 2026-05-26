@@ -138,10 +138,17 @@ function Results({ user: propUser }) {
         }
 
         const answeredCount = Object.values(localAnswers).filter(a => a && a.trim().length > 0).length;
-        const skippedCount = localQuestions.length - answeredCount;
+        const skippedCount = Math.max(0, localQuestions.length - answeredCount);
         const evalCount = Object.keys(evalDict).length || 1;
         
-        const avgOverall = Math.round(sumOverall / evalCount) || 0;
+        let trueEvalCount = 0;
+        if (Array.isArray(localEvals)) {
+           trueEvalCount = localEvals.filter(e => e && typeof e.score === 'number').length;
+        } else if (localEvals && typeof localEvals === 'object') {
+           trueEvalCount = Object.values(localEvals).filter(e => e && typeof e.score === 'number').length;
+        }
+
+        const avgOverall = trueEvalCount > 0 ? Math.round(sumOverall / trueEvalCount) : (answeredCount >= 15 ? 7 : 0);
 
         const atsScore = parseInt(localStorage.getItem("atsScore") || "0", 10);
         const edScore = parseInt(localStorage.getItem("educationScore") || "0", 10);
@@ -153,7 +160,7 @@ function Results({ user: propUser }) {
           interview: { 
             id: intvId, 
             role_applied: localStorage.getItem("targetRole") || "Candidate", 
-            overall_score: avgOverall > 0 ? avgOverall * 10 : (answeredCount >= 15 ? 75 : 0), 
+            overall_score: avgOverall > 0 ? avgOverall * 10 : 0, 
             status: localStorage.getItem("interviewTerminated") === "true" ? "Terminated" : "completed",
             termination_reason: localStorage.getItem("terminationReason") || "",
             start_time: localStorage.getItem("interviewStartTime") ? new Date(parseInt(localStorage.getItem("interviewStartTime"))).toISOString() : new Date().toISOString(),

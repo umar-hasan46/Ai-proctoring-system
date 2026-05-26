@@ -214,6 +214,11 @@ function RegisterInterview({ user }) {
                 throw new Error(data.message || "Failed to start interview");
               }
 
+              localStorage.setItem("interviewRegistered", "true");
+              localStorage.setItem("detectedSkills", JSON.stringify(skills));
+              localStorage.setItem("targetRole", targetRole || "Software Engineer");
+              localStorage.setItem("resumeAnalysis", JSON.stringify(resumeAnalysis || {}));
+
               localStorage.setItem("currentInterviewId", data.interviewId || data.sessionId);
               localStorage.setItem("interviewSessionId", data.sessionId || data.interviewId);
               localStorage.setItem("active_interview_id", data.interviewId || data.sessionId);
