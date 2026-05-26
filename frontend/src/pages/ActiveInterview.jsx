@@ -62,6 +62,7 @@ function ActiveInterview({ user }) {
   const [isSupported] = useState(() => !!(window.SpeechRecognition || window.webkitSpeechRecognition));
   const recognitionRef = useRef(null);
   const isAiSpeakingRef = useRef(false);
+  const shouldKeepListeningRef = useRef(false);
   const finalRef = useRef('');
   const typedTextRef = useRef('');
   const isMicEnabledRef = useRef(false);
@@ -105,6 +106,7 @@ function ActiveInterview({ user }) {
 
   
   const stopListening = () => {
+    shouldKeepListeningRef.current = false;
     if (recognitionRef.current) {
       recognitionRef.current.stop();
     }
@@ -120,6 +122,8 @@ function ActiveInterview({ user }) {
     }
     if (assistantSpeaking) return;
 
+    shouldKeepListeningRef.current = true;
+
     const recognition = new SpeechRecognition();
     recognition.lang = "en-US";
     recognition.continuous = true;
@@ -132,30 +136,38 @@ function ActiveInterview({ user }) {
     };
 
     recognition.onresult = (event) => {
-      let finalText = "";
       let interimText = "";
+      let finalText = "";
+
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
+
         if (event.results[i].isFinal) {
           finalText += transcript + " ";
         } else {
           interimText += transcript;
         }
       }
+
+      if (interimText) {
+        setLiveTranscript(interimText);
+      }
+
       if (finalText.trim()) {
         const activeQ = questions[currentIdx];
         if (activeQ) {
             setAnswers(prev => {
-                const updated = { ...prev, [activeQ.id]: `${prev[activeQ.id] || ""} ${finalText}`.trim() };
-                localStorage.setItem("interviewAnswers", JSON.stringify(updated));
-                return updated;
+                const updated = `${prev[activeQ.id] || ""} ${finalText}`.replace(/\s+/g, " ").trim();
+                const newAns = { ...prev, [activeQ.id]: updated };
+                localStorage.setItem("interviewAnswers", JSON.stringify(newAns));
+                return newAns;
             });
             if (textareaRef.current) {
-                textareaRef.current.value = `${textareaRef.current.value || ""} ${finalText}`.trim();
+                textareaRef.current.value = `${textareaRef.current.value || ""} ${finalText}`.replace(/\s+/g, " ").trim();
             }
         }
+        setLiveTranscript("");
       }
-      setLiveTranscript(interimText);
     };
 
     recognition.onerror = (event) => {
@@ -169,6 +181,18 @@ function ActiveInterview({ user }) {
     recognition.onend = () => {
       setIsListening(false);
       setIsMicEnabled(false);
+
+      if (shouldKeepListeningRef.current && !assistantSpeaking) {
+        setTimeout(() => {
+          try {
+            recognition.start();
+            setIsListening(true);
+            setIsMicEnabled(true);
+          } catch (e) {
+            console.log("Recognition restart skipped:", e.message);
+          }
+        }, 200);
+      }
     };
 
     recognitionRef.current = recognition;
@@ -182,8 +206,8 @@ function ActiveInterview({ user }) {
     setAssistantSpeaking(true);
     setIsMicEnabled(false);
 
-    const text = `Question ${questionNumber}. ${questionText}. ${explanation || ""} Please answer clearly.`;
-    const utterance = new SpeechSynthesisUtterance(text);
+    const spokenText = `Question ${questionNumber}. ${questionText}. ${explanation || ""} Please answer clearly.`;
+    const utterance = new SpeechSynthesisUtterance(spokenText);
     utterance.lang = "en-US";
     utterance.rate = 0.9;
     utterance.pitch = 1;
@@ -191,12 +215,14 @@ function ActiveInterview({ user }) {
 
     utterance.onend = () => {
       setAssistantSpeaking(false);
-      startListening();
+      setIsMicEnabled(false);
+      setIsListening(false);
     };
 
     utterance.onerror = () => {
       setAssistantSpeaking(false);
-      startListening();
+      setIsMicEnabled(false);
+      setIsListening(false);
     };
 
     window.speechSynthesis.speak(utterance);
@@ -216,21 +242,17 @@ function ActiveInterview({ user }) {
   }, [currentIdx, questions, voiceEnabled]);
 
 
-  const toggleMic = () => {
-    if (isMicEnabledRef.current) {
-      stopMic();
-    } else {
-      isRecordingRef.current = true;
-      startMic();
+  const handleToggleMic = () => {
+    if (assistantSpeaking) {
+      setWarningMessage("Please wait until AI assistant finishes speaking.");
+      setTimeout(() => setWarningMessage(""), 3000);
+      return;
     }
-  };
 
-  const toggleListening = () => {
-    if (isMicEnabledRef.current) {
-      stopMic();
+    if (isListening) {
+      stopListening();
     } else {
-      window.speechSynthesis.cancel();
-      startMic();
+      startListening();
     }
   };
 
@@ -1206,10 +1228,15 @@ const handlePrev = async () => {
             style={{ width: '100%', padding: '1rem', fontSize: '1.1rem', borderRadius: '8px', border: '1px solid #cbd5e0', marginBottom: 0, boxSizing: 'border-box' }}
           ></textarea>
         </div>
+        {liveTranscript && (
+          <div className="live-transcript" style={{ marginTop: '10px', color: '#3182ce', fontStyle: 'italic', fontSize: '0.9rem', background: '#ebf8ff', padding: '10px', borderRadius: '8px' }}>
+            Listening: {liveTranscript}
+          </div>
+        )}
         {isSupported && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem', gap: '10px' }}>
             <button
-              onClick={toggleListening}
+              onClick={handleToggleMic}
               type="button"
               disabled={isTerminated || submitting}
               style={{
@@ -1425,7 +1452,7 @@ const handlePrev = async () => {
           <div ref={liveTranscriptSidebarRef} style={{ color: '#e2e8f0', fontSize: '0.68rem', lineHeight: 1.4, fontStyle: 'italic' }}></div>
         </div>
         <button
-          onClick={() => { if (assistantSpeaking) { setWarningMessage('Please wait until assistant finishes speaking.'); setTimeout(() => setWarningMessage(''), 3000); } else { isListening ? stopListening() : startListening(); } }}
+          onClick={handleToggleMic}
           style={{
             background: isMicEnabled ? '#dc2626' : '#1a56db',
             color: 'white',
@@ -1467,7 +1494,7 @@ const handlePrev = async () => {
           </span>
         </div>
         <button
-          onClick={() => { if (assistantSpeaking) { setWarningMessage('Please wait until assistant finishes speaking.'); setTimeout(() => setWarningMessage(''), 3000); } else { isListening ? stopListening() : startListening(); } }}
+          onClick={handleToggleMic}
           type="button"
           style={{
             background: isMicEnabled ? "#dc2626" : "#1a56db",
@@ -1476,10 +1503,10 @@ const handlePrev = async () => {
             fontWeight: 700, cursor: "pointer", fontSize: "0.82rem"
           }}
         >
-          {assistantSpeaking ? "Assistant Speaking" : (isListening ? "Stop Mic" : "Turn On Mic")}
+          {assistantSpeaking ? "Assistant Speaking" : (isListening ? "Turn Off Mic" : "Turn On Mic")}
         </button>
         <div ref={liveTranscriptBottomRef} style={{flex:1,color:"#93c5fd",fontSize:"0.78rem",fontStyle:"italic",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-          Click Turn On Mic to start speaking
+          {assistantSpeaking ? "AI Assistant is speaking..." : (isListening ? "Mic Active — speak now" : "Mic OFF — click Turn On Mic to start speaking")}
         </div>
         <div style={{ padding: '1rem', background: '#e2e8f0', color: '#4a5568', fontWeight: 'bold', textAlign: 'center' }}>
           Q{currentIdx + 1}/30
