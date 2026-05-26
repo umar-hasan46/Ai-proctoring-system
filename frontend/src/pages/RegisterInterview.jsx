@@ -105,6 +105,8 @@ function RegisterInterview({ user }) {
         localStorage.setItem("educationScore", educationScore.toString());
         localStorage.setItem("skillsScore", skillsScore.toString());
         localStorage.setItem("resumeScore", resumeScore.toString());
+        localStorage.setItem("interviewRegistered", "true");
+        localStorage.setItem("registeredUserId", localStorage.getItem("userId") || "");
         localStorage.setItem("detectedSkills", JSON.stringify(detected));
         
         const mockResumeAnalysis = {
@@ -198,8 +200,10 @@ function RegisterInterview({ user }) {
                   "Authorization": token ? `Bearer ${token}` : ""
                 },
                 body: JSON.stringify({
-                  role: formData.role,
-                  skills: skills
+                  userId: localStorage.getItem("userId") || "",
+                  role: formData.role || localStorage.getItem("userRole") || "user",
+                  skills: skills,
+                  targetRole: formData.role || "Software Engineer"
                 })
               });
               
@@ -243,6 +247,10 @@ function RegisterInterview({ user }) {
                 
                 localStorage.setItem("interviewQuestions", JSON.stringify(normalizedQuestions));
                 localStorage.setItem("interviewStartTime", Date.now().toString());
+                localStorage.setItem("warningCount", "0");
+                localStorage.setItem("interviewAnswers", "{}");
+                localStorage.setItem("interviewEvaluations", "[]");
+                localStorage.setItem("interviewWarnings", "[]");
 
                 navigate('/active-interview', { 
                   state: { 

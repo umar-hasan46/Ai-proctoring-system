@@ -8,6 +8,14 @@ import { formatTime } from '../utils/time';
 function ActiveInterview({ user }) {
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const isRegistered = localStorage.getItem("interviewRegistered") === "true";
+    if (!isRegistered) {
+      alert("Please register for the interview before starting.");
+      navigate("/register");
+    }
+  }, [navigate]);
   const [interviewId, setInterviewId] = useState(() => location.state?.interviewId || localStorage.getItem("active_interview_id") || "");
   const [sessionId, setSessionId] = useState(() => location.state?.sessionId || localStorage.getItem("active_session_id") || "");
 
