@@ -442,6 +442,42 @@ function ActiveInterview({ user }) {
     let behaviorInterval;
     let adminActionInterval;
 
+    // Real-time proctoring window events
+    const handleBlur = () => {
+      if (isStarted && !isTerminated) {
+        addWarning("Tab switched / Window out of focus");
+      }
+    };
+    
+    const handleContextMenu = (e) => {
+      if (isStarted && !isTerminated) {
+        e.preventDefault();
+        addWarning("Right click is disabled during the interview");
+      }
+    };
+    
+    const handleCopy = (e) => {
+      if (isStarted && !isTerminated) {
+        e.preventDefault();
+        addWarning("Copying text is disabled");
+      }
+    };
+    
+    const handlePaste = (e) => {
+      if (isStarted && !isTerminated) {
+        e.preventDefault();
+        addWarning("Pasting text is disabled");
+      }
+    };
+
+    if (isStarted && !isTerminated) {
+      window.addEventListener('blur', handleBlur);
+      window.addEventListener('contextmenu', handleContextMenu);
+      window.addEventListener('copy', handleCopy);
+      window.addEventListener('paste', handlePaste);
+    }
+
+
     if (isStarted && !isTerminated && email) {
       setupListeners();
       statusInterval = setInterval(sendLiveUpdate, 5000);
@@ -551,9 +587,12 @@ function ActiveInterview({ user }) {
   const terminateInterview = async (reason) => {
     stopListening();
     window.speechSynthesis.cancel();
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+    }
     localStorage.setItem("interviewTerminated", "true");
     localStorage.setItem("terminationReason", reason);
-    const intvId = localStorage.getItem("currentInterviewId") || localStorage.getItem("active_session_id") || interviewId;
+    const intvId = localStorage.getItem("currentInterviewId") || localStorage.getItem("active_session_id") || interviewId || "unknown";
     const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com";
     await fetch(`${API_BASE_URL}/api/interview/finish`, {
       method: "POST",
@@ -593,8 +632,13 @@ function ActiveInterview({ user }) {
         setWarningMessage(`Warning ${newCount}/3: ${message}`);
         setTimeout(() => setWarningMessage(''), 5000);
       }
-      if (newCount > MAX_WARNINGS) {
-        terminateInterview("Interview terminated because warning limit exceeded.");
+      // Automatically log the event to localStorage to feed the Results Integrity Dashboard
+      const storedEvents = JSON.parse(localStorage.getItem("proctoringEvents") || "[]");
+      storedEvents.push({ type: message, time: new Date().toLocaleTimeString(), id: Date.now() });
+      localStorage.setItem("proctoringEvents", JSON.stringify(storedEvents));
+
+      if (newCount > 3) {
+        terminateInterview("Interview terminated because warning count exceeded 3.");
       }
       
       const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com";
@@ -746,6 +790,16 @@ function ActiveInterview({ user }) {
       });
 
       streamRef.current = stream;
+      stream.getTracks().forEach(track => {
+        track.onended = () => {
+          if (track.kind === 'video') {
+             addWarning("Camera disconnected or turned off");
+          }
+          if (track.kind === 'audio') {
+             addWarning("Microphone disconnected or muted");
+          }
+        };
+      });
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;

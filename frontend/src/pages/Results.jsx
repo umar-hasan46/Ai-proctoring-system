@@ -10,7 +10,13 @@ function Results({ user: propUser }) {
   const navigate = useNavigate();
   const { interviewId: routeInterviewId } = useParams();
   const validRouteId = routeInterviewId && routeInterviewId !== "id" ? routeInterviewId : null;
-  const interviewIdFromState = validRouteId || location.state?.interviewId || localStorage.getItem("currentInterviewId") || localStorage.getItem("interviewSessionId");
+  const interviewIdFromState = validRouteId || localStorage.getItem("currentInterviewId") || localStorage.getItem("interviewSessionId");
+
+  useEffect(() => {
+    if (routeInterviewId === "id" && interviewIdFromState) {
+      navigate(`/results/${interviewIdFromState}`, { replace: true });
+    }
+  }, [routeInterviewId, interviewIdFromState, navigate]);
 
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(true);
