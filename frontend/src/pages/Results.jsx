@@ -1119,11 +1119,17 @@ function Results({ user: propUser }) {
             📝 Detailed Questions & Answers
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {(d.scored_technical || []).map((q, idx) => (
+            {((d.questions && d.questions.length > 0) ? d.questions : (d.scored_technical || [])).map((q, idx) => {
+              const qNum = q.question_number || q.questionNumber || q.id || idx + 1;
+              const qText = q.question_text || q.question || q.text || "Unknown Question";
+              const cAns = q.candidate_answer || q.answer_text || q.answer || d.answers?.[q.id] || d.answers?.[qNum] || "Not answered";
+              const feedback = q.ai_feedback || q.feedback || d.evaluations?.find(e => e.questionId === q.id || e.questionNumber === qNum)?.feedback || "Evaluation pending";
+              const score = q.content_score || q.score || d.evaluations?.find(e => e.questionId === q.id || e.questionNumber === qNum)?.score || "N/A";
+              return (
               <div key={idx} style={{ padding: '20px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' }}>
                   <div>
-                    <span style={{ fontWeight: 'bold', color: '#1e3a5f', fontSize: '1.05rem' }}>Question {q.question_no}: {q.question_text}</span>
+                    <span style={{ fontWeight: 'bold', color: '#1e3a5f', fontSize: '1.05rem' }}>Question {qNum}: {qText}</span>
                     <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
                       <span style={{ background: '#e2e8f0', color: '#4a5568', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600' }}>Difficulty: {q.difficulty || 'Medium'}</span>
                       <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600' }}>Skill: {q.skill || q.category || 'General'}</span>
@@ -1134,22 +1140,23 @@ function Results({ user: propUser }) {
                     background: (q.candidate_answer || q.answer_text || '').toLowerCase() === 'skipped' ? '#edf2f7' : '#dcfce7',
                     color: (q.candidate_answer || q.answer_text || '').toLowerCase() === 'skipped' ? '#4a5568' : '#15803d'
                   }}>
-                    {(q.candidate_answer || q.answer_text || '').toLowerCase() === 'skipped' ? 'Skipped' : 'Answered'}
+                    {cAns.toLowerCase() === 'skipped' ? 'Skipped' : 'Answered'}
                   </span>
                 </div>
                 <div style={{ background: '#fff', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '10px', fontSize: '0.9rem' }}>
                   <strong style={{ color: '#4a5568', display: 'block', marginBottom: '4px' }}>Candidate Answer:</strong>
-                  <span style={{ color: '#2d3748', lineHeight: '1.5' }}>{q.candidate_answer || q.answer_text || 'Skipped'}</span>
+                  <span style={{ color: '#2d3748', lineHeight: '1.5' }}>{cAns}</span>
                 </div>
                 {q.ai_feedback || q.feedback ? (
                   <div style={{ background: '#f0fdf4', padding: '12px 16px', borderRadius: '8px', border: '1px solid #bbf7d0', fontSize: '0.9rem' }}>
-                    <strong style={{ color: '#166534', display: 'block', marginBottom: '4px' }}>AI Feedback & Evaluation {q.content_score ? `(Score: ${q.content_score}/5)` : ''}:</strong>
-                    <span style={{ color: '#14532d', lineHeight: '1.5' }}>{q.ai_feedback || q.feedback}</span>
+                    <strong style={{ color: '#166534', display: 'block', marginBottom: '4px' }}>AI Feedback & Evaluation {` (Score: ${score})`}:</strong>
+                    <span style={{ color: '#14532d', lineHeight: '1.5' }}>{feedback}</span>
                   </div>
                 ) : null}
               </div>
-            ))}
-            {(!d.scored_technical || d.scored_technical.length === 0) && (
+            );
+          })}
+            {(!d.scored_technical || d.scored_technical.length === 0) && (!d.questions || d.questions.length === 0) && (
               <div style={{ textAlign: 'center', padding: '30px', color: '#718096' }}>No question evaluations available.</div>
             )}
           </div>

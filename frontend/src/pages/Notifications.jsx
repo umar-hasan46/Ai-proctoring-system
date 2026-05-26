@@ -40,7 +40,36 @@ function Notifications({ user }) {
   useEffect(() => {
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 15000);
-    return () => clearInterval(interval);
+    
+  const formatTitle = (type) => {
+    if (!type) return "System Notification";
+    const str = type.replace(/_/g, ' ');
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
+
+  const buildNotificationMessage = (n) => {
+    if (n.message && n.message !== 'message') return n.message;
+    const name = n.studentName || n.candidate_name || n.student_name || "A candidate";
+    if (n.event_type === 'interview_started') return `${name} started an interview.`;
+    if (n.event_type === 'answer_submitted') return `${name} submitted an answer.`;
+    if (n.event_type === 'warning_added') return `Warning: ${name} received a proctoring warning.`;
+    if (n.event_type === 'interview_completed') return `${name} completed the interview.`;
+    if (n.event_type === 'result_generated') return `Result generated for ${name}.`;
+    return "No detailed message provided.";
+  };
+
+  const normalizedNotifications = (notifications || []).map(n => ({
+    ...n,
+    id: n.id || Date.now() + Math.random(),
+    type: n.type || n.event_type || "system",
+    title: n.title || formatTitle(n.event_type),
+    message: n.message || buildNotificationMessage(n),
+    studentName: n.studentName || n.candidate_name || n.student_name || localStorage.getItem("userName") || "Candidate",
+    interviewId: n.interviewId || n.interview_id || "",
+    createdAt: n.createdAt || n.created_at || n.created_at_ist || new Date().toISOString()
+  }));
+
+return () => clearInterval(interval);
   }, [user?.email, user?.role]);
 
   const markRead = async (id) => {
@@ -72,7 +101,36 @@ function Notifications({ user }) {
 
   if (loading && notifications.length === 0) return <div style={{ textAlign: 'center', marginTop: '50px' }}>Loading...</div>;
 
-  return (
+  
+  const formatTitle = (type) => {
+    if (!type) return "System Notification";
+    const str = type.replace(/_/g, ' ');
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
+
+  const buildNotificationMessage = (n) => {
+    if (n.message && n.message !== 'message') return n.message;
+    const name = n.studentName || n.candidate_name || n.student_name || "A candidate";
+    if (n.event_type === 'interview_started') return `${name} started an interview.`;
+    if (n.event_type === 'answer_submitted') return `${name} submitted an answer.`;
+    if (n.event_type === 'warning_added') return `Warning: ${name} received a proctoring warning.`;
+    if (n.event_type === 'interview_completed') return `${name} completed the interview.`;
+    if (n.event_type === 'result_generated') return `Result generated for ${name}.`;
+    return "No detailed message provided.";
+  };
+
+  const normalizedNotifications = (notifications || []).map(n => ({
+    ...n,
+    id: n.id || Date.now() + Math.random(),
+    type: n.type || n.event_type || "system",
+    title: n.title || formatTitle(n.event_type),
+    message: n.message || buildNotificationMessage(n),
+    studentName: n.studentName || n.candidate_name || n.student_name || localStorage.getItem("userName") || "Candidate",
+    interviewId: n.interviewId || n.interview_id || "",
+    createdAt: n.createdAt || n.created_at || n.created_at_ist || new Date().toISOString()
+  }));
+
+return (
     <div style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px' }}>
       <div className="card" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
         <div>
@@ -86,7 +144,7 @@ function Notifications({ user }) {
       </div>
 
       {notifications.length > 0 ? (
-        notifications.map(n => (
+        normalizedNotifications.map(n => (
           <div key={n.id} className="card" style={{
             padding: '1.5rem',
             marginBottom: '1rem',
@@ -98,23 +156,23 @@ function Notifications({ user }) {
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
                   <span style={{ fontSize: '0.75rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', background: '#edf2f7', color: '#4a5568' }}>
-                    {n.event_type || 'Notification'}
+                    {n.type}
                   </span>
                   {n.status === 'unread' && <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#e53e3e' }}></span>}
                 </div>
-                <h4 style={{ margin: '5px 0', color: '#2d3748' }}>{n.title && n.title !== 'title' ? n.title : 'System Notification'}</h4>
-                <p style={{ margin: '8px 0', color: '#4a5568', lineHeight: '1.5' }}>{n.message && n.message !== 'message' ? n.message : 'No detailed message provided.'}</p>
+                <h4 style={{ margin: '5px 0', color: '#2d3748' }}>{n.title}</h4>
+                <p style={{ margin: '8px 0', color: '#4a5568', lineHeight: '1.5' }}>{n.message}</p>
                 
                 {(n.candidate_name || n.candidate_email || n.interview_id) && (
                   <div style={{ fontSize: '0.8rem', background: 'rgba(0,0,0,0.03)', padding: '8px', borderRadius: '4px', margin: '10px 0', display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
-                    {n.candidate_name && n.candidate_name !== 'candidate_name' && <span><strong>Student:</strong> {n.candidate_name}</span>}
+                    {<span><strong>Student:</strong> {n.studentName}</span>}
                     {n.candidate_email && n.candidate_email !== 'candidate_email' && <span><strong>Email:</strong> {n.candidate_email}</span>}
                     {n.interview_id && n.interview_id !== 'interview_id' && <span><strong>ID:</strong> #{n.interview_id}</span>}
                   </div>
                 )}
 
                 <div style={{ fontSize: '0.75rem', color: '#a0aec0', fontWeight: 'bold', marginTop: '5px' }}>
-                  🕒 {n.created_at_ist || new Date().toLocaleString()}
+                  🕒 {new Date(n.createdAt).toLocaleString()}
                 </div>
               </div>
               {n.status === 'unread' && (

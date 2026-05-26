@@ -7,7 +7,15 @@ import { formatTime } from '../utils/time';
 
 function ActiveInterview({ user }) {
   const location = useLocation();
-  const navigate = useNavigate();
+  const navigate = useNavigate()
+  // Ensure user is registered before accessing ActiveInterview
+  React.useEffect(() => {
+    const isRegistered = localStorage.getItem("interviewRegistered") === "true";
+    if (!isRegistered) {
+      navigate("/register");
+    }
+  }, [navigate]);
+;
 
   const isRegistered = localStorage.getItem("interviewRegistered") === "true";
   const [interviewId, setInterviewId] = useState(() => location.state?.interviewId || localStorage.getItem("active_interview_id") || "");

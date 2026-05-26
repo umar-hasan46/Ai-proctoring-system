@@ -167,6 +167,8 @@ function App() {
             <Route path="/admin/live-proctoring" element={wrap("admin", LiveProctoring, user)} />
             <Route path="/admin/reports" element={wrap("admin", Reports, user)} />
             <Route path="/admin/students-dashboard" element={wrap("admin", StudentsDashboard, user)} />
+            <Route path="/admin/users" element={wrap("admin", StudentsDashboard, user)} />
+            <Route path="/admin/interviews" element={wrap("admin", LiveProctoring, user)} />
             <Route path="/admin/notifications" element={wrap("admin", AdminNotifications, user)} />
             <Route path="/admin/settings" element={wrap("admin", AdminSettings, user, handleLogin)} />
             

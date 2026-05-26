@@ -227,7 +227,19 @@ function RegisterInterview({ user }) {
               localStorage.setItem("currentInterviewId", data.interviewId || data.sessionId);
               localStorage.setItem("interviewSessionId", data.sessionId || data.interviewId);
               localStorage.setItem("active_interview_id", data.interviewId || data.sessionId);
-              localStorage.setItem("interviewQuestions", JSON.stringify(data.questions || []));
+              
+              const normalizedQuestions = (data.questions || []).map((q, index) => ({
+                id: q.id || index + 1,
+                questionNumber: q.questionNumber || q.question_number || index + 1,
+                question: q.question || q.question_text || q.text || `Question ${index + 1}`,
+                explanation: q.explanation || "",
+                type: q.type || "technical",
+                skill: q.skill || "General",
+                difficulty: q.difficulty || "Medium"
+              }));
+
+              localStorage.setItem("interviewQuestions", JSON.stringify(normalizedQuestions));
+              localStorage.setItem("currentQuestionIndex", "0");
               localStorage.setItem("interviewStartTime", Date.now().toString());
               localStorage.setItem("warningCount", "0");
               localStorage.setItem("interviewAnswers", "{}");
