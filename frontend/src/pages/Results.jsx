@@ -154,9 +154,13 @@ function Results({ user: propUser }) {
             id: intvId, 
             role_applied: localStorage.getItem("targetRole") || "Candidate", 
             overall_score: avgOverall > 0 ? avgOverall * 10 : (answeredCount >= 15 ? 75 : 0), 
-            status: "completed",
-            start_time: localStorage.getItem("interviewStartTime") ? new Date(parseInt(localStorage.getItem("interviewStartTime"))).toISOString() : new Date().toISOString()
+            status: localStorage.getItem("interviewTerminated") === "true" ? "Terminated" : "completed",
+            termination_reason: localStorage.getItem("terminationReason") || "",
+            start_time: localStorage.getItem("interviewStartTime") ? new Date(parseInt(localStorage.getItem("interviewStartTime"))).toISOString() : new Date().toISOString(),
+            warning_count: localWarnings.length
           },
+          warnings: localWarnings,
+          warningCount: localWarnings.length,
           candidate: { name: user?.name || user?.full_name || "Candidate", email: email, role: localStorage.getItem("targetRole") || "Software Engineer" },
           decision: answeredCount >= 15 ? "Shortlisted" : "Review",
           answered_count: answeredCount,
@@ -201,7 +205,8 @@ function Results({ user: propUser }) {
             correct: 2,
             score: 70
           })),
-          warnings: localWarnings.map(w => ({ violation_type: w.message || "Warning", created_at: w.time || Date.now() }))
+          warnings: localWarnings.map(w => ({ violation_type: w.message || "Warning", created_at: w.time || Date.now() })),
+          proctoring_logs: localWarnings.map(w => ({ message: w.message || "Warning", timestamp: w.time || Date.now(), severity: "High" }))
         });
       } else {
         setError(err.message || "An error occurred while fetching details.");

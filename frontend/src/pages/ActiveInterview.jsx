@@ -21,7 +21,7 @@ function ActiveInterview({ user }) {
 
   const storedQuestions = JSON.parse(localStorage.getItem("interviewQuestions") || "[]");
   const [questions, setQuestions] = useState(() => localStorage.getItem("active_interview_id") ? storedQuestions : []);
-  const [currentIdx, setCurrentIdx] = useState(() => localStorage.getItem("active_interview_id") ? parseInt(localStorage.getItem("current_question_index") || "0", 10) : 0);
+  const [currentIdx, setCurrentIdx] = useState(() => Number(localStorage.getItem("currentQuestionIndex") || 0));
   const [highestIdx, setHighestIdx] = useState(0);
   const [answers, setAnswers] = useState(() => JSON.parse(localStorage.getItem("answers") || "{}"));
   const [warnings, setWarnings] = useState(0);
@@ -54,7 +54,7 @@ function ActiveInterview({ user }) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [assistantSpeaking, setAssistantSpeaking] = useState(false);
   const MAX_WARNINGS = 3;
-  const [warningCount, setWarningCount] = useState(Number(localStorage.getItem("warningCount") || 0));
+  const [warningCount, setWarningCount] = useState(() => Number(localStorage.getItem("warningCount") || 0));
   const [liveTranscript, setLiveTranscript] = useState('');
   const [isSupported] = useState(() => !!(window.SpeechRecognition || window.webkitSpeechRecognition));
   const recognitionRef = useRef(null);
@@ -91,7 +91,7 @@ function ActiveInterview({ user }) {
 
   useEffect(() => {
     if (timeLeft <= 0) {
-      handleFinalSubmit();
+      terminateInterview("Time completed");
       return;
     }
     const timer = setInterval(() => {
@@ -100,203 +100,118 @@ function ActiveInterview({ user }) {
     return () => clearInterval(timer);
   }, [timeLeft]);
 
-  const showAndSpeak = (text) => {
-    window.speechSynthesis.cancel();
-    if (!voiceEnabled) return;
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = "en-US";
-    u.rate = 1.0;
-    u.pitch = 1.0;
-    u.volume = 1.0;
-    const voices = window.speechSynthesis.getVoices();
-    const v = voices.find(x => x.name === "Google US English" || (x.lang === "en-US" && !x.localService));
-    if (v) u.voice = v;
-    u.onstart = () => { setIsSpeaking(true); isAiSpeakingRef.current = true; };
-    u.onend = () => { setIsSpeaking(false); isAiSpeakingRef.current = false; };
-    u.onerror = () => { setIsSpeaking(false); isAiSpeakingRef.current = false; };
-    window.speechSynthesis.speak(u);
+  
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+    setIsListening(false);
+    setIsMicEnabled(false);
   };
 
-  useEffect(() => {
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-      window.speechSynthesis.cancel();
-      stopMic();
-    };
-  }, []);
-
-  useEffect(() => {
-    currentIdxRef.current = currentIdx;
-    questionsRef.current = questions;
-    const activeQ = questions[currentIdx];
-    if (activeQ) {
-      currentQuestionIdRef.current = activeQ.id;
-      typedTextRef.current = answers[activeQ.id] || '';
-      finalRef.current = '';
-      if (textareaRef.current) {
-        textareaRef.current.value = answers[activeQ.id] || '';
-      }
+  const startListening = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      addWarning("Speech recognition is not supported in this browser.");
+      return;
     }
-  }, [currentIdx, questions]);
+    if (assistantSpeaking) return;
 
-  useEffect(() => {
-    if (!voiceEnabled || !questions[currentIdx]) return;
-    const cq = questions[currentIdx];
-    const text = `Question ${currentIdx + 1}. ${cq.question || cq.question_text || cq.text || 'Question text not available'}. Please answer clearly.`;
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setIsMicEnabled(true);
+    };
+
+    recognition.onresult = (event) => {
+      let finalText = "";
+      let interimText = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalText += transcript + " ";
+        } else {
+          interimText += transcript;
+        }
+      }
+      if (finalText.trim()) {
+        const activeQ = questions[currentIdx];
+        if (activeQ) {
+            setAnswers(prev => {
+                const updated = { ...prev, [activeQ.id]: `${prev[activeQ.id] || ""} ${finalText}`.trim() };
+                localStorage.setItem("interviewAnswers", JSON.stringify(updated));
+                return updated;
+            });
+            if (textareaRef.current) {
+                textareaRef.current.value = `${textareaRef.current.value || ""} ${finalText}`.trim();
+            }
+        }
+      }
+      setLiveTranscript(interimText);
+    };
+
+    recognition.onerror = (event) => {
+      setIsListening(false);
+      setIsMicEnabled(false);
+      if (event.error === "not-allowed") {
+        addWarning("Microphone permission denied.");
+      }
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      setIsMicEnabled(false);
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
+
+  const speakQuestion = (questionText, explanation, questionNumber) => {
+    if (!questionText) return;
+    stopListening();
+    window.speechSynthesis.cancel();
+    setAssistantSpeaking(true);
+    setIsMicEnabled(false);
+
+    const text = `Question ${questionNumber}. ${questionText}. ${explanation || ""} Please answer clearly.`;
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "en-US";
     utterance.rate = 0.9;
     utterance.pitch = 1;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
-    return () => window.speechSynthesis.cancel();
-  }, [currentIdx, voiceEnabled, questions]);
+    utterance.volume = 1;
 
-
-  useEffect(() => {
-    if (isStarted && !isTerminated && questions[currentIdx]) {
-      const q = questions[currentIdx];
-      const rawText = q.text || '';
-      const category = q.category || 'Self Introduction';
-      const intro = currentIdx === 0 ? `Welcome to your proctored interview. Let's begin with the ${category} section. ` : '';
-      api.post('/interview/spoken-question', {
-        question_text: rawText,
-        question_no: currentIdx + 1,
-        skills: detectedSkillsState
-      }).then(res => {
-        showAndSpeak(intro + (res?.spoken_question || rawText));
-      }).catch(() => {
-        showAndSpeak(intro + rawText);
-      });
-    }
-  }, [isStarted, currentIdx, isTerminated]);
-
-  const isRecordingRef = useRef(false);
-
-  useEffect(() => {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SR) {
-      const r = new SR();
-      r.continuous = true;
-      r.interimResults = false; // Use only final results for speed
-      r.lang = 'en-US';
-      r.maxAlternatives = 1;
-
-      r.onstart = () => {
-        setIsListening(true);
-        isListeningRef.current = true;
-      };
-
-      r.onresult = (e) => {
-        if (isAiSpeakingRef.current) return;
-        let finalVoiceText = '';
-        for (let i = e.resultIndex; i < e.results.length; i++) {
-          if (e.results[i].isFinal) {
-            finalVoiceText += e.results[i][0].transcript;
-          }
-        }
-        const activeQ = questionsRef.current[currentIdxRef.current];
-        if (!activeQ) return;
-
-        finalTranscriptRef.current = finalVoiceText;
-        // Update UI with final transcript only
-        if (liveTranscriptSidebarRef.current) {
-          liveTranscriptSidebarRef.current.innerText = finalVoiceText;
-        }
-        if (liveTranscriptSidebarContainerRef.current) {
-          liveTranscriptSidebarContainerRef.current.style.display = finalVoiceText ? 'block' : 'none';
-        }
-        if (liveTranscriptBottomRef.current) {
-          liveTranscriptBottomRef.current.innerText = finalVoiceText || (isListeningRef.current ? "Listening for your answer..." : "Click Turn On Mic to start speaking");
-        }
-        let textToShow = typedTextRef.current || '';
-        if (finalVoiceText) {
-          const combined = typedTextRef.current ? typedTextRef.current + ' ' + finalVoiceText.trim() : finalVoiceText.trim();
-          typedTextRef.current = combined;
-          textToShow = combined;
-        }
-        if (textareaRef.current) {
-          textareaRef.current.value = textToShow;
-        }
-      };
-
-      r.onend = () => {
-        setIsListening(false);
-        isListeningRef.current = false;
-        if (!isMicEnabledRef.current) {
-          if (liveTranscriptSidebarRef.current) {
-            liveTranscriptSidebarRef.current.innerText = '';
-          }
-          if (liveTranscriptSidebarContainerRef.current) {
-            liveTranscriptSidebarContainerRef.current.style.display = 'none';
-          }
-          if (liveTranscriptBottomRef.current) {
-            liveTranscriptBottomRef.current.innerText = 'Click Turn On Mic to start speaking';
-          }
-        }
-      };
-
-      r.onerror = (e) => {
-        if (e.error === 'not-allowed') {
-          setWarningMessage('Microphone permission denied.');
-          setTimeout(() => setWarningMessage(''), 5000);
-          isMicEnabledRef.current = false;
-          setIsMicEnabled(false);
-          setIsListening(false);
-          isListeningRef.current = false;
-        }
-      };
-      
-      recognitionRef.current = r;
-    }
-    
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-      window.speechSynthesis.cancel();
+    utterance.onend = () => {
+      setAssistantSpeaking(false);
+      startListening();
     };
-  }, []);
 
-  const startMic = () => {
-    if (!recognitionRef.current) {
-      setWarningMessage('Speech recognition not supported. Please use Chrome.');
-      setTimeout(() => setWarningMessage(''), 5000);
-      return;
-    }
-    window.speechSynthesis.cancel();
-    isMicEnabledRef.current = true;
-    setIsMicEnabled(true);
-    setIsListening(true);
-    isListeningRef.current = true;
-    try { recognitionRef.current.start(); } catch (_) {}
-    
-    if (liveTranscriptBottomRef.current) {
-      liveTranscriptBottomRef.current.innerText = "Listening for your answer...";
-    }
+    utterance.onerror = () => {
+      setAssistantSpeaking(false);
+      startListening();
+    };
+
+    window.speechSynthesis.speak(utterance);
   };
 
-  const stopMic = () => {
-    isMicEnabledRef.current = false;
-    setIsMicEnabled(false);
-    if (recognitionRef.current) {
-      try { recognitionRef.current.stop(); } catch (_) {}
-    }
-    setIsListening(false);
-    isListeningRef.current = false;
+  useEffect(() => {
+    const currentQuestion = questions[currentIdx];
+    if (!currentQuestion || !voiceEnabled) return;
     
-    if (liveTranscriptSidebarRef.current) {
-      liveTranscriptSidebarRef.current.innerText = '';
-    }
-    if (liveTranscriptSidebarContainerRef.current) {
-      liveTranscriptSidebarContainerRef.current.style.display = 'none';
-    }
-    if (liveTranscriptBottomRef.current) {
-      liveTranscriptBottomRef.current.innerText = 'Click Turn On Mic to start speaking';
-    }
-  };
+    const questionText = currentQuestion.question || currentQuestion.question_text || currentQuestion.text || "";
+    speakQuestion(questionText, currentQuestion.explanation || "", currentIdx + 1);
+
+    return () => {
+      window.speechSynthesis.cancel();
+      stopListening();
+    };
+  }, [currentIdx, questions, voiceEnabled]);
+
 
   const toggleMic = () => {
     if (isMicEnabledRef.current) {
@@ -470,15 +385,12 @@ function ActiveInterview({ user }) {
     };
 
     if (isStarted && !isTerminated) {
-      window.addEventListener('blur', handleBlur);
-      window.addEventListener('contextmenu', handleContextMenu);
-      window.addEventListener('copy', handleCopy);
-      window.addEventListener('paste', handlePaste);
+      // Event listeners moved to a single useEffect
     }
 
 
     if (isStarted && !isTerminated && email) {
-      setupListeners();
+      // setupListeners removed
       statusInterval = setInterval(sendLiveUpdate, 5000);
       behaviorInterval = setInterval(checkBehavior, 10000);
 
@@ -507,7 +419,7 @@ function ActiveInterview({ user }) {
     }
 
     return () => {
-      removeListeners();
+      // removeListeners removed
       if (statusInterval) clearInterval(statusInterval);
       if (behaviorInterval) clearInterval(behaviorInterval);
       if (adminActionInterval) clearInterval(adminActionInterval);
@@ -612,6 +524,38 @@ function ActiveInterview({ user }) {
     navigate(`/results/${intvId}`);
   };
 
+  
+  const terminateInterview = async (reason) => {
+    stopListening();
+    window.speechSynthesis.cancel();
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+    }
+    localStorage.setItem("interviewTerminated", "true");
+    localStorage.setItem("terminationReason", reason);
+
+    const activeId = localStorage.getItem("currentInterviewId") || localStorage.getItem("interviewSessionId");
+
+    await fetch(`${import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com"}/api/interview/finish`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-User-Id": localStorage.getItem("userId") || "",
+        "X-User-Role": localStorage.getItem("userRole") || "user"
+      },
+      body: JSON.stringify({
+        interviewId: activeId,
+        status: "terminated",
+        reason,
+        answers: JSON.parse(localStorage.getItem("interviewAnswers") || "{}"),
+        evaluations: JSON.parse(localStorage.getItem("interviewEvaluations") || "[]"),
+        warnings: JSON.parse(localStorage.getItem("interviewWarnings") || "[]")
+      })
+    }).catch(() => {});
+
+    navigate(`/results/${activeId}`);
+  };
+
   const addWarning = (message) => {
     setWarningCount(prev => {
       const newCount = prev + 1;
@@ -624,129 +568,66 @@ function ActiveInterview({ user }) {
         time: new Date().toLocaleTimeString()
       };
       const savedWarnings = JSON.parse(localStorage.getItem("interviewWarnings") || "[]");
-      localStorage.setItem("interviewWarnings", JSON.stringify([warning, ...savedWarnings]));
-      setWarningsList([warning, ...savedWarnings]);
-      
+      const updatedWarnings = [warning, ...savedWarnings];
+      localStorage.setItem("interviewWarnings", JSON.stringify(updatedWarnings));
+      setWarningsList(updatedWarnings);
+
       if (newCount <= MAX_WARNINGS) {
-        setWarningMessage(`Warning ${newCount}/3: ${message}`);
+        setWarningMessage(`⚠️ Warning ${newCount}/3: ${message}`);
         setTimeout(() => setWarningMessage(''), 5000);
       }
-      // Automatically log the event to localStorage to feed the Results Integrity Dashboard
-      const storedEvents = JSON.parse(localStorage.getItem("proctoringEvents") || "[]");
-      storedEvents.push({ type: message, time: new Date().toLocaleTimeString(), id: Date.now() });
-      localStorage.setItem("proctoringEvents", JSON.stringify(storedEvents));
-
-      if (newCount > 3) {
-        terminateInterview("Interview terminated because warning count exceeded 3.");
+      if (newCount > MAX_WARNINGS) {
+        terminateInterview("Interview terminated because warning limit exceeded.");
       }
-      
-      const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com";
-      fetch(`${API_BASE_URL}/api/proctoring/warning`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-User-Email": email },
-        body: JSON.stringify({ interviewId, message, eventType: "warning", timestamp: new Date().toISOString(), count: newCount })
-      }).catch(err => console.log("Warning save error:", err));
-      
       return newCount;
     });
   };
 
-  const handleContextMenu = (e) => {
-    e.preventDefault();
-    addWarning("Right click is disabled during the interview.");
-  };
-
-  const setupListeners = () => {
-    if (!videoRef.current) return;
-    window.addEventListener('blur', handleTabSwitch);
-    document.addEventListener('visibilitychange', handleTabSwitch);
-    document.addEventListener('copy', handleCopyPaste);
-    document.addEventListener('paste', handleCopyPaste);
-    document.addEventListener('contextmenu', handleContextMenu);
-  };
-
-  const removeListeners = () => {
-    window.removeEventListener('blur', handleTabSwitch);
-    document.removeEventListener('visibilitychange', handleTabSwitch);
-    document.removeEventListener('copy', handleCopyPaste);
-    document.removeEventListener('paste', handleCopyPaste);
-    document.removeEventListener('contextmenu', handleContextMenu);
-  };
-
-  const handleCopyPaste = (e) => {
-    e.preventDefault();
-    addWarning("Pasting is not allowed during the interview.");
-    logAIEvent('Cheating Alert', 'Candidate attempted to copy or paste content.', 15, 'High');
-    processViolation('Copy/Paste Detected', 'Copying or pasting is strictly prohibited.');
-  };
-
-  const logAIEvent = async (type, msg, score, severity = 'Low') => {
-    try {
-      const videoSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000);
-      const h = Math.floor(videoSeconds / 3600).toString().padStart(2, '0');
-      const m = Math.floor((videoSeconds % 3600) / 60).toString().padStart(2, '0');
-      const s = (videoSeconds % 60).toString().padStart(2, '0');
-      const timestamp = `${h}:${m}:${s}`;
-      await api.saveAILog({
-        interview_id: interviewId,
-        candidate_name: user?.name || user?.full_name || storedUser?.name || "Candidate",
-        candidate_email: email,
-        timestamp,
-        event_type: type,
-        message: msg,
-        severity,
-        score
-      });
-    } catch (err) {
-      
+  useEffect(() => {
+    const savedCount = Number(localStorage.getItem("warningCount") || 0);
+    if (savedCount > 3) {
+      terminateInterview("Interview terminated because warning limit exceeded.");
     }
-  };
+  }, []);
 
-  const handleTabSwitch = () => {
-    if (isTerminated) return;
-    const now = Date.now();
-    if (now - lastViolationTime.current < 5000) return;
-    lastViolationTime.current = now;
-    addWarning("Tab switch detected. Please stay on the interview page.");
-    logAIEvent('Cheating Alert', 'Candidate switched tab or exited fullscreen.', 20, 'High');
-    processViolation('Tab Switching', 'Candidate switched tabs or windows.');
-  };
-
-  const checkBehavior = () => {
-    if (isTerminated || submitting) return;
-    const now = Date.now();
-    const idleTime = (now - lastActivityTime.current) / 1000;
-    if (idleTime > 15 && questions[currentIdx]?.category === 'Technical') {
-      logAIEvent('Confidence Drop', 'Candidate paused for an extended period during a technical question.', 45, 'Medium');
-      lastActivityTime.current = now;
-    }
-  };
-
-  const processViolation = async (type, msg) => {
-    if (isTerminated) return;
-    try {
-      const res = await api.saveViolation({
-        interview_id: interviewId,
-        user_email: email,
-        violation_type: type,
-        message: msg,
-        severity: 'high'
-      });
-      if (res.success) {
-        const newCount = res.warning_count;
-        setWarnings(newCount);
-        if (newCount <= 3) {
-          setWarningMessage(`Warning ${newCount} of 3: ${type} detected!`);
-          setTimeout(() => setWarningMessage(''), 5000);
-        }
-        if (res.auto_terminated && !terminationHandled) {
-          handleTerminationEffect();
-        }
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        addWarning("Tab switch detected. Please stay on the interview page.");
       }
-    } catch (err) {
-      
-    }
-  };
+    };
+    const handleBlur = () => {
+      addWarning("Window out of focus.");
+    };
+    const preventCopyPaste = (e) => {
+      e.preventDefault();
+      addWarning("Copy/Paste is not allowed.");
+    };
+    const preventRightClick = (e) => {
+      e.preventDefault();
+      addWarning("Right click is not allowed.");
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleBlur);
+    document.addEventListener('copy', preventCopyPaste);
+    document.addEventListener('paste', preventCopyPaste);
+    document.addEventListener('contextmenu', preventRightClick);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleBlur);
+      document.removeEventListener('copy', preventCopyPaste);
+      document.removeEventListener('paste', preventCopyPaste);
+      document.removeEventListener('contextmenu', preventRightClick);
+    };
+  }, []);
+
+
+
+  
+
+  
 
   const handleTerminationEffect = () => {
     if (terminationHandled) return;
@@ -841,7 +722,12 @@ function ActiveInterview({ user }) {
 
   const handleStart = async () => {
     // Hard reset all previous state
-    localStorage.removeItem("current_question_index");
+    localStorage.setItem("currentQuestionIndex", "0");
+    localStorage.setItem("warningCount", "0");
+    localStorage.setItem("interviewWarnings", "[]");
+    localStorage.setItem("interviewAnswers", "{}");
+    localStorage.setItem("interviewEvaluations", "[]");
+    localStorage.setItem("interviewStartTime", Date.now().toString());
     localStorage.removeItem("currentIdx");
     localStorage.removeItem("questionIndex");
     localStorage.removeItem("lastQuestion");
@@ -1000,14 +886,18 @@ function ActiveInterview({ user }) {
     }
   };
 
-  const handleNext = async () => {
-    setSubmitting(true);
-    const q = questions[currentIdx];
-    const ans = textareaRef.current ? textareaRef.current.value : (answers[q.id] || '');
+  
+  const handleNextQuestion = async () => {
+    stopListening();
     
+    const q = questions[currentIdx];
+    if (!q) return;
+
+    setSubmitting(true);
+    const ans = textareaRef.current ? textareaRef.current.value : (answers[q.id] || '');
     const newAnswers = { ...answers, [q.id]: ans };
     setAnswers(newAnswers);
-    localStorage.setItem("answers", JSON.stringify(newAnswers));
+    localStorage.setItem("interviewAnswers", JSON.stringify(newAnswers));
 
     try {
       const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com";
@@ -1032,41 +922,24 @@ function ActiveInterview({ user }) {
       if (data.success) {
         evals[q.id] = data;
       } else {
-        evals[q.id] = {
-          score: ans.length > 40 ? 6 : 3,
-          technicalScore: ans.length > 40 ? 6 : 3,
-          communicationScore: ans.length > 20 ? 6 : 3,
-          confidenceScore: ans.length > 20 ? 6 : 3,
-          feedback: "Answer saved. Detailed AI evaluation unavailable.",
-          suggestedImprovement: "Add more explanation and examples."
-        };
+        evals[q.id] = { score: 5, feedback: "Answer saved." };
       }
       localStorage.setItem("interviewEvaluations", JSON.stringify(evals));
-      if (voiceEnabled) {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance("Answer submitted. Your response is evaluated. Moving to next question.");
-        u.lang = "en-US";
-        window.speechSynthesis.speak(u);
-      }
-    } catch (err) {
-      console.error("Backend error saving answer:", err);
-    }
-
+    } catch (err) {}
+    
     setSubmitting(false);
 
     if (currentIdx < questions.length - 1) {
-      const nextIdx = currentIdx + 1;
-      setCurrentIdx(nextIdx);
-      localStorage.setItem("current_question_index", nextIdx.toString());
-      if (textareaRef.current) {
-        textareaRef.current.value = '';
-      }
+      const nextIndex = currentIdx + 1;
+      setCurrentIdx(nextIndex);
+      localStorage.setItem("currentQuestionIndex", String(nextIndex));
+      if (textareaRef.current) textareaRef.current.value = "";
+      setLiveTranscript("");
     } else {
-      handleFinalSubmit();
+      terminateInterview("Completed");
     }
   };
-
-  const handlePrev = async () => {
+const handlePrev = async () => {
     if (currentIdx > 0) {
       const prevIdx = currentIdx - 1;
       setCurrentIdx(prevIdx);
@@ -1274,7 +1147,7 @@ function ActiveInterview({ user }) {
               border: `1px solid ${timeLeft <= 300 ? '#e53e3e' : '#3182ce'}`,
               animation: timeLeft <= 300 ? 'pulseGlow 1.5s infinite alternate' : 'none'
             }}>
-              Question {currentIdx + 1} of 30 | Time Left: {formatTime(timeLeft)}
+              Question {currentIdx + 1} of 30 | Time Left: {formatTime(timeLeft)} | Warnings: {warningCount}/3
             </span>
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -1419,7 +1292,7 @@ function ActiveInterview({ user }) {
             <button className="btn btn-outline" onClick={handleSkip} disabled={isTerminated || submitting}>Skip</button>
             {currentIdx < questions.length - 1 ? (
               <>
-                <button className="btn btn-primary" onClick={handleNext} disabled={isTerminated || submitting}>{submitting ? 'Saving...' : 'Next'}</button>
+                <button className="btn btn-primary" onClick={handleNextQuestion} disabled={isTerminated || submitting}>{submitting ? 'Saving...' : 'Next'}</button>
                 <button className="btn btn-primary" onClick={() => setShowConfirmSubmit(true)} disabled={submitting || isTerminated}>Submit Interview</button>
               </>
             ) : (
