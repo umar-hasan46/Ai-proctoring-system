@@ -46,9 +46,16 @@ const wrap = (role, Component, user, onUpdate) => (
 function App() {
   const [user, setUser] = React.useState(() => {
     const savedUser = localStorage.getItem("user");
-    if (savedUser) {
+    const token = localStorage.getItem("token");
+    if (savedUser && token) {
       try {
-        return JSON.parse(savedUser);
+        const parsedUser = JSON.parse(savedUser);
+        // Ensure role in user matches localStorage role to prevent infinite redirect loops
+        const localRole = localStorage.getItem("role");
+        if (localRole && parsedUser.role !== localRole) {
+          parsedUser.role = localRole;
+        }
+        return parsedUser;
       } catch (e) {
         localStorage.removeItem("user");
       }
