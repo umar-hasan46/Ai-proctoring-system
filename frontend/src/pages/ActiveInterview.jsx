@@ -495,34 +495,7 @@ function ActiveInterview({ user }) {
     }
   };
 
-  const terminateInterview = async (reason) => {
-    stopListening();
-    window.speechSynthesis.cancel();
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-    }
-    localStorage.setItem("interviewTerminated", "true");
-    localStorage.setItem("terminationReason", reason);
-    const intvId = localStorage.getItem("currentInterviewId") || localStorage.getItem("active_session_id") || interviewId || "unknown";
-    const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com";
-    await fetch(`${API_BASE_URL}/api/interview/finish`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-User-Id": localStorage.getItem("userId") || "",
-        "X-User-Role": localStorage.getItem("userRole") || "user"
-      },
-      body: JSON.stringify({
-        interviewId: intvId,
-        status: "terminated",
-        reason,
-        answers: JSON.parse(localStorage.getItem("answers") || "{}"),
-        evaluations: JSON.parse(localStorage.getItem("interviewEvaluations") || "{}"),
-        warnings: JSON.parse(localStorage.getItem("interviewWarnings") || "[]")
-      })
-    }).catch(() => {});
-    navigate(`/results/${intvId}`);
-  };
+
 
   
   const terminateInterview = async (reason) => {
