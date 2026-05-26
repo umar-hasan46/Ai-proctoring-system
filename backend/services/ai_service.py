@@ -141,9 +141,12 @@ def generate_30_questions(resume_text, detected_skills, target_role, user_histor
     
     Rules:
     - Questions must be based ONLY on the resume skills, projects, experience, education, and target job role.
+    - VERY IMPORTANT: Do NOT ask any of the following questions that the user has already been asked in past interviews:
+    {json.dumps(user_history) if user_history else '[]'}
+    
     - Do not repeat questions.
-    - Do not generate generic repeated questions.
-    - Make questions different for every interview attempt.
+    - Ensure extreme variety. Select a random subset of the candidate's detected skills and ask deep, nuanced, scenario-based questions about them.
+    - Make questions vastly different for every interview attempt.
     - Use randomness with timestamp/sessionId: {session_id} {current_timestamp} {random_seed}
     - Include technical, project-based, scenario-based, problem-solving, communication, and HR questions.
     - Avoid generic project questions like "describe your most challenging project". Make them highly specific to the candidate's actual listed projects and technologies.
@@ -161,7 +164,7 @@ def generate_30_questions(resume_text, detected_skills, target_role, user_histor
     ]
     """
     
-    raw = call_gemini(prompt, temperature=0.7, max_tokens=2500)
+    raw = call_gemini(prompt, temperature=0.9, max_tokens=2500)
     parsed = extract_json_array(raw)
     
     # Process dynamic questions and apply uniqueness logic
