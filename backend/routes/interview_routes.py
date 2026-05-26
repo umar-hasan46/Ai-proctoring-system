@@ -2106,8 +2106,8 @@ def get_timer_status(interview_id):
         cur.close()
         conn.close()
 
-@bp.route('/interview/evaluate-answer', methods=['POST'])
-@bp.route('/interviews/evaluate-answer', methods=['POST'])
+@bp.route('/interview/evaluate-single-answer', methods=['POST'])
+@bp.route('/interviews/evaluate-single-answer', methods=['POST'])
 def evaluate_single_answer_endpoint():
     data = request.json
     intv_id = data.get('interview_id')
