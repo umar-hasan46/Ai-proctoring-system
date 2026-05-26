@@ -20,8 +20,8 @@ function ActiveInterview({ user }) {
   const [sessionId, setSessionId] = useState(() => location.state?.sessionId || localStorage.getItem("active_session_id") || "");
 
   const storedQuestions = JSON.parse(localStorage.getItem("interviewQuestions") || "[]");
-  const [questions, setQuestions] = useState(storedQuestions);
-  const [currentIdx, setCurrentIdx] = useState(() => parseInt(localStorage.getItem("current_question_index") || "0", 10));
+  const [questions, setQuestions] = useState(() => localStorage.getItem("active_interview_id") ? storedQuestions : []);
+  const [currentIdx, setCurrentIdx] = useState(() => localStorage.getItem("active_interview_id") ? parseInt(localStorage.getItem("current_question_index") || "0", 10) : 0);
   const [highestIdx, setHighestIdx] = useState(0);
   const [answers, setAnswers] = useState(() => JSON.parse(localStorage.getItem("answers") || "{}"));
   const [warnings, setWarnings] = useState(0);

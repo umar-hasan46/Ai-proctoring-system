@@ -24,6 +24,13 @@ function Results({ user: propUser }) {
   const [attempts, setAttempts] = useState([]);
   const [selectedAttemptId, setSelectedAttemptId] = useState(null);
   const [modalTab, setModalTab] = useState('resume');
+  const [slowLoading, setSlowLoading] = useState(false);
+  useEffect(() => {
+    if (loading) {
+      const timer = setTimeout(() => setSlowLoading(true), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
 
   const [techSearch, setTechSearch] = useState('');
   const [techDifficultyFilter, setTechDifficultyFilter] = useState('All');
@@ -101,7 +108,11 @@ function Results({ user: propUser }) {
         throw new Error(res.message || "Failed to load detailed results.");
       }
     } catch (err) {
-      const localQuestions = JSON.parse(localStorage.getItem("interviewQuestions") || "[]");
+      let localQuestions = [];
+      try {
+        const iq = localStorage.getItem("interviewQuestions");
+        localQuestions = iq && iq !== "undefined" ? JSON.parse(iq) : [];
+      } catch (e) {}
       if (localQuestions.length > 0) {
         const localAnswersStr = localStorage.getItem("interviewAnswers") || localStorage.getItem("answers") || "{}";
         const localAnswers = JSON.parse(localAnswersStr);

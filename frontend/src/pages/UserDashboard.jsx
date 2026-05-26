@@ -9,9 +9,24 @@ function UserDashboard({ user: initialUser }) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [pastInterviews, setPastInterviews] = useState([]);
 
+  const [slowLoading, setSlowLoading] = useState(false);
+  useEffect(() => {
+    if (loading) {
+      const timer = setTimeout(() => setSlowLoading(true), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
+
   const fetchDashboardData = async () => {
-    const email = initialUser?.email || JSON.parse(localStorage.getItem('user'))?.email;
-    if (!email) return;
+    let email = initialUser?.email;
+    if (!email) {
+      try { email = JSON.parse(localStorage.getItem('user'))?.email; } catch(e){}
+    }
+    if (!email) email = localStorage.getItem('email');
+    if (!email) {
+      setLoading(false);
+      return;
+    }
     try {
       const res = await api.getUserDashboard(email);
       if (res.success) {
@@ -40,8 +55,9 @@ function UserDashboard({ user: initialUser }) {
 
   if (loading && !data) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', fontSize: '1.2rem', color: '#1e3a5f' }}>
-        Loading Dashboard...
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '60vh', fontSize: '1.2rem', color: '#1e3a5f' }}>
+        <div>Loading Dashboard...</div>
+        {slowLoading && <div style={{marginTop: '15px', fontSize: '1rem', color: '#718096'}}>Taking longer than usual? The server might be waking up...</div>}
       </div>
     );
   }
