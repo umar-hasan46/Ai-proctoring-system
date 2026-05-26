@@ -538,6 +538,13 @@ function Results({ user: propUser }) {
         )}
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '15px', background: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0', marginTop: '20px' }}>
+                    <div>
+            <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>Status</span>
+            <div style={{ fontSize: '1.1rem', fontWeight: '700', marginTop: '2px', color: d.interview?.status === 'Terminated' ? '#e53e3e' : '#38a169' }}>
+              {d.interview?.status === 'Terminated' ? 'Terminated' : 'Completed'}
+            </div>
+            {d.interview?.status === 'Terminated' && <div style={{ fontSize: '0.8rem', color: '#e53e3e', marginTop: '4px' }}>{d.interview?.termination_reason}</div>}
+          </div>
           <div>
             <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>Interview ID</span>
             <div style={{ fontSize: '1.1rem', fontWeight: '700', marginTop: '2px', color: '#1e3a5f' }}>{d.interview?.id || 'N/A'}</div>

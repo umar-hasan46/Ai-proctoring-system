@@ -4323,6 +4323,8 @@ def finish_interview():
     interview_id = data.get('interviewId')
     evaluations = data.get('evaluations', {})
     warnings = data.get('warnings', [])
+    status = data.get('status', 'completed')
+    reason = data.get('reason', '')
     
     overall = 0
     technical = 0
@@ -4341,5 +4343,7 @@ def finish_interview():
         "technicalScore": round(technical, 2),
         "communicationScore": round(communication, 2),
         "warningCount": len(warnings),
+        "status": status,
+        "terminationReason": reason,
         "finalRecommendation": "Selected" if overall > 70 else "Review" if overall > 50 else "Rejected"
     })

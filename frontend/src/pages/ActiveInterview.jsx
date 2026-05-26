@@ -44,6 +44,10 @@ function ActiveInterview({ user }) {
   const [isListening, setIsListening] = useState(false);
   const [isMicEnabled, setIsMicEnabled] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [assistantSpeaking, setAssistantSpeaking] = useState(false);
+  const MAX_WARNINGS = 3;
+  const [warningCount, setWarningCount] = useState(Number(localStorage.getItem("warningCount") || 0));
+  const [liveTranscript, setLiveTranscript] = useState('');
   const [isSupported] = useState(() => !!(window.SpeechRecognition || window.webkitSpeechRecognition));
   const recognitionRef = useRef(null);
   const isAiSpeakingRef = useRef(false);
@@ -536,19 +540,64 @@ function ActiveInterview({ user }) {
     }
   };
 
-  const addWarning = (message) => {
-    const warning = { id: Date.now(), message, time: new Date().toLocaleTimeString() };
-    setWarningsList(prev => {
-      const nw = [warning, ...prev];
-      localStorage.setItem("interviewWarnings", JSON.stringify(nw));
-      return nw;
-    });
+  const terminateInterview = async (reason) => {
+    stopListening();
+    window.speechSynthesis.cancel();
+    localStorage.setItem("interviewTerminated", "true");
+    localStorage.setItem("terminationReason", reason);
+    const intvId = localStorage.getItem("currentInterviewId") || localStorage.getItem("active_session_id") || interviewId;
     const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com";
-    fetch(`${API_BASE_URL}/api/proctoring/warning`, {
+    await fetch(`${API_BASE_URL}/api/interview/finish`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-User-Email": email },
-      body: JSON.stringify({ interviewId, message, eventType: "warning", timestamp: new Date().toISOString() })
-    }).catch(err => console.log("Warning save error:", err));
+      headers: {
+        "Content-Type": "application/json",
+        "X-User-Id": localStorage.getItem("userId") || "",
+        "X-User-Role": localStorage.getItem("userRole") || "user"
+      },
+      body: JSON.stringify({
+        interviewId: intvId,
+        status: "terminated",
+        reason,
+        answers: JSON.parse(localStorage.getItem("answers") || "{}"),
+        evaluations: JSON.parse(localStorage.getItem("interviewEvaluations") || "{}"),
+        warnings: JSON.parse(localStorage.getItem("interviewWarnings") || "[]")
+      })
+    }).catch(() => {});
+    navigate(`/results/${intvId}`);
+  };
+
+  const addWarning = (message) => {
+    setWarningCount(prev => {
+      const newCount = prev + 1;
+      localStorage.setItem("warningCount", String(newCount));
+      const warning = {
+        id: Date.now(),
+        count: newCount,
+        max: MAX_WARNINGS,
+        message,
+        time: new Date().toLocaleTimeString()
+      };
+      const savedWarnings = JSON.parse(localStorage.getItem("interviewWarnings") || "[]");
+      localStorage.setItem("interviewWarnings", JSON.stringify([warning, ...savedWarnings]));
+      setWarningsList([warning, ...savedWarnings]);
+      
+      if (newCount <= MAX_WARNINGS) {
+        setWarningMessage(`Warning ${newCount}/3: ${message}`);
+        setTimeout(() => setWarningMessage(''), 5000);
+      }
+      if (newCount > MAX_WARNINGS) {
+        terminateInterview("Interview terminated because warning limit exceeded.");
+      }
+      
+      const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com";
+      fetch(`${API_BASE_URL}/api/proctoring/warning`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-User-Email": email },
+        body: JSON.stringify({ interviewId, message, eventType: "warning", timestamp: new Date().toISOString(), count: newCount })
+      }).catch(err => console.log("Warning save error:", err));
+      
+      return newCount;
+    });
   };
 
   const handleContextMenu = (e) => {
@@ -910,22 +959,33 @@ function ActiveInterview({ user }) {
         body: JSON.stringify({
           interviewId,
           questionId: q.id,
+          questionNumber: currentIdx + 1,
           question: q.question || q.question_text || q.text,
           answer: ans,
-          skill: q.skill || q.skill_tag || "General"
+          skill: q.skill || q.skill_tag || "General",
+          userId: user?.id || ""
         })
       });
       const data = await res.json();
+      const evals = JSON.parse(localStorage.getItem("interviewEvaluations") || "{}");
       if (data.success) {
-        const evals = JSON.parse(localStorage.getItem("interviewEvaluations") || "{}");
         evals[q.id] = data;
-        localStorage.setItem("interviewEvaluations", JSON.stringify(evals));
-        if (voiceEnabled) {
-          window.speechSynthesis.cancel();
-          const u = new SpeechSynthesisUtterance("Answer submitted. Your response is evaluated. Moving to next question.");
-          u.lang = "en-US";
-          window.speechSynthesis.speak(u);
-        }
+      } else {
+        evals[q.id] = {
+          score: ans.length > 40 ? 6 : 3,
+          technicalScore: ans.length > 40 ? 6 : 3,
+          communicationScore: ans.length > 20 ? 6 : 3,
+          confidenceScore: ans.length > 20 ? 6 : 3,
+          feedback: "Answer saved. Detailed AI evaluation unavailable.",
+          suggestedImprovement: "Add more explanation and examples."
+        };
+      }
+      localStorage.setItem("interviewEvaluations", JSON.stringify(evals));
+      if (voiceEnabled) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance("Answer submitted. Your response is evaluated. Moving to next question.");
+        u.lang = "en-US";
+        window.speechSynthesis.speak(u);
       }
     } catch (err) {
       console.error("Backend error saving answer:", err);
@@ -1200,7 +1260,7 @@ function ActiveInterview({ user }) {
           <h2>
             Question {currentIdx + 1} of {questions.length} | 
             <span style={{ color: timeLeft < 300 ? '#e53e3e' : 'inherit', marginLeft: '8px' }}>
-              Time Left: {formatTime(timeLeft)}
+              Time Left: {formatTime(timeLeft)} | Warnings: {warningCount}/3
             </span>
           </h2>
           {autosaveStatus && (
@@ -1209,12 +1269,12 @@ function ActiveInterview({ user }) {
             </span>
           )}
         </div>
-        {warningsList.length > 0 && (
+        {warningCount > 0 && (
           <div className="warning-panel" style={{ background: '#fff7ed', border: '1px solid #fb923c', color: '#9a3412', padding: '16px', borderRadius: '12px', marginTop: '16px' }}>
-            <h3 style={{ marginTop: 0, marginBottom: '10px' }}>Proctoring Warnings</h3>
-            {warningsList.slice(0, 5).map(warning => (
+            <h3 style={{ marginTop: 0, marginBottom: '10px' }}>Warning Count: {warningCount}/3</h3>
+            {warningsList.slice(0, 5).map((warning, i) => (
               <div key={warning.id} className="warning-item" style={{ background: '#ffedd5', padding: '10px', borderRadius: '8px', marginTop: '8px', fontWeight: '500' }}>
-                ⚠️ {warning.message}
+                ⚠️ Warning {warning.count || warningCount - i}/3 - {warning.message}
                 <span style={{float: 'right', fontSize: '0.85em', color: '#7c2d12'}}>{warning.time}</span>
               </div>
             ))}
@@ -1454,7 +1514,7 @@ function ActiveInterview({ user }) {
           <div ref={liveTranscriptSidebarRef} style={{ color: '#e2e8f0', fontSize: '0.68rem', lineHeight: 1.4, fontStyle: 'italic' }}></div>
         </div>
         <button
-          onClick={toggleMic}
+          onClick={() => { if (assistantSpeaking) { setWarningMessage('Please wait until assistant finishes speaking.'); setTimeout(() => setWarningMessage(''), 3000); } else { isListening ? stopListening() : startListening(); } }}
           style={{
             background: isMicEnabled ? '#dc2626' : '#1a56db',
             color: 'white',
@@ -1496,7 +1556,7 @@ function ActiveInterview({ user }) {
           </span>
         </div>
         <button
-          onClick={toggleMic}
+          onClick={() => { if (assistantSpeaking) { setWarningMessage('Please wait until assistant finishes speaking.'); setTimeout(() => setWarningMessage(''), 3000); } else { isListening ? stopListening() : startListening(); } }}
           type="button"
           style={{
             background: isMicEnabled ? "#dc2626" : "#1a56db",
@@ -1505,7 +1565,7 @@ function ActiveInterview({ user }) {
             fontWeight: 700, cursor: "pointer", fontSize: "0.82rem"
           }}
         >
-          {isMicEnabled ? "Turn Off Mic" : "Turn On Mic"}
+          {assistantSpeaking ? "Assistant Speaking" : (isListening ? "Stop Mic" : "Turn On Mic")}
         </button>
         <div ref={liveTranscriptBottomRef} style={{flex:1,color:"#93c5fd",fontSize:"0.78rem",fontStyle:"italic",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
           Click Turn On Mic to start speaking
