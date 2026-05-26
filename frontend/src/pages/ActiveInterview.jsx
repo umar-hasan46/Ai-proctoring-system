@@ -414,7 +414,6 @@ function ActiveInterview({ user }) {
     if (!email || backendStatus !== 'online') return;
 
     if (questions.length === 0) {
-      setDataError("No interview questions found. Please start a new interview.");
       setLoading(false);
     } else {
       setLoading(false);

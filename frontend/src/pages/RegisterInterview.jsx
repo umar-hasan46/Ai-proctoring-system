@@ -216,6 +216,7 @@ function RegisterInterview({ user }) {
 
               localStorage.setItem("currentInterviewId", data.interviewId || data.sessionId);
               localStorage.setItem("interviewSessionId", data.sessionId || data.interviewId);
+              localStorage.setItem("active_interview_id", data.interviewId || data.sessionId);
               localStorage.setItem("interviewQuestions", JSON.stringify(data.questions || []));
               localStorage.setItem("interviewStartTime", Date.now().toString());
               localStorage.setItem("warningCount", "0");
