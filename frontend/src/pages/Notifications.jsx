@@ -39,7 +39,7 @@ function Notifications({ user }) {
 
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 3000);
+    const interval = setInterval(fetchNotifications, 15000);
     return () => clearInterval(interval);
   }, [user?.email, user?.role]);
 

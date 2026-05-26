@@ -89,6 +89,31 @@ function RegisterInterview({ user }) {
     try {
       const skillRes = await api.detectSkills({ interview_id: interviewId });
       if (skillRes.success) {
+        const detected = skillRes.skills || [];
+        setSkills(detected);
+        
+        // Calculate Resume Scores
+        const targetRole = formData.role || 'General';
+        localStorage.setItem("targetRole", targetRole);
+        
+        const atsScore = Math.min(100, Math.max(30, detected.length * 8));
+        const educationScore = 80 + (detected.length > 5 ? 10 : 0); 
+        const skillsScore = Math.min(100, detected.length * 10);
+        const resumeScore = Math.round((atsScore + educationScore + skillsScore) / 3);
+        
+        localStorage.setItem("atsScore", atsScore.toString());
+        localStorage.setItem("educationScore", educationScore.toString());
+        localStorage.setItem("skillsScore", skillsScore.toString());
+        localStorage.setItem("resumeScore", resumeScore.toString());
+        localStorage.setItem("detectedSkills", JSON.stringify(detected));
+        
+        const mockResumeAnalysis = {
+          summary_paragraph: `Candidate has applied for ${targetRole}. We detected ${detected.length} relevant skills including ${detected.slice(0, 3).join(', ')}. The resume format is ATS friendly.`,
+          strengths: detected.slice(0, 4),
+          weaknesses: ["Consider adding more measurable achievements", "Add more diverse project experience"]
+        };
+        localStorage.setItem("resumeAnalysis", JSON.stringify(mockResumeAnalysis));
+
         setSkills(skillRes.skills);
       } else {
         setError('Skill detection failed. Please try again.');
