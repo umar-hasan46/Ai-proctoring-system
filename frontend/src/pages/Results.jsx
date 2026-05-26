@@ -8,7 +8,10 @@ import { formatToIST, formatToDDMMYYYY } from '../utils/dateUtils';
 function Results({ user: propUser }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { interviewId: routeInterviewId } = useParams();
+  const validRouteId = routeInterviewId && routeInterviewId !== "id" ? routeInterviewId : null;
+  const interviewIdFromState = validRouteId || location.state?.interviewId || localStorage.getItem("currentInterviewId") || localStorage.getItem("interviewSessionId");
+
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,7 +23,6 @@ function Results({ user: propUser }) {
   const [techDifficultyFilter, setTechDifficultyFilter] = useState('All');
   const [techStatusFilter, setTechStatusFilter] = useState('All');
 
-  const interviewIdFromState = id || location.state?.interviewId;
   const user = propUser || JSON.parse(localStorage.getItem("user") || "null");
   const email = user?.email || localStorage.getItem("email") || "";
 
@@ -34,7 +36,8 @@ function Results({ user: propUser }) {
           list.sort((a, b) => b.attempt_no - a.attempt_no);
           setAttempts(list);
           if (list.length > 0) {
-            const initialId = Number(interviewIdFromState) || selectedAttemptId || list[0].id;
+            const matched = list.find(x => x.id == interviewIdFromState || x.session_id == interviewIdFromState || x.interview_id == interviewIdFromState);
+            const initialId = matched ? matched.id : list[0].id;
             setSelectedAttemptId(initialId);
           }
         }
@@ -89,10 +92,31 @@ function Results({ user: propUser }) {
       if (res.success) {
         setReportData(res);
       } else {
-        setError(res.message || "Failed to load detailed results.");
+        throw new Error(res.message || "Failed to load detailed results.");
       }
     } catch (err) {
-      setError(err.message || "An error occurred while fetching details.");
+      const localQuestions = JSON.parse(localStorage.getItem("interviewQuestions") || "[]");
+      if (localQuestions.length > 0) {
+        const localAnswers = JSON.parse(localStorage.getItem("answers") || "{}");
+        const localEvals = JSON.parse(localStorage.getItem("interviewEvaluations") || "{}");
+        const localWarnings = JSON.parse(localStorage.getItem("interviewWarnings") || "[]");
+        setReportData({
+          success: true,
+          isFallback: true,
+          interview: { id: intvId, role_applied: localStorage.getItem("targetRole") || "Candidate", overall_score: 0, status: "completed" },
+          candidate: { name: user?.name || user?.full_name || "Candidate", email: email },
+          questions: localQuestions.map(q => ({
+            question_number: q.questionNumber,
+            question_text: q.question,
+            answer_text: localAnswers[q.id] || "",
+            ai_feedback: localEvals[q.id]?.feedback || "Not evaluated",
+            score: localEvals[q.id]?.score || 0
+          })),
+          warnings: localWarnings.map(w => ({ violation_type: w.message, created_at: w.time }))
+        });
+      } else {
+        setError(err.message || "An error occurred while fetching details.");
+      }
     } finally {
       setLoading(false);
     }

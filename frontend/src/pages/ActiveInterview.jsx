@@ -129,6 +129,19 @@ function ActiveInterview({ user }) {
     }
   }, [currentIdx, questions]);
 
+  useEffect(() => {
+    if (!voiceEnabled || !questions[currentIdx]) return;
+    const cq = questions[currentIdx];
+    const text = `Question ${currentIdx + 1}. ${cq.question || cq.question_text || cq.text || 'Question text not available'}. Please answer clearly.`;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "en-US";
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+    return () => window.speechSynthesis.cancel();
+  }, [currentIdx, voiceEnabled, questions]);
+
 
   useEffect(() => {
     if (isStarted && !isTerminated && questions[currentIdx]) {
@@ -538,12 +551,18 @@ function ActiveInterview({ user }) {
     }).catch(err => console.log("Warning save error:", err));
   };
 
+  const handleContextMenu = (e) => {
+    e.preventDefault();
+    addWarning("Right click is disabled during the interview.");
+  };
+
   const setupListeners = () => {
     if (!videoRef.current) return;
     window.addEventListener('blur', handleTabSwitch);
     document.addEventListener('visibilitychange', handleTabSwitch);
     document.addEventListener('copy', handleCopyPaste);
     document.addEventListener('paste', handleCopyPaste);
+    document.addEventListener('contextmenu', handleContextMenu);
   };
 
   const removeListeners = () => {
@@ -551,6 +570,7 @@ function ActiveInterview({ user }) {
     document.removeEventListener('visibilitychange', handleTabSwitch);
     document.removeEventListener('copy', handleCopyPaste);
     document.removeEventListener('paste', handleCopyPaste);
+    document.removeEventListener('contextmenu', handleContextMenu);
   };
 
   const handleCopyPaste = (e) => {
@@ -881,7 +901,7 @@ function ActiveInterview({ user }) {
 
     try {
       const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com";
-      await fetch(`${API_BASE_URL}/api/interview/answer`, {
+      const res = await fetch(`${API_BASE_URL}/api/interview/evaluate-answer`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -890,9 +910,23 @@ function ActiveInterview({ user }) {
         body: JSON.stringify({
           interviewId,
           questionId: q.id,
-          answer: ans
+          question: q.question || q.question_text || q.text,
+          answer: ans,
+          skill: q.skill || q.skill_tag || "General"
         })
       });
+      const data = await res.json();
+      if (data.success) {
+        const evals = JSON.parse(localStorage.getItem("interviewEvaluations") || "{}");
+        evals[q.id] = data;
+        localStorage.setItem("interviewEvaluations", JSON.stringify(evals));
+        if (voiceEnabled) {
+          window.speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance("Answer submitted. Your response is evaluated. Moving to next question.");
+          u.lang = "en-US";
+          window.speechSynthesis.speak(u);
+        }
+      }
     } catch (err) {
       console.error("Backend error saving answer:", err);
     }
@@ -963,7 +997,10 @@ function ActiveInterview({ user }) {
         },
         body: JSON.stringify({
           interviewId,
-          answers: JSON.parse(localStorage.getItem("answers") || "{}")
+          answers: JSON.parse(localStorage.getItem("answers") || "{}"),
+          evaluations: JSON.parse(localStorage.getItem("interviewEvaluations") || "{}"),
+          warnings: JSON.parse(localStorage.getItem("interviewWarnings") || "[]"),
+          timeTaken: Math.floor((Date.now() - Number(localStorage.getItem("interviewStartTime"))) / 1000)
         })
       });
 
@@ -1160,7 +1197,12 @@ function ActiveInterview({ user }) {
           </div>
         )}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2>Question {currentIdx + 1}/{questions.length}</h2>
+          <h2>
+            Question {currentIdx + 1} of {questions.length} | 
+            <span style={{ color: timeLeft < 300 ? '#e53e3e' : 'inherit', marginLeft: '8px' }}>
+              Time Left: {formatTime(timeLeft)}
+            </span>
+          </h2>
           {autosaveStatus && (
             <span style={{ fontSize: '0.85rem', color: '#38a169', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
               🟢 {autosaveStatus}

@@ -159,7 +159,7 @@ function App() {
             <Route path="/register" element={wrap("user", RegisterInterview, user)} />
             <Route path="/active-interview" element={wrap("user", ActiveInterview, user)} />
             <Route path="/results" element={wrap("user", Results, user)} />
-            <Route path="/results/:id" element={wrap("user", Results, user)} />
+            <Route path="/results/:interviewId" element={wrap("user", Results, user)} />
             <Route path="/notifications" element={wrap("user", Notifications, user)} />
             <Route path="/settings" element={wrap("user", Settings, user, handleLogin)} />
             

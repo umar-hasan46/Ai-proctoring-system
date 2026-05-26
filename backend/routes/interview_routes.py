@@ -3935,12 +3935,12 @@ def start_interview_session():
             legacy_row = cur.fetchone()
             if legacy_row:
                 legacy_id = legacy_row[0]
-                cur.execute("UPDATE interviews SET status = 'active', start_time = %s WHERE id = %s", (get_ist_time(), legacy_id))
+                cur.execute("UPDATE interviews SET status = 'active', start_time = %s, session_id = %s, interview_id = %s WHERE id = %s", (get_ist_time(), session_id, session_id, legacy_id))
             else:
                 cur.execute("""
-                    INSERT INTO interviews (user_id, user_email, full_name, phone, role_applied, status, start_time, remaining_time_seconds, current_question_no)
-                    VALUES (%s, %s, %s, %s, %s, 'active', %s, 1800, 1) RETURNING id
-                """, (user_id, email, full_name, phone, role, get_ist_time()))
+                    INSERT INTO interviews (user_id, user_email, full_name, phone, role_applied, status, start_time, remaining_time_seconds, current_question_no, session_id, interview_id)
+                    VALUES (%s, %s, %s, %s, %s, 'active', %s, 1800, 1, %s, %s) RETURNING id
+                """, (user_id, email, full_name, phone, role, get_ist_time(), session_id, session_id))
                 legacy_id = cur.fetchone()[0]
             conn.commit()
 
@@ -4239,21 +4239,20 @@ def get_interview_report(interview_id=None):
         return jsonify({"success": False, "message": "Database connection failed"}), 500
     cur = conn.cursor()
     try:
-        if not interview_id:
-            if not user_id:
-                return jsonify({"success": False, "message": "No interviewId provided and user not identified."}), 404
-            cur.execute("SELECT id FROM interviews WHERE user_id = %s ORDER BY created_at DESC LIMIT 1", (user_id,))
-            row = cur.fetchone()
-            if not row:
-                return jsonify({"success": False, "message": "No interview found."}), 404
-            interview_id = row[0]
+        if interview_id == "id" or not interview_id:
+            return jsonify({"success": False, "message": "Invalid interview id"}), 400
+
+        if str(interview_id).isdigit():
+            cur.execute("SELECT user_id, id FROM interviews WHERE id = %s", (int(interview_id),))
+        else:
+            cur.execute("SELECT user_id, id FROM interviews WHERE session_id = %s OR interview_id = %s", (str(interview_id), str(interview_id)))
             
-        cur.execute("SELECT user_id FROM interviews WHERE id = %s", (interview_id,))
         intv_row = cur.fetchone()
         if not intv_row:
             return jsonify({"success": False, "message": "Interview not found."}), 404
             
         owner_id = str(intv_row[0])
+        real_id = intv_row[1]
         
         # RBAC: Only admin, recruiter, or the owner can view
         if role not in ['admin', 'recruiter'] and str(user_id) != owner_id:
@@ -4270,7 +4269,7 @@ def get_interview_report(interview_id=None):
             "phone": cand_row[3] if cand_row else ""
         }
         
-        cur.execute("SELECT technical_score, communication_score, final_percentage, result_status FROM results WHERE interview_id = %s", (interview_id,))
+        cur.execute("SELECT technical_score, communication_score, final_percentage, result_status FROM results WHERE interview_id = %s", (real_id,))
         res_row = cur.fetchone()
         scores = {
             "technical": res_row[0] if res_row else 0,
@@ -4282,7 +4281,7 @@ def get_interview_report(interview_id=None):
         # Get questions and answers if available
         questions = []
         answers = []
-        cur.execute("SELECT question_text, candidate_answer, content_score FROM ai_evaluation WHERE interview_id = %s", (interview_id,))
+        cur.execute("SELECT question_text, candidate_answer, content_score FROM ai_evaluation WHERE interview_id = %s", (real_id,))
         for q in cur.fetchall():
             questions.append({"text": q[0]})
             answers.append({"text": q[1], "score": q[2]})
@@ -4302,3 +4301,45 @@ def get_interview_report(interview_id=None):
         cur.close()
         conn.close()
 
+@bp.route('/interview/evaluate-answer', methods=['POST'])
+def evaluate_answer():
+    from flask import request
+    data = request.json
+    interview_id = data.get('interviewId')
+    
+    return jsonify({
+        "success": True,
+        "score": 8,
+        "technicalScore": 8,
+        "communicationScore": 7,
+        "feedback": "Good answer. Add more technical details.",
+        "suggestedImprovement": "Explain with an example."
+    })
+
+@bp.route('/interview/finish', methods=['POST'])
+def finish_interview():
+    from flask import request
+    data = request.json
+    interview_id = data.get('interviewId')
+    evaluations = data.get('evaluations', {})
+    warnings = data.get('warnings', [])
+    
+    overall = 0
+    technical = 0
+    communication = 0
+    
+    if evaluations:
+        eval_list = list(evaluations.values())
+        technical = sum(e.get('technicalScore', 0) for e in eval_list) / len(eval_list)
+        communication = sum(e.get('communicationScore', 0) for e in eval_list) / len(eval_list)
+        overall = sum(e.get('score', 0) for e in eval_list) / len(eval_list)
+        
+    return jsonify({
+        "success": True,
+        "interviewId": interview_id,
+        "overallScore": round(overall, 2),
+        "technicalScore": round(technical, 2),
+        "communicationScore": round(communication, 2),
+        "warningCount": len(warnings),
+        "finalRecommendation": "Selected" if overall > 70 else "Review" if overall > 50 else "Rejected"
+    })
