@@ -188,13 +188,35 @@ function RegisterInterview({ user }) {
                 // Store required elements from backend
                 const newId = data.interviewId || data.sessionId;
                 const newSessionId = data.sessionId || data.interviewId;
+
+                let normalizedQuestions = (data.questions || []).map((q, index) => ({
+                  id: q.id || index + 1,
+                  questionNumber: q.questionNumber || q.question_number || index + 1,
+                  question: q.question || q.question_text || q.text || `Question ${index + 1}`,
+                  type: q.type || q.questionType || "technical",
+                  skill: q.skill || q.skill_tag || "General"
+                }));
+
+                if (normalizedQuestions.length === 0) {
+                  const fallbackQuestions = [];
+                  for (let i = 0; i < 30; i++) {
+                    fallbackQuestions.push({
+                      id: i + 1,
+                      questionNumber: i + 1,
+                      question: i === 0 ? "Are you ready for the interview?" : i === 1 ? "Please introduce yourself." : i === 2 ? "Tell me about your education background." : "Can you explain a concept related to your skills?",
+                      type: i < 3 ? "mandatory" : "technical",
+                      skill: "General"
+                    });
+                  }
+                  normalizedQuestions = fallbackQuestions;
+                }
                 
                 localStorage.setItem("currentInterviewId", newId);
                 localStorage.setItem("interviewSessionId", newSessionId);
                 localStorage.setItem("active_interview_id", newId);
                 localStorage.setItem("active_session_id", newSessionId);
                 
-                localStorage.setItem("interviewQuestions", JSON.stringify(data.questions || []));
+                localStorage.setItem("interviewQuestions", JSON.stringify(normalizedQuestions));
                 localStorage.setItem("interviewStartTime", Date.now().toString());
 
                 navigate('/active-interview', { 

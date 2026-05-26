@@ -17,6 +17,7 @@ function ActiveInterview({ user }) {
   const [highestIdx, setHighestIdx] = useState(0);
   const [answers, setAnswers] = useState(() => JSON.parse(localStorage.getItem("answers") || "{}"));
   const [warnings, setWarnings] = useState(0);
+  const [warningsList, setWarningsList] = useState(() => JSON.parse(localStorage.getItem("interviewWarnings") || "[]"));
   const [starting, setStarting] = useState(false);
   const [startMessage, setStartMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -522,11 +523,23 @@ function ActiveInterview({ user }) {
     }
   };
 
+  const addWarning = (message) => {
+    const warning = { id: Date.now(), message, time: new Date().toLocaleTimeString() };
+    setWarningsList(prev => {
+      const nw = [warning, ...prev];
+      localStorage.setItem("interviewWarnings", JSON.stringify(nw));
+      return nw;
+    });
+    const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ai-proctoring-backend-5t3k.onrender.com";
+    fetch(`${API_BASE_URL}/api/proctoring/warning`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-User-Email": email },
+      body: JSON.stringify({ interviewId, message, eventType: "warning", timestamp: new Date().toISOString() })
+    }).catch(err => console.log("Warning save error:", err));
+  };
+
   const setupListeners = () => {
-    if (!videoRef.current) {
-      console.warn("Video element not ready yet");
-      return;
-    }
+    if (!videoRef.current) return;
     window.addEventListener('blur', handleTabSwitch);
     document.addEventListener('visibilitychange', handleTabSwitch);
     document.addEventListener('copy', handleCopyPaste);
@@ -541,6 +554,8 @@ function ActiveInterview({ user }) {
   };
 
   const handleCopyPaste = (e) => {
+    e.preventDefault();
+    addWarning("Pasting is not allowed during the interview.");
     logAIEvent('Cheating Alert', 'Candidate attempted to copy or paste content.', 15, 'High');
     processViolation('Copy/Paste Detected', 'Copying or pasting is strictly prohibited.');
   };
@@ -572,6 +587,7 @@ function ActiveInterview({ user }) {
     const now = Date.now();
     if (now - lastViolationTime.current < 5000) return;
     lastViolationTime.current = now;
+    addWarning("Tab switch detected. Please stay on the interview page.");
     logAIEvent('Cheating Alert', 'Candidate switched tab or exited fullscreen.', 20, 'High');
     processViolation('Tab Switching', 'Candidate switched tabs or windows.');
   };
@@ -888,7 +904,7 @@ function ActiveInterview({ user }) {
       setCurrentIdx(nextIdx);
       localStorage.setItem("current_question_index", nextIdx.toString());
       if (textareaRef.current) {
-        textareaRef.current.value = newAnswers[questions[nextIdx]?.id] || '';
+        textareaRef.current.value = '';
       }
     } else {
       handleFinalSubmit();
@@ -1151,8 +1167,20 @@ function ActiveInterview({ user }) {
             </span>
           )}
         </div>
-        <p style={{ fontSize: '1.2rem', margin: '1.5rem 0', padding: '1.5rem', background: '#f7fafc', borderRadius: '8px', color: '#1a202c' }}>
-          {currentQuestion?.text}
+        {warningsList.length > 0 && (
+          <div className="warning-panel" style={{ background: '#fff7ed', border: '1px solid #fb923c', color: '#9a3412', padding: '16px', borderRadius: '12px', marginTop: '16px' }}>
+            <h3 style={{ marginTop: 0, marginBottom: '10px' }}>Proctoring Warnings</h3>
+            {warningsList.slice(0, 5).map(warning => (
+              <div key={warning.id} className="warning-item" style={{ background: '#ffedd5', padding: '10px', borderRadius: '8px', marginTop: '8px', fontWeight: '500' }}>
+                ⚠️ {warning.message}
+                <span style={{float: 'right', fontSize: '0.85em', color: '#7c2d12'}}>{warning.time}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <p className="question-text" style={{ color: '#0f172a', fontSize: '20px', fontWeight: '600', lineHeight: '1.6', background: '#f8fafc', padding: '18px', borderRadius: '12px', border: '1px solid #e2e8f0', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
+          {currentQuestion?.question || currentQuestion?.question_text || currentQuestion?.text || "Question text not available"}
         </p>
         <div style={{ marginBottom: '0.5rem' }}>
           <textarea

@@ -177,6 +177,31 @@ def api_logout():
     return auth.logout()
 
 
+@app.route('/api/proctoring/warning', methods=['POST'])
+def proctoring_warning():
+    from db import get_db_connection, get_ist_time
+    data = request.json or {}
+    message = data.get('message')
+    interview_id = data.get('interviewId')
+    user_email = request.headers.get('X-User-Email', '')
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        ist_now = get_ist_time()
+        cur.execute("""
+            INSERT INTO violations (interview_id, user_email, violation_type, message, severity, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (interview_id, user_email, 'Proctoring Alert', message, 'high', ist_now))
+        conn.commit()
+        return jsonify({"success": True, "message": "Warning saved"})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cur.close()
+        conn.close()
+
 @app.errorhandler(404)
 def not_found(e):
     return jsonify({"success": False, "message": "Resource not found (404)"}), 404
