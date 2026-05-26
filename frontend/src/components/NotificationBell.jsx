@@ -29,7 +29,7 @@ function NotificationBell({ user }) {
   if (!user) return null;
 
   return (
-    <Link to={user.role === 'admin' ? '/admin/notifications' : '/notifications'} style={{ position: 'relative', marginLeft: '1.5rem' }}>
+    <Link to={user.role === 'admin' ? '/admin/notifications' : '/notifications'} style={{ position: 'relative', marginLeft: '1.5rem' }} aria-label="Notifications">
       🔔
       {unreadCount > 0 && (
         <span style={{

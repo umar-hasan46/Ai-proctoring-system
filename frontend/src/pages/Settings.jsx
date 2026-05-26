@@ -185,7 +185,10 @@ function Settings({ user: propUser, onUpdate }) {
               {previewUrl ? (
                 <img
                   src={previewUrl}
-                  alt="Preview"
+                  alt="Profile Picture Preview"
+                  width="130"
+                  height="130"
+                  loading="lazy"
                   style={{ width: '130px', height: '130px', borderRadius: '50%', objectFit: 'cover', border: '5px solid #fff', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}
                 />
               ) : (

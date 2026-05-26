@@ -161,6 +161,7 @@ const AIChatbot = ({ user: propUser }) => {
     <div style={{ position: 'fixed', bottom: '25px', right: '25px', zIndex: 10000 }}>
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-label={isOpen ? "Close AI Assistant" : "Open AI Assistant"}
         style={{
           width: '65px',
           height: '65px',
@@ -211,7 +212,7 @@ const AIChatbot = ({ user: propUser }) => {
               <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>AI Interview Assistant</div>
               <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>Online | Smart AI</div>
             </div>
-            <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '20px' }}>✕</button>
+            <button onClick={() => setIsOpen(false)} aria-label="Close Chatbot" style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '20px' }}>✕</button>
           </div>
 
           {}
@@ -309,7 +310,7 @@ const AIChatbot = ({ user: propUser }) => {
                 fontSize: '0.95rem'
               }}
             />
-            <button type="submit" style={{
+            <button type="submit" aria-label="Send Message" style={{
               background: '#4f46e5',
               color: '#fff',
               border: 'none',

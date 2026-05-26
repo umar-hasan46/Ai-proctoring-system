@@ -136,7 +136,7 @@ function LiveProctoring() {
               <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr', gap: '20px', marginBottom: '20px' }}>
                 <div style={{ background: '#000', borderRadius: '10px', height: '150px', position: 'relative', overflow: 'hidden', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5)' }}>
                   {intv.camera_frame ? (
-                    <img src={intv.camera_frame} alt="Live" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={intv.camera_frame} alt="Live feed preview" width="200" height="150" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
                     <div style={{ color: '#fff', fontSize: '0.75rem', textAlign: 'center', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
                       <span style={{ fontSize: '1.5rem', marginBottom: '10px' }}>📷</span>

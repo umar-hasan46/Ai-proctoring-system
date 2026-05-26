@@ -101,7 +101,10 @@ function Profile({ user: propUser }) {
           <div style={{ display: 'inline-block', position: 'relative' }}>
             <img
               src={profile.profile_pic ? (profile.profile_pic.startsWith('http') ? profile.profile_pic : `${API_BASE_URL}${profile.profile_pic}`) : defaultAvatar}
-              alt="Profile"
+              alt="User Profile Picture"
+              width="180"
+              height="180"
+              loading="lazy"
               onError={(e) => { e.target.src = defaultAvatar; }}
               style={{ width: '180px', height: '180px', borderRadius: '50%', objectFit: 'cover', border: '8px solid #fff', boxShadow: '0 5px 15px rgba(0,0,0,0.1)', background: '#fff' }}
             />

@@ -28,6 +28,19 @@ services:
     envVars:
       - key: VITE_API_URL
         value: https://ai-proctoring-backend.onrender.com
+    headers:
+      - path: /assets/*
+        headers:
+          - key: Cache-Control
+            value: public, max-age=31536000, immutable
+      - path: /favicon.ico
+        headers:
+          - key: Cache-Control
+            value: public, max-age=31536000
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
 
 databases:
   - name: ai-proctoring-db

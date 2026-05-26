@@ -51,6 +51,9 @@ const Avatar = ({ name, email, profile_pic, size = 40 }) => {
         <img
           src={imageUrl}
           alt={name || 'Avatar'}
+          width={size}
+          height={size}
+          loading="lazy"
           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           onError={() => setImgError(true)}
         />

@@ -1,25 +1,29 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import Login from "./pages/Login";
-import Register from "./pages/Signup";
-import Dashboard from "./pages/UserDashboard";
+
+const Login = React.lazy(() => import("./pages/Login"));
+const Register = React.lazy(() => import("./pages/Signup"));
+const Dashboard = React.lazy(() => import("./pages/UserDashboard"));
 const ActiveInterview = React.lazy(() => import("./pages/ActiveInterview"));
 const Results = React.lazy(() => import("./pages/Results"));
-import Notifications from "./pages/Notifications";
-import Settings from "./pages/Settings";
+const Notifications = React.lazy(() => import("./pages/Notifications"));
+const Settings = React.lazy(() => import("./pages/Settings"));
 const AdminDashboard = React.lazy(() => import("./pages/AdminDashboard"));
-import LiveProctoring from "./pages/LiveProctoring";
-import Reports from "./pages/AllResults";
+const LiveProctoring = React.lazy(() => import("./pages/LiveProctoring"));
+const Reports = React.lazy(() => import("./pages/AllResults"));
 const StudentsDashboard = React.lazy(() => import("./pages/StudentsDashboard"));
-import AdminNotifications from "./pages/Notifications";
-import AdminSettings from "./pages/Settings";
+const RegisterInterview = React.lazy(() => import("./pages/RegisterInterview"));
+
+const AdminNotifications = Notifications;
+const AdminSettings = Settings;
+
 import Navbar from "./components/Navbar";
-import RegisterInterview from "./pages/RegisterInterview";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import AIChatbot from "./components/AIChatbot";
 import { api } from "./api/api";
 import API_BASE_URL from "./config/api";
+
 
 class ErrorBoundary extends React.Component {
   constructor(props) { super(props); this.state = { hasError: false, error: "" }; }
@@ -152,7 +156,7 @@ function App() {
             <span style={{ fontSize: '0.7rem', color: '#a0aec0' }}>{toast.created_at_ist}</span>
           </div>
           <p style={{ margin: 0, fontSize: '0.9rem', color: '#4a5568', lineHeight: '1.4' }}>{toast.message}</p>
-          <button onClick={() => setToast(null)} style={{ position: 'absolute', top: '8px', right: '8px', background: 'none', border: 'none', cursor: 'pointer', color: '#cbd5e0', fontSize: '14px' }}>✕</button>
+          <button onClick={() => setToast(null)} style={{ position: 'absolute', top: '8px', right: '8px', background: 'none', border: 'none', cursor: 'pointer', color: '#cbd5e0', fontSize: '14px' }} aria-label="Close Toast">✕</button>
         </div>
       )}
 
