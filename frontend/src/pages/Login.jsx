@@ -10,42 +10,14 @@ function Login({ onLogin }) {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [backendStatus, setBackendStatus] = useState("online");
   const navigate = useNavigate();
 
   useEffect(() => {
     setRole(location.pathname === "/admin-login" ? "admin" : "user");
   }, [location.pathname]);
 
-  useEffect(() => {
-    const checkBackend = async () => {
-      try {
-        const health = await api.checkHealth();
-        if (health.success) {
-          setBackendStatus("online");
-        } else {
-          setBackendStatus("offline");
-        }
-      } catch (err) {
-        setBackendStatus("offline");
-      }
-    };
-    const timer = setTimeout(checkBackend, 3000);
-    return () => clearTimeout(timer);
-  }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (backendStatus === "offline") {
-      setError("Backend connection failed. Please check Render backend service.");
-      return;
-    }
-
-    if (backendStatus === "checking") {
-      setError("Still checking backend status... Please wait a moment.");
-      return;
-    }
 
     setLoading(true);
     setError("");
@@ -154,9 +126,9 @@ function Login({ onLogin }) {
           type="submit"
           className="btn btn-primary"
           style={{ width: "100%", height: "45px", fontSize: "1rem" }}
-          disabled={loading || backendStatus === "checking"}
+          disabled={loading}
         >
-          {backendStatus === "checking" ? "Checking Server..." : (loading ? "Authenticating..." : "Login")}
+          {loading ? "Authenticating..." : "Login"}
         </button>
       </form>
 

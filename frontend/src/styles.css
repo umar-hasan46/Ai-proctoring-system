@@ -165,5 +165,19 @@ th {
   border: 1px solid #9ae6b4;
 }
 
+@media (max-width: 768px) {
+  .card {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    backdrop-filter: none;
+    filter: none;
+  }
+
+  * {
+    animation-duration: 0.15s !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.15s !important;
+  }
+}
+
 
 

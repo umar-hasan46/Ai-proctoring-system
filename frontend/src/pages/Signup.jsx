@@ -15,25 +15,7 @@ function Signup() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const [backendStatus, setBackendStatus] = useState("online");
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const checkBackend = async () => {
-      try {
-        const health = await api.checkHealth();
-        if (health.success) {
-          setBackendStatus("online");
-        } else {
-          setBackendStatus("offline");
-        }
-      } catch (err) {
-        setBackendStatus("offline");
-      }
-    };
-    const timer = setTimeout(checkBackend, 3000);
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -41,10 +23,6 @@ function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (backendStatus === "offline") {
-      setError("Backend connection failed. Please check Render backend service.");
-      return;
-    }
     setError('');
     setSuccess('');
 
@@ -190,7 +168,7 @@ function Signup() {
           type="submit"
           className="btn btn-primary"
           style={{ width: '100%', height: '45px', fontSize: '1rem', marginTop: '1rem' }}
-          disabled={loading || backendStatus === "checking" || !!success}
+          disabled={loading || !!success}
         >
           {loading ? 'Creating Account...' : 'Create Account'}
         </button>

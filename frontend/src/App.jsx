@@ -103,16 +103,7 @@ function App() {
   const [toast, setToast] = React.useState(null);
   const shownNotifIds = React.useRef(new Set());
 
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      api.checkHealth()
-        .then(res => console.log("Backend health check:", res))
-        .catch(err => {
-          console.error("Backend not connected. Please check Render backend service.", err);
-        });
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, []);
+
 
   React.useEffect(() => {
     let interval;
