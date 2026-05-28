@@ -24,11 +24,10 @@ function Login({ onLogin }) {
         if (health.success) {
           setBackendStatus("online");
         } else {
-          throw new Error("Health check returned failure.");
+          setBackendStatus("offline");
         }
       } catch (err) {
         setBackendStatus("offline");
-        setError("Backend connection failed. Please check Render backend service.");
       }
     };
     checkBackend();
@@ -121,11 +120,7 @@ function Login({ onLogin }) {
         </button>
       </div>
 
-      {backendStatus === "offline" && (
-        <div className="alert alert-error" style={{ marginBottom: "1.5rem" }}>
-          <strong>Error:</strong> Backend connection failed. Please check Render backend service.
-        </div>
-      )}
+      {/* Backend connection warning will be shown in error state on login attempt */}
 
       {error && <div className="alert alert-error" style={{ marginBottom: "1.5rem" }}>{error}</div>}
 

@@ -17,10 +17,10 @@ const RegisterInterview = React.lazy(() => import("./pages/RegisterInterview"));
 const AdminNotifications = Notifications;
 const AdminSettings = Settings;
 
-import Navbar from "./components/Navbar";
+const Navbar = React.lazy(() => import("./components/Navbar"));
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
-import AIChatbot from "./components/AIChatbot";
+const AIChatbot = React.lazy(() => import("./components/AIChatbot"));
 import { api } from "./api/api";
 import API_BASE_URL from "./config/api";
 
@@ -104,9 +104,8 @@ function App() {
   const shownNotifIds = React.useRef(new Set());
 
   React.useEffect(() => {
-    fetch(`${API_BASE_URL}/health`)
-      .then(res => res.json())
-      .then(data => console.log("Backend health check:", data))
+    api.checkHealth()
+      .then(res => console.log("Backend health check:", res))
       .catch(err => {
         console.error("Backend not connected. Please check Render backend service.", err);
       });
@@ -142,7 +141,9 @@ function App() {
 
   return (
     <>
-      {user && <Navbar user={user} onLogout={handleLogout} />}
+      <React.Suspense fallback={null}>
+        {user && <Navbar user={user} onLogout={handleLogout} />}
+      </React.Suspense>
 
       {toast && (
         <div className="toast-container" style={{
@@ -156,7 +157,7 @@ function App() {
             <span style={{ fontSize: '0.7rem', color: '#a0aec0' }}>{toast.created_at_ist}</span>
           </div>
           <p style={{ margin: 0, fontSize: '0.9rem', color: '#4a5568', lineHeight: '1.4' }}>{toast.message}</p>
-          <button onClick={() => setToast(null)} style={{ position: 'absolute', top: '8px', right: '8px', background: 'none', border: 'none', cursor: 'pointer', color: '#cbd5e0', fontSize: '14px' }} aria-label="Close Toast">✕</button>
+          <button onClick={() => setToast(null)} style={{ position: 'absolute', top: '8px', right: '8px', background: 'none', border: 'none', cursor: 'pointer', color: '#718096', fontSize: '14px' }} aria-label="Close Toast">✕</button>
         </div>
       )}
 
@@ -195,7 +196,9 @@ function App() {
           </Routes>
         </React.Suspense>
       </div>
-      <AIChatbot user={user} />
+      <React.Suspense fallback={null}>
+        {user && <AIChatbot user={user} />}
+      </React.Suspense>
     </>
   );
 }

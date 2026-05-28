@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/api';
 
-function NotificationBell({ user }) {
+const NotificationBell = React.memo(function NotificationBell({ user }) {
   const [unreadCount, setUnreadCount] = useState(0);
 
   const fetchCount = async () => {
@@ -22,7 +22,7 @@ function NotificationBell({ user }) {
 
   useEffect(() => {
     fetchCount();
-    const interval = setInterval(fetchCount, 3000);
+    const interval = setInterval(fetchCount, 10000);
     return () => clearInterval(interval);
   }, [user?.email, user?.role]);
 
@@ -47,6 +47,7 @@ function NotificationBell({ user }) {
       )}
     </Link>
   );
-}
+});
 
 export default NotificationBell;
+

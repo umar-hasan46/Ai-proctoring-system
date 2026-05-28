@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import NotificationBell from "./NotificationBell";
 import Avatar from "./Avatar";
 
-function Navbar({ user, onLogout }) {
+const Navbar = React.memo(function Navbar({ user, onLogout }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -101,6 +101,6 @@ function Navbar({ user, onLogout }) {
       </div>
     </nav>
   );
-}
+});
 
 export default Navbar;

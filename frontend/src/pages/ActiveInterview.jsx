@@ -1218,6 +1218,7 @@ const handlePrev = async () => {
               onClick={handleToggleMic}
               type="button"
               disabled={isTerminated || submitting}
+              aria-label={isMicEnabled ? "Turn Mic Off" : "Turn Mic On"}
               style={{
                 width: '68px',
                 height: '68px',

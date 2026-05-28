@@ -25,11 +25,10 @@ function Signup() {
         if (health.success) {
           setBackendStatus("online");
         } else {
-          throw new Error("Offline");
+          setBackendStatus("offline");
         }
       } catch (err) {
         setBackendStatus("offline");
-        setError("Backend connection failed. Please check Render backend service.");
       }
     };
     checkBackend();
