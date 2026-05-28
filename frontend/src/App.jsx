@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
-const Login = React.lazy(() => import("./pages/Login"));
+import Login from "./pages/Login";
 const Register = React.lazy(() => import("./pages/Signup"));
 const Dashboard = React.lazy(() => import("./pages/UserDashboard"));
 const ActiveInterview = React.lazy(() => import("./pages/ActiveInterview"));
@@ -104,11 +104,14 @@ function App() {
   const shownNotifIds = React.useRef(new Set());
 
   React.useEffect(() => {
-    api.checkHealth()
-      .then(res => console.log("Backend health check:", res))
-      .catch(err => {
-        console.error("Backend not connected. Please check Render backend service.", err);
-      });
+    const timer = setTimeout(() => {
+      api.checkHealth()
+        .then(res => console.log("Backend health check:", res))
+        .catch(err => {
+          console.error("Backend not connected. Please check Render backend service.", err);
+        });
+    }, 3000);
+    return () => clearTimeout(timer);
   }, []);
 
   React.useEffect(() => {

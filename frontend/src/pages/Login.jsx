@@ -10,7 +10,7 @@ function Login({ onLogin }) {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [backendStatus, setBackendStatus] = useState("checking");
+  const [backendStatus, setBackendStatus] = useState("online");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,7 +30,8 @@ function Login({ onLogin }) {
         setBackendStatus("offline");
       }
     };
-    checkBackend();
+    const timer = setTimeout(checkBackend, 3000);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleSubmit = async (e) => {

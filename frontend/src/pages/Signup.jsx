@@ -15,7 +15,7 @@ function Signup() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const [backendStatus, setBackendStatus] = useState("checking");
+  const [backendStatus, setBackendStatus] = useState("online");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,7 +31,8 @@ function Signup() {
         setBackendStatus("offline");
       }
     };
-    checkBackend();
+    const timer = setTimeout(checkBackend, 3000);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleChange = (e) => {
