@@ -71,8 +71,8 @@ function Login({ onLogin }) {
   };
 
   return (
-    <div style={{ maxWidth: "450px", margin: "100px auto" }} className="card">
-      <h1 style={{ textAlign: "center", color: "#1e3a5f", marginBottom: "1.5rem" }}>
+    <div style={{ maxWidth: "450px", margin: "100px auto" }} className="card login-card login-container">
+      <h1 style={{ textAlign: "center", color: "#1e3a5f", marginBottom: "1.5rem" }} className="login-title">
         AI Proctoring System
       </h1>
 

@@ -70,8 +70,8 @@ function Signup() {
   };
 
   return (
-    <div style={{ maxWidth: '450px', margin: '50px auto' }} className="card">
-      <h2 style={{ textAlign: 'center', color: '#1e3a5f', marginBottom: '1.5rem' }}>Create Account</h2>
+    <div style={{ maxWidth: '450px', margin: '50px auto' }} className="card login-card login-container">
+      <h2 style={{ textAlign: 'center', color: '#1e3a5f', marginBottom: '1.5rem' }} className="login-title">Create Account</h2>
 
       {error && <div className="alert alert-error" style={{ marginBottom: '1.5rem' }}>{error}</div>}
       {success && <div className="alert alert-success" style={{ marginBottom: '1.5rem', background: '#dcfce7', color: '#166534', padding: '15px', borderRadius: '8px' }}>{success}</div>}

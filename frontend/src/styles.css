@@ -166,16 +166,21 @@ th {
 }
 
 @media (max-width: 768px) {
-  .card {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    backdrop-filter: none;
-    filter: none;
+  .card, .login-card {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+    backdrop-filter: none !important;
+    filter: none !important;
   }
 
+  .login-container,
+  .login-card,
+  .login-title,
   * {
-    animation-duration: 0.15s !important;
+    animation: none !important;
+    transition: none !important;
+    animation-duration: 0s !important;
     animation-delay: 0s !important;
-    transition-duration: 0.15s !important;
+    transition-duration: 0s !important;
   }
 }
 

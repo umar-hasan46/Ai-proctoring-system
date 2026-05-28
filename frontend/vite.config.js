@@ -18,7 +18,13 @@ export default defineConfig({
       compress: {
         drop_console: true,
         drop_debugger: true,
-        passes: 2
+        passes: 3,
+        pure_funcs: [
+          "console.log",
+          "console.info",
+          "console.debug",
+          "console.warn"
+        ]
       },
       format: {
         comments: false
@@ -29,9 +35,11 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes("node_modules")) {
             if (id.includes("react-router-dom")) return "router";
+            if (id.includes("react") || id.includes("react-dom")) return "react-vendor";
             if (id.includes("recharts") || id.includes("chart.js")) return "charts";
             if (id.includes("jspdf") || id.includes("html2canvas")) return "pdf";
-            if (id.includes("react") || id.includes("react-dom")) return "react-vendor";
+            if (id.includes("framer-motion")) return "animations";
+            if (id.includes("face-api") || id.includes("tensorflow")) return "proctoring";
             return "vendor";
           }
         }
