@@ -595,7 +595,7 @@ function Results({ user: propUser }) {
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #f1f5f9', paddingBottom: '16px', flexWrap: 'wrap', gap: '15px' }}>
           <div>
-            <h1 style={{ color: '#1e3a5f', margin: 0, fontSize: '1.8rem' }}>Interview Performance Analysis</h1>
+            <h1 style={{ color: 'var(--text-primary)', margin: 0, fontSize: '1.8rem' }}>Interview Performance Analysis</h1>
             <div style={{ display: 'flex', gap: '15px', marginTop: '5px', fontSize: '0.9rem', color: '#64748b', flexWrap: 'wrap' }}>
               <span><strong>Candidate:</strong> {d.candidate?.name}</span>
               <span>|</span>
@@ -625,8 +625,8 @@ function Results({ user: propUser }) {
         </div>
 
         {attempts.length > 1 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '20px', background: '#f8fafc', padding: '12px 18px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-            <span style={{ fontWeight: 'bold', color: '#1e3a5f', fontSize: '0.9rem' }}>Select Attempt:</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '20px', background: 'var(--bg-primary)', padding: '12px 18px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+            <span style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '0.9rem' }}>Select Attempt:</span>
             <select
               value={selectedAttemptId || ''}
               onChange={(e) => {
@@ -634,7 +634,7 @@ function Results({ user: propUser }) {
                 setSelectedAttemptId(val);
                 fetchData(true, val);
               }}
-              style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e0', fontSize: '0.85rem', color: '#2d3748', background: '#fff', cursor: 'pointer' }}
+              style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '0.85rem', color: 'var(--text-primary)', background: '#fff', cursor: 'pointer' }}
             >
               {attempts.map((att) => (
                 <option key={att.id} value={att.id}>
@@ -645,7 +645,7 @@ function Results({ user: propUser }) {
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '15px', background: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0', marginTop: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '15px', background: 'var(--bg-primary)', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0', marginTop: '20px' }}>
                     <div>
             <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>Status</span>
             <div style={{ fontSize: '1.1rem', fontWeight: '700', marginTop: '2px', color: d.interview?.status === 'Terminated' ? '#e53e3e' : '#38a169' }}>
@@ -655,7 +655,7 @@ function Results({ user: propUser }) {
           </div>
           <div>
             <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>Interview ID</span>
-            <div style={{ fontSize: '1.1rem', fontWeight: '700', marginTop: '2px', color: '#1e3a5f' }}>{d.interview?.id || 'N/A'}</div>
+            <div style={{ fontSize: '1.1rem', fontWeight: '700', marginTop: '2px', color: 'var(--text-primary)' }}>{d.interview?.id || 'N/A'}</div>
           </div>
           <div>
             <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>Rating Score</span>
@@ -827,12 +827,12 @@ function Results({ user: propUser }) {
                 <>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     <div style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                      <h3 style={{ margin: '0 0 10px', color: '#1e3a5f', fontSize: '1.05rem', fontWeight: 'bold' }}>Resume Summary</h3>
+                      <h3 style={{ margin: '0 0 10px', color: 'var(--text-primary)', fontSize: '1.05rem', fontWeight: 'bold' }}>Resume Summary</h3>
                       <p style={{ margin: 0, color: '#475569', fontSize: '0.9rem', lineHeight: '1.6' }}>{d.resume.summary_paragraph || 'No summary available.'}</p>
                     </div>
                     
                     <div style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                      <h3 style={{ margin: '0 0 12px', color: '#1e3a5f', fontSize: '1.05rem', fontWeight: 'bold' }}>Skill Matrix</h3>
+                      <h3 style={{ margin: '0 0 12px', color: 'var(--text-primary)', fontSize: '1.05rem', fontWeight: 'bold' }}>Skill Matrix</h3>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                         {(d.resume.skills || []).map((skill, sIdx) => (
                           <span key={sIdx} style={{ background: '#e0f2fe', color: '#0369a1', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: '600' }}>{skill}</span>
@@ -842,7 +842,7 @@ function Results({ user: propUser }) {
                     </div>
 
                     <div style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                      <h3 style={{ margin: '0 0 12px', color: '#1e3a5f', fontSize: '1.05rem', fontWeight: 'bold' }}>Strengths & Opportunities</h3>
+                      <h3 style={{ margin: '0 0 12px', color: 'var(--text-primary)', fontSize: '1.05rem', fontWeight: 'bold' }}>Strengths & Opportunities</h3>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         <div>
                           <strong style={{ fontSize: '0.85rem', color: '#166534' }}>Strengths:</strong>
@@ -862,7 +862,7 @@ function Results({ user: propUser }) {
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     <div style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                      <h3 style={{ margin: '0 0 16px', color: '#1e3a5f', fontSize: '1.05rem', fontWeight: 'bold' }}>ATS Resume Scoring Matrix</h3>
+                      <h3 style={{ margin: '0 0 16px', color: 'var(--text-primary)', fontSize: '1.05rem', fontWeight: 'bold' }}>ATS Resume Scoring Matrix</h3>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                         {[
                           { label: 'ATS Score', val: d.resume.ats_score || 0, col: '#4f46e5' },
@@ -872,7 +872,7 @@ function Results({ user: propUser }) {
                           { label: 'Skills Weight', val: d.resume.skills_score || 0, col: '#e11d48' },
                           { label: 'Education Match', val: d.resume.education_score || 0, col: '#d97706' }
                         ].map((score, sIdx) => (
-                          <div key={sIdx} style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
+                          <div key={sIdx} style={{ background: 'var(--bg-primary)', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
                             <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '600' }}>{score.label}</div>
                             <div style={{ fontSize: '1.4rem', fontWeight: 'bold', color: score.col, margin: '4px 0' }}>{score.val}/100</div>
                             <div style={{ height: '6px', background: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
@@ -884,7 +884,7 @@ function Results({ user: propUser }) {
                     </div>
 
                     <div style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                      <h3 style={{ margin: '0 0 12px', color: '#1e3a5f', fontSize: '1.05rem', fontWeight: 'bold' }}>Skills Gap Analysis</h3>
+                      <h3 style={{ margin: '0 0 12px', color: 'var(--text-primary)', fontSize: '1.05rem', fontWeight: 'bold' }}>Skills Gap Analysis</h3>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                         <div style={{ background: '#f0fdf4', padding: '12px', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
                           <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#166534' }}>Matched Role Skills:</span>
@@ -909,8 +909,8 @@ function Results({ user: propUser }) {
                     </div>
 
                     {d.combined_analysis && (
-                      <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '10px', border: '1px solid #cbd5e1' }}>
-                        <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#1e3a5f', display: 'block', marginBottom: '4px' }}>Combined Resume + Assessment Recommendation:</span>
+                      <div style={{ background: 'var(--bg-primary)', padding: '16px', borderRadius: '10px', border: '1px solid #cbd5e1' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-primary)', display: 'block', marginBottom: '4px' }}>Combined Resume + Assessment Recommendation:</span>
                         <p style={{ margin: 0, fontSize: '0.85rem', color: '#475569', lineHeight: '1.5' }}>{d.combined_analysis.summary}</p>
                         <span style={{ display: 'block', fontSize: '0.8rem', fontWeight: '700', color: '#0f766e', marginTop: '8px' }}>Action: {d.combined_analysis.recommendation}</span>
                       </div>
@@ -955,7 +955,7 @@ function Results({ user: propUser }) {
           )}
 
           {modalTab === 'chat' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: 'var(--bg-primary)', padding: '20px', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
               {(d.chat || []).map((msg, idx) => (
                 <div key={idx} style={{
                   display: 'flex',
@@ -966,7 +966,7 @@ function Results({ user: propUser }) {
                     maxWidth: '75%',
                     padding: '12px 16px',
                     borderRadius: msg.role === 'ai' ? '12px 12px 12px 0px' : '12px 12px 0px 12px',
-                    background: msg.role === 'ai' ? '#ffffff' : '#1e3a5f',
+                    background: msg.role === 'ai' ? '#ffffff' : 'var(--text-primary)',
                     color: msg.role === 'ai' ? '#1e293b' : '#ffffff',
                     border: msg.role === 'ai' ? '1px solid #cbd5e1' : 'none',
                     boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
@@ -992,13 +992,13 @@ function Results({ user: propUser }) {
 
           {modalTab === 'technical' && (
             <div style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-              <h3 style={{ margin: '0 0 15px', color: '#1e3a5f', fontSize: '1.1rem', fontWeight: 'bold' }}>Detailed Questions & Answers</h3>
+              <h3 style={{ margin: '0 0 15px', color: 'var(--text-primary)', fontSize: '1.1rem', fontWeight: 'bold' }}>Detailed Questions & Answers</h3>
               {(!d.questions || d.questions.length === 0) ? (
                 <div style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>No question evaluations available.</div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   {d.questions.map((q, i) => (
-                    <div key={i} style={{ padding: '15px', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                    <div key={i} style={{ padding: '15px', background: 'var(--bg-primary)', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
                         <div style={{ fontWeight: 'bold', color: '#1e3a8a', fontSize: '1.05rem', flex: 1 }}>Q{q.question_number}: {q.question_text}</div>
                         <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold' }}>{q.skill_tag || 'Technical'}</span>
@@ -1044,13 +1044,13 @@ function Results({ user: propUser }) {
 
           {modalTab === 'ignored' && (
             <div style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-              <h3 style={{ margin: '0 0 15px', color: '#1e3a5f', fontSize: '1.1rem', fontWeight: 'bold' }}>Ignored Prompts & Skipped Questions</h3>
+              <h3 style={{ margin: '0 0 15px', color: 'var(--text-primary)', fontSize: '1.1rem', fontWeight: 'bold' }}>Ignored Prompts & Skipped Questions</h3>
               {(!d.questions || d.questions.filter(q => !q.answer_text || q.answer_text.trim().length < 5).length === 0) ? (
                 <div style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>No ignored prompts found. Candidate answered all questions adequately.</div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                   {d.questions.filter(q => !q.answer_text || q.answer_text.trim().length < 5).map((q, i) => (
-                    <div key={i} style={{ padding: '15px', background: '#f8fafc', borderRadius: '8px', borderLeft: '4px solid #94a3b8' }}>
+                    <div key={i} style={{ padding: '15px', background: 'var(--bg-primary)', borderRadius: '8px', borderLeft: '4px solid #94a3b8' }}>
                       <div style={{ fontWeight: 'bold', color: '#475569', marginBottom: '6px' }}>Question {q.question_number}: {q.question_text}</div>
                       <div style={{ color: '#ef4444', fontSize: '0.9rem' }}>Status: {(!q.answer_text || q.answer_text.trim() === '') ? 'Skipped completely' : 'Answer too short to evaluate'}</div>
                     </div>
@@ -1064,7 +1064,7 @@ function Results({ user: propUser }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                 <div style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #cbd5e1' }}>
-                  <h3 style={{ margin: '0 0 16px', color: '#1e3a5f', fontSize: '1.05rem', fontWeight: 'bold' }}>Proctoring Violations Log</h3>
+                  <h3 style={{ margin: '0 0 16px', color: 'var(--text-primary)', fontSize: '1.05rem', fontWeight: 'bold' }}>Proctoring Violations Log</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     {[
                       { label: 'Camera Off Alerts', count: d.violations?.camera_off || 0 },
@@ -1082,7 +1082,7 @@ function Results({ user: propUser }) {
                 </div>
 
                 <div style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                  <h3 style={{ margin: '0', color: '#1e3a5f', fontSize: '1.05rem', fontWeight: 'bold' }}>Integrity Assessment</h3>
+                  <h3 style={{ margin: '0', color: 'var(--text-primary)', fontSize: '1.05rem', fontWeight: 'bold' }}>Integrity Assessment</h3>
                   <div style={{ background: (d.interview?.warning_count || 0) >= 3 ? '#fef2f2' : '#f0fdf4', padding: '16px', borderRadius: '8px', border: (d.interview?.warning_count || 0) >= 3 ? '1px solid #fee2e2' : '1px solid #dcfce7', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
                     <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>{(d.interview?.warning_count || 0) >= 3 ? '⚠️' : '✅'}</div>
                     <div style={{ fontWeight: 'bold', color: (d.interview?.warning_count || 0) >= 3 ? '#991b1b' : '#15803d', fontSize: '1rem' }}>
@@ -1096,11 +1096,11 @@ function Results({ user: propUser }) {
               </div>
 
               <div className="card" style={{ background: '#fff', padding: '20px', border: '1px solid #cbd5e1', borderRadius: '10px' }}>
-                <h4 style={{ margin: '0 0 15px', color: '#1e3a5f', fontSize: '1.05rem', fontWeight: 'bold' }}>Proctoring Activity Event Log</h4>
+                <h4 style={{ margin: '0 0 15px', color: 'var(--text-primary)', fontSize: '1.05rem', fontWeight: 'bold' }}>Proctoring Activity Event Log</h4>
                 <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {d.logs && d.logs.length > 0 ? (
                     d.logs.map((log, idx) => (
-                      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: '#f8fafc', borderRadius: '6px', fontSize: '0.85rem', borderLeft: '3px solid #cbd5e1', borderColor: log.message.toLowerCase().includes('terminate') ? '#ef4444' : log.message.toLowerCase().includes('warning') ? '#f59e0b' : '#3b82f6' }}>
+                      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: 'var(--bg-primary)', borderRadius: '6px', fontSize: '0.85rem', borderLeft: '3px solid #cbd5e1', borderColor: log.message.toLowerCase().includes('terminate') ? '#ef4444' : log.message.toLowerCase().includes('warning') ? '#f59e0b' : '#3b82f6' }}>
                         <span style={{ fontWeight: '500', color: '#334155' }}>{log.message}</span>
                         <span style={{ color: '#64748b', fontSize: '0.75rem' }}>{log.created_at_ist || log.created_at}</span>
                       </div>
@@ -1115,7 +1115,7 @@ function Results({ user: propUser }) {
         </div>
 
         <div style={{ marginTop: '40px', borderTop: '2px solid #e2e8f0', paddingTop: '30px' }}>
-          <h2 style={{ color: '#1e3a5f', fontSize: '1.4rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h2 style={{ color: 'var(--text-primary)', fontSize: '1.4rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             📝 Detailed Questions & Answers
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -1126,26 +1126,26 @@ function Results({ user: propUser }) {
               const feedback = q.ai_feedback || q.feedback || d.evaluations?.find(e => e.questionId === q.id || e.questionNumber === qNum)?.feedback || "Evaluation pending";
               const score = q.content_score || q.score || d.evaluations?.find(e => e.questionId === q.id || e.questionNumber === qNum)?.score || "N/A";
               return (
-              <div key={idx} style={{ padding: '20px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+              <div key={idx} style={{ padding: '20px', background: 'var(--bg-primary)', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' }}>
                   <div>
-                    <span style={{ fontWeight: 'bold', color: '#1e3a5f', fontSize: '1.05rem' }}>Question {qNum}: {qText}</span>
+                    <span style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '1.05rem' }}>Question {qNum}: {qText}</span>
                     <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-                      <span style={{ background: '#e2e8f0', color: '#4a5568', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600' }}>Difficulty: {q.difficulty || 'Medium'}</span>
+                      <span style={{ background: '#e2e8f0', color: 'var(--text-secondary)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600' }}>Difficulty: {q.difficulty || 'Medium'}</span>
                       <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600' }}>Skill: {q.skill || q.category || 'General'}</span>
                     </div>
                   </div>
                   <span style={{
                     padding: '6px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold',
-                    background: (q.candidate_answer || q.answer_text || '').toLowerCase() === 'skipped' ? '#edf2f7' : '#dcfce7',
-                    color: (q.candidate_answer || q.answer_text || '').toLowerCase() === 'skipped' ? '#4a5568' : '#15803d'
+                    background: (q.candidate_answer || q.answer_text || '').toLowerCase() === 'skipped' ? 'var(--border-color)' : '#dcfce7',
+                    color: (q.candidate_answer || q.answer_text || '').toLowerCase() === 'skipped' ? 'var(--text-secondary)' : '#15803d'
                   }}>
                     {cAns.toLowerCase() === 'skipped' ? 'Skipped' : 'Answered'}
                   </span>
                 </div>
                 <div style={{ background: '#fff', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '10px', fontSize: '0.9rem' }}>
-                  <strong style={{ color: '#4a5568', display: 'block', marginBottom: '4px' }}>Candidate Answer:</strong>
-                  <span style={{ color: '#2d3748', lineHeight: '1.5' }}>{cAns}</span>
+                  <strong style={{ color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Candidate Answer:</strong>
+                  <span style={{ color: 'var(--text-primary)', lineHeight: '1.5' }}>{cAns}</span>
                 </div>
                 {q.ai_feedback || q.feedback ? (
                   <div style={{ background: '#f0fdf4', padding: '12px 16px', borderRadius: '8px', border: '1px solid #bbf7d0', fontSize: '0.9rem' }}>
@@ -1157,7 +1157,7 @@ function Results({ user: propUser }) {
             );
           })}
             {(!d.scored_technical || d.scored_technical.length === 0) && (!d.questions || d.questions.length === 0) && (
-              <div style={{ textAlign: 'center', padding: '30px', color: '#718096' }}>No question evaluations available.</div>
+              <div style={{ textAlign: 'center', padding: '30px', color: 'var(--text-secondary)' }}>No question evaluations available.</div>
             )}
           </div>
         </div>

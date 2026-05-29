@@ -29,7 +29,7 @@ function DrillDownCharts({ data, onDrillDown }) {
       <defs>
         <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#4299e1" />
-          <stop offset="100%" stopColor="#1e3a5f" />
+          <stop offset="100%" stopColor="var(--text-primary)" />
         </linearGradient>
         <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#48bb78" />
@@ -76,9 +76,9 @@ function DrillDownCharts({ data, onDrillDown }) {
 
     return (
       <div className="card" style={{ position: 'relative', margin: 0, padding: '1.5rem', background: '#fff', borderRadius: '12px' }}>
-        <h4 style={{ color: '#2d3748', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h4 style={{ color: 'var(--text-primary)', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>Month-wise Interviews</span>
-          <span style={{ fontSize: '0.75rem', color: '#718096' }}>(Click bars to filter)</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>(Click bars to filter)</span>
         </h4>
         <div style={{ position: 'relative' }}>
           <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
@@ -119,7 +119,7 @@ function DrillDownCharts({ data, onDrillDown }) {
                     x={x + barWidth / 2}
                     y={height - padding + 15}
                     textAnchor="middle"
-                    fill="#718096"
+                    fill="var(--text-secondary)"
                     fontSize="10"
                     fontWeight="600"
                   >
@@ -168,9 +168,9 @@ function DrillDownCharts({ data, onDrillDown }) {
 
     return (
       <div className="card" style={{ position: 'relative', margin: 0, padding: '1.5rem', background: '#fff', borderRadius: '12px' }}>
-        <h4 style={{ color: '#2d3748', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h4 style={{ color: 'var(--text-primary)', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>Candidate Status Ratio</span>
-          <span style={{ fontSize: '0.75rem', color: '#718096' }}>(Click segments to filter)</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>(Click segments to filter)</span>
         </h4>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px', position: 'relative', flexWrap: 'wrap' }}>
           <div style={{ position: 'relative', width: `${size}px`, height: `${size}px`, flexShrink: 0 }}>
@@ -213,8 +213,8 @@ function DrillDownCharts({ data, onDrillDown }) {
               textAlign: 'center',
               pointerEvents: 'none'
             }}>
-              <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#2d3748' }}>{total}</div>
-              <div style={{ fontSize: '0.65rem', color: '#718096', textTransform: 'uppercase' }}>Evaluations</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{total}</div>
+              <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Evaluations</div>
             </div>
           </div>
 
@@ -233,14 +233,14 @@ function DrillDownCharts({ data, onDrillDown }) {
                   borderRadius: '4px',
                   transition: 'background 0.2s'
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.background = '#f7fafc'}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-primary)'}
                 onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
               >
                 <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: s.color, flexShrink: 0 }}></div>
-                <div style={{ flex: 1, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', color: '#4a5568', fontWeight: '500' }}>
+                <div style={{ flex: 1, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', color: 'var(--text-secondary)', fontWeight: '500' }}>
                   {s.label}
                 </div>
-                <div style={{ fontWeight: 'bold', color: '#2d3748' }}>{s.count}</div>
+                <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{s.count}</div>
               </div>
             ))}
           </div>
@@ -286,9 +286,9 @@ function DrillDownCharts({ data, onDrillDown }) {
 
     return (
       <div className="card" style={{ position: 'relative', margin: 0, padding: '1.5rem', background: '#fff', borderRadius: '12px' }}>
-        <h4 style={{ color: '#2d3748', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h4 style={{ color: 'var(--text-primary)', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>Role-wise Candidates</span>
-          <span style={{ fontSize: '0.75rem', color: '#718096' }}>(Click roles to filter)</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>(Click roles to filter)</span>
         </h4>
         <div style={{ position: 'relative' }}>
           <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
@@ -303,7 +303,7 @@ function DrillDownCharts({ data, onDrillDown }) {
                   <text
                     x={5}
                     y={y + barHeight / 2 + 4}
-                    fill="#4a5568"
+                    fill="var(--text-secondary)"
                     fontSize="9.5"
                     fontWeight="600"
                   >
@@ -323,7 +323,7 @@ function DrillDownCharts({ data, onDrillDown }) {
                   <text
                     x={85 + Math.max(barWidth, 4) + 6}
                     y={y + barHeight / 2 + 4}
-                    fill="#718096"
+                    fill="var(--text-secondary)"
                     fontSize="9.5"
                     fontWeight="bold"
                   >
@@ -375,9 +375,9 @@ function DrillDownCharts({ data, onDrillDown }) {
 
     return (
       <div className="card" style={{ position: 'relative', margin: 0, padding: '1.5rem', background: '#fff', borderRadius: '12px' }}>
-        <h4 style={{ color: '#2d3748', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h4 style={{ color: 'var(--text-primary)', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>Score Distribution</span>
-          <span style={{ fontSize: '0.75rem', color: '#718096' }}>(Click score brackets)</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>(Click score brackets)</span>
         </h4>
         <div style={{ position: 'relative' }}>
           <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
@@ -416,7 +416,7 @@ function DrillDownCharts({ data, onDrillDown }) {
                     x={x + barWidth / 2}
                     y={height - padding + 15}
                     textAnchor="middle"
-                    fill="#718096"
+                    fill="var(--text-secondary)"
                     fontSize="9.5"
                     fontWeight="600"
                   >
@@ -465,9 +465,9 @@ function DrillDownCharts({ data, onDrillDown }) {
 
     return (
       <div className="card" style={{ position: 'relative', margin: 0, padding: '1.5rem', background: '#fff', borderRadius: '12px' }}>
-        <h4 style={{ color: '#2d3748', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h4 style={{ color: 'var(--text-primary)', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>Confidence Profile</span>
-          <span style={{ fontSize: '0.75rem', color: '#718096' }}>(Click segments to filter)</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>(Click segments to filter)</span>
         </h4>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px', position: 'relative', flexWrap: 'wrap' }}>
           <div style={{ position: 'relative', width: `${size}px`, height: `${size}px`, flexShrink: 0 }}>
@@ -509,8 +509,8 @@ function DrillDownCharts({ data, onDrillDown }) {
               textAlign: 'center',
               pointerEvents: 'none'
             }}>
-              <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#2d3748' }}>{total}</div>
-              <div style={{ fontSize: '0.65rem', color: '#718096', textTransform: 'uppercase' }}>Evaluated</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{total}</div>
+              <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Evaluated</div>
             </div>
           </div>
 
@@ -529,14 +529,14 @@ function DrillDownCharts({ data, onDrillDown }) {
                   borderRadius: '4px',
                   transition: 'background 0.2s'
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.background = '#f7fafc'}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-primary)'}
                 onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
               >
                 <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: l.color, flexShrink: 0 }}></div>
-                <div style={{ flex: 1, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', color: '#4a5568', fontWeight: '500' }}>
+                <div style={{ flex: 1, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden', color: 'var(--text-secondary)', fontWeight: '500' }}>
                   {l.label}
                 </div>
-                <div style={{ fontWeight: 'bold', color: '#2d3748' }}>{l.count}</div>
+                <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{l.count}</div>
               </div>
             ))}
           </div>
@@ -591,9 +591,9 @@ function DrillDownCharts({ data, onDrillDown }) {
 
     return (
       <div className="card" style={{ position: 'relative', margin: 0, padding: '1.5rem', background: '#fff', borderRadius: '12px' }}>
-        <h4 style={{ color: '#2d3748', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h4 style={{ color: 'var(--text-primary)', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>Daily Evaluation Trend</span>
-          <span style={{ fontSize: '0.75rem', color: '#718096' }}>(Click nodes to drill-down)</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>(Click nodes to drill-down)</span>
         </h4>
         <div style={{ position: 'relative' }}>
           <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
@@ -638,7 +638,7 @@ function DrillDownCharts({ data, onDrillDown }) {
                     x={p.x}
                     y={height - padding + 15}
                     textAnchor="middle"
-                    fill="#718096"
+                    fill="var(--text-secondary)"
                     fontSize="8.5"
                     fontWeight="600"
                   >

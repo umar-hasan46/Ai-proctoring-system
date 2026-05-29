@@ -28,7 +28,7 @@ function AnalyticsSummaryCards({ stats }) {
       }}
     >
       <div>
-        <h4 style={{ color: '#718096', fontSize: '0.8rem', fontWeight: '600', textTransform: 'uppercase', tracking: '0.05em', marginBottom: '0.25rem' }}>
+        <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: '600', textTransform: 'uppercase', tracking: '0.05em', marginBottom: '0.25rem' }}>
           {title}
         </h4>
         <h2 style={{ color: '#1a202c', fontSize: '1.8rem', fontWeight: '700', margin: '0.25rem 0' }}>
@@ -50,7 +50,7 @@ function AnalyticsSummaryCards({ stats }) {
       gap: '1.25rem',
       marginBottom: '2rem'
     }}>
-      <Card title="Total Interviews" value={stats.totalInterviews} color="#1e3a5f" description="All registered sessions" />
+      <Card title="Total Interviews" value={stats.totalInterviews} color="var(--text-primary)" description="All registered sessions" />
       <Card title="Candidates Evaluated" value={stats.totalCandidates} color="#4299e1" description="Unique students" />
       <Card title="Total Selected" value={stats.totalSelected} color="#38a169" description="Status: Shortlisted" />
       <Card title="Total Rejected" value={stats.totalRejected} color="#e53e3e" description="Status: Not Shortlisted" />

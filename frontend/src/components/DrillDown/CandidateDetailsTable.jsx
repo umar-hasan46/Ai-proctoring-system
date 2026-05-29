@@ -129,8 +129,8 @@ function CandidateDetailsTable({ candidates, onViewDetails }) {
           <circle cx="12" cy="12" r="10" />
           <line x1="8" y1="12" x2="16" y2="12" />
         </svg>
-        <h4 style={{ color: '#4a5568', marginBottom: '0.5rem' }}>No Candidate Records Found</h4>
-        <p style={{ color: '#718096', fontSize: '0.9rem' }}>Try relaxing your search terms or active chart filters.</p>
+        <h4 style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>No Candidate Records Found</h4>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Try relaxing your search terms or active chart filters.</p>
       </div>
     );
   }
@@ -138,7 +138,7 @@ function CandidateDetailsTable({ candidates, onViewDetails }) {
   return (
     <div className="card" style={{ padding: '1.5rem', background: '#fff', borderRadius: '12px', overflow: 'hidden' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-        <h3 style={{ fontSize: '1.1rem', color: '#2d3748' }}>
+        <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)' }}>
           Showing {candidates.length} Candidate Evaluation Record{candidates.length !== 1 ? 's' : ''}
         </h3>
       </div>
@@ -147,15 +147,15 @@ function CandidateDetailsTable({ candidates, onViewDetails }) {
         <table style={{ width: '100%', minWidth: '1000px', borderCollapse: 'collapse', marginTop: 0 }}>
           <thead>
             <tr>
-              <th style={{ padding: '0.85rem 1.5rem', background: '#f7fafc', fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0' }}>Candidate Info</th>
-              <th style={{ padding: '0.85rem 1rem', background: '#f7fafc', fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0' }}>Applied Role</th>
-              <th style={{ padding: '0.85rem 1rem', background: '#f7fafc', fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0' }}>Date</th>
-              <th style={{ padding: '0.85rem 1rem', background: '#f7fafc', fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>Resume Score</th>
-              <th style={{ padding: '0.85rem 1rem', background: '#f7fafc', fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>Interview Score</th>
-              <th style={{ padding: '0.85rem 1rem', background: '#f7fafc', fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>Confidence</th>
-              <th style={{ padding: '0.85rem 1rem', background: '#f7fafc', fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>AI Proctor Status</th>
-              <th style={{ padding: '0.85rem 1rem', background: '#f7fafc', fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>Hiring Status</th>
-              <th style={{ padding: '0.85rem 1.5rem', background: '#f7fafc', fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>Actions</th>
+              <th style={{ padding: '0.85rem 1.5rem', background: 'var(--bg-primary)', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0' }}>Candidate Info</th>
+              <th style={{ padding: '0.85rem 1rem', background: 'var(--bg-primary)', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0' }}>Applied Role</th>
+              <th style={{ padding: '0.85rem 1rem', background: 'var(--bg-primary)', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0' }}>Date</th>
+              <th style={{ padding: '0.85rem 1rem', background: 'var(--bg-primary)', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>Resume Score</th>
+              <th style={{ padding: '0.85rem 1rem', background: 'var(--bg-primary)', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>Interview Score</th>
+              <th style={{ padding: '0.85rem 1rem', background: 'var(--bg-primary)', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>Confidence</th>
+              <th style={{ padding: '0.85rem 1rem', background: 'var(--bg-primary)', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>AI Proctor Status</th>
+              <th style={{ padding: '0.85rem 1rem', background: 'var(--bg-primary)', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>Hiring Status</th>
+              <th style={{ padding: '0.85rem 1.5rem', background: 'var(--bg-primary)', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0', textAlign: 'center' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -168,11 +168,11 @@ function CandidateDetailsTable({ candidates, onViewDetails }) {
                 <tr
                   key={idx}
                   style={{
-                    borderBottom: '1px solid #edf2f7',
+                    borderBottom: '1px solid var(--border-color)',
                     background: idx % 2 === 0 ? '#fff' : '#fcfdfd',
                     transition: 'background 0.2s'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#f7fafc'}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-primary)'}
                   onMouseLeave={(e) => e.currentTarget.style.background = idx % 2 === 0 ? '#fff' : '#fcfdfd'}
                 >
                   <td style={{ padding: '1rem 1.5rem' }}>
@@ -180,7 +180,7 @@ function CandidateDetailsTable({ candidates, onViewDetails }) {
                       <span style={{ fontWeight: '700', color: '#1a202c', fontSize: '0.9rem' }}>
                         {cand.student_name}
                       </span>
-                      <span style={{ color: '#718096', fontSize: '0.75rem', marginTop: '2px' }}>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '2px' }}>
                         {cand.email}
                       </span>
                       <span style={{ color: '#a0aec0', fontSize: '0.7rem', marginTop: '2px' }}>
@@ -189,15 +189,15 @@ function CandidateDetailsTable({ candidates, onViewDetails }) {
                     </div>
                   </td>
                   <td style={{ padding: '1rem 1rem', verticalAlign: 'middle' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: '500', color: '#2d3748' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: '500', color: 'var(--text-primary)' }}>
                       {cand.role || 'Software Engineer'}
                     </span>
                   </td>
-                  <td style={{ padding: '1rem 1rem', verticalAlign: 'middle', fontSize: '0.85rem', color: '#4a5568' }}>
+                  <td style={{ padding: '1rem 1rem', verticalAlign: 'middle', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                     {formatDate(cand.started_at_ist || cand.created_at)}
                   </td>
                   <td style={{ padding: '1rem 1rem', textAlign: 'center', verticalAlign: 'middle' }}>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#4a5568' }}>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>
                       {hasInterview ? `${resScore}%` : 'N/A'}
                     </span>
                   </td>
@@ -211,10 +211,10 @@ function CandidateDetailsTable({ candidates, onViewDetails }) {
                     </span>
                   </td>
                   <td style={{ padding: '1rem 1rem', textAlign: 'center', verticalAlign: 'middle' }}>
-                    {hasInterview ? getConfidenceBadge(cand.confidence_level || 'Moderate Confidence') : <span style={{ color: '#cbd5e0' }}>—</span>}
+                    {hasInterview ? getConfidenceBadge(cand.confidence_level || 'Moderate Confidence') : <span style={{ color: 'var(--border-color)' }}>—</span>}
                   </td>
                   <td style={{ padding: '1rem 1rem', textAlign: 'center', verticalAlign: 'middle' }}>
-                    {hasInterview ? getProctoringAlerts(cand) : <span style={{ color: '#cbd5e0' }}>—</span>}
+                    {hasInterview ? getProctoringAlerts(cand) : <span style={{ color: 'var(--border-color)' }}>—</span>}
                   </td>
                   <td style={{ padding: '1rem 1rem', textAlign: 'center', verticalAlign: 'middle' }}>
                     {getStatusBadge(cand.admin_status)}

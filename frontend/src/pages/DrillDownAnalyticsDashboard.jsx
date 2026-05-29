@@ -476,15 +476,15 @@ function DrillDownAnalyticsDashboard() {
       <div className="container" style={{ minHeight: '80vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
         <div style={{
           border: '4px solid #e2e8f0',
-          borderTop: '4px solid #1e3a5f',
+          borderTop: '4px solid var(--text-primary)',
           borderRadius: '50%',
           width: '50px',
           height: '50px',
           animation: 'spin 1s linear infinite',
           marginBottom: '1.5rem'
         }}></div>
-        <h3 style={{ color: '#1e3a5f', margin: 0 }}>Initializing Recruiter Analytics Dashboard...</h3>
-        <p style={{ color: '#718096', marginTop: '8px' }}>Syncing database tables and generating custom SVG visualizations...</p>
+        <h3 style={{ color: 'var(--text-primary)', margin: 0 }}>Initializing Recruiter Analytics Dashboard...</h3>
+        <p style={{ color: 'var(--text-secondary)', marginTop: '8px' }}>Syncing database tables and generating custom SVG visualizations...</p>
       </div>
     );
   }
@@ -504,8 +504,8 @@ function DrillDownAnalyticsDashboard() {
         <>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
             <div>
-              <h1 style={{ color: '#1e3a5f', fontSize: '2rem', fontWeight: 'bold', margin: 0 }}>Drill-Down Interview Analytics</h1>
-              <p style={{ color: '#718096', fontSize: '0.95rem', marginTop: '4px' }}>Real-time database intelligence. Click segment nodes on any chart below to view related candidates.</p>
+              <h1 style={{ color: 'var(--text-primary)', fontSize: '2rem', fontWeight: 'bold', margin: 0 }}>Drill-Down Interview Analytics</h1>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginTop: '4px' }}>Real-time database intelligence. Click segment nodes on any chart below to view related candidates.</p>
             </div>
             <button
               onClick={() => fetchDashboardData(true)}
@@ -527,7 +527,7 @@ function DrillDownAnalyticsDashboard() {
 
           {/* Recent Evaluations integration under summary */}
           <div style={{ marginTop: '2.5rem' }}>
-            <h2 style={{ color: '#1e3a5f', fontSize: '1.4rem', fontWeight: 'bold', marginBottom: '1.25rem' }}>Recent Evaluations</h2>
+            <h2 style={{ color: 'var(--text-primary)', fontSize: '1.4rem', fontWeight: 'bold', marginBottom: '1.25rem' }}>Recent Evaluations</h2>
             <CandidateDetailsTable
               candidates={students.slice(0, 5)}
               onViewDetails={handleViewCandidateReport}
@@ -540,10 +540,10 @@ function DrillDownAnalyticsDashboard() {
       {level === 'chartDetails' && (
         <>
           <div style={{ marginBottom: '2rem' }}>
-            <h1 style={{ color: '#1e3a5f', fontSize: '1.8rem', fontWeight: 'bold', margin: 0 }}>
+            <h1 style={{ color: 'var(--text-primary)', fontSize: '1.8rem', fontWeight: 'bold', margin: 0 }}>
               Records Filtered by: <span style={{ color: '#4299e1' }}>{drillFilter?.label}</span>
             </h1>
-            <p style={{ color: '#718096', fontSize: '0.95rem', marginTop: '4px' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginTop: '4px' }}>
               Dynamic filter settings are applied instantly. Modify search terms and sliders below to refine list.
             </p>
           </div>

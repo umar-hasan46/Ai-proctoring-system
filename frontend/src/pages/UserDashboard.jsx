@@ -55,9 +55,9 @@ function UserDashboard({ user: initialUser }) {
 
   if (loading && !data) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '60vh', fontSize: '1.2rem', color: '#1e3a5f' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '60vh', fontSize: '1.2rem', color: 'var(--text-primary)' }}>
         <div>Loading Dashboard...</div>
-        {slowLoading && <div style={{marginTop: '15px', fontSize: '1rem', color: '#718096'}}>Taking longer than usual? The server might be waking up...</div>}
+        {slowLoading && <div style={{marginTop: '15px', fontSize: '1rem', color: 'var(--text-secondary)'}}>Taking longer than usual? The server might be waking up...</div>}
       </div>
     );
   }
@@ -89,10 +89,10 @@ function UserDashboard({ user: initialUser }) {
 
   return (
     <div style={{ animation: 'fadeIn 0.5s ease-in-out' }}>
-      <div className="card" style={{ display: 'flex', gap: '30px', alignItems: 'center', flexWrap: 'wrap', borderLeft: '5px solid #1e3a5f' }}>
+      <div className="card" style={{ display: 'flex', gap: '30px', alignItems: 'center', flexWrap: 'wrap', borderLeft: '5px solid var(--primary-color)' }}>
         <Avatar name={displayName} email={user?.email} profile_pic={user?.profile_pic} size={100} />
         <div style={{ flex: 1, minWidth: '300px' }}>
-          <h1 style={{ margin: '0 0 10px 0', color: '#1e3a5f' }}>Welcome back, {displayName}</h1>
+          <h1 style={{ margin: '0 0 10px 0', color: 'var(--text-primary)' }}>Welcome back, {displayName}</h1>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
             <div style={infoRowStyle}><span style={labelStyle}>Email:</span> {sanitizeDisplay(user?.email, 'Not Provided')}</div>
             <div style={infoRowStyle}><span style={labelStyle}>Phone:</span> {sanitizeDisplay(user?.phone, 'Not Provided')}</div>
@@ -101,45 +101,45 @@ function UserDashboard({ user: initialUser }) {
             <div style={infoRowStyle}><span style={labelStyle}>Score:</span> {summary.latest_interview_score !== null && summary.latest_interview_score !== undefined ? `${summary.latest_interview_score}%` : 'Pending'}</div>
           </div>
         </div>
-        <div style={{ textAlign: 'right', borderLeft: '1px solid #edf2f7', paddingLeft: '20px' }}>
-          <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#1e3a5f' }}>
+        <div style={{ textAlign: 'right', borderLeft: '1px solid var(--border-color)', paddingLeft: '20px' }}>
+          <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--primary-hover)' }}>
             {currentTime.toLocaleString('en-IN', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}
           </div>
-          <div style={{ fontSize: '0.8rem', color: '#718096' }}>Indian Standard Time</div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Indian Standard Time</div>
         </div>
       </div>
 
       <div className="stats-grid">
-        <div className="stat-card" style={{ background: '#fff', borderBottom: '4px solid #3182ce' }}>
-          <h3 style={{ color: '#4a5568', fontSize: '0.9rem', textTransform: 'uppercase' }}>Last Interview</h3>
-          <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#2d3748', margin: '10px 0' }}>{summary.latest_interview_status || 'No Interview Yet'}</p>
+        <div className="stat-card" style={{ background: 'var(--card-bg)', borderBottom: '4px solid var(--accent)', border: '1px solid var(--border-color)' }}>
+          <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase' }}>Last Interview</h3>
+          <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)', margin: '10px 0' }}>{summary.latest_interview_status || 'No Interview Yet'}</p>
         </div>
-        <div className="stat-card" style={{ background: '#fff', borderBottom: '4px solid #e53e3e' }}>
-          <h3 style={{ color: '#4a5568', fontSize: '0.9rem', textTransform: 'uppercase' }}>Warnings</h3>
-          <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: summary.warnings > 0 ? '#e53e3e' : '#38a169', margin: '10px 0' }}>{summary.warnings || 0}</p>
+        <div className="stat-card" style={{ background: 'var(--card-bg)', borderBottom: '4px solid var(--danger)', border: '1px solid var(--border-color)' }}>
+          <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase' }}>Warnings</h3>
+          <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: summary.warnings > 0 ? 'var(--danger)' : 'var(--success)', margin: '10px 0' }}>{summary.warnings || 0}</p>
         </div>
-        <div className="stat-card" style={{ background: '#fff', borderBottom: '4px solid #38a169' }}>
-          <h3 style={{ color: '#4a5568', fontSize: '0.9rem', textTransform: 'uppercase' }}>Confidence Level</h3>
-          <p style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#2d3748', margin: '10px 0' }}>{sanitizeDisplay(summary.confidence_level) !== 'Not Provided' ? summary.confidence_level : getConfidenceLabel(summary.confidence_score)}</p>
+        <div className="stat-card" style={{ background: 'var(--card-bg)', borderBottom: '4px solid var(--success)', border: '1px solid var(--border-color)' }}>
+          <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase' }}>Confidence Level</h3>
+          <p style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-primary)', margin: '10px 0' }}>{sanitizeDisplay(summary.confidence_level) !== 'Not Provided' ? summary.confidence_level : getConfidenceLabel(summary.confidence_score)}</p>
         </div>
-        <div className="stat-card" style={{ background: '#fff', borderBottom: '4px solid #805ad5' }}>
-          <h3 style={{ color: '#4a5568', fontSize: '0.9rem', textTransform: 'uppercase' }}>Notifications</h3>
-          <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#2d3748', margin: '10px 0' }}>{summary.notifications_count || 0}</p>
+        <div className="stat-card" style={{ background: 'var(--card-bg)', borderBottom: '4px solid #805ad5', border: '1px solid var(--border-color)' }}>
+          <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase' }}>Notifications</h3>
+          <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)', margin: '10px 0' }}>{summary.notifications_count || 0}</p>
         </div>
       </div>
 
-      <div className="card" style={{ textAlign: 'center', padding: '40px', background: 'linear-gradient(to right, #ffffff, #f7fafc)' }}>
-        <h2 style={{ color: '#1e3a5f' }}>Ready for your next challenge?</h2>
-        <p style={{ marginBottom: '2rem', color: '#718096', maxWidth: '600px', margin: '0 auto 2rem' }}>
+      <div className="card" style={{ textAlign: 'center', padding: '40px', background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
+        <h2 style={{ color: 'var(--text-primary)' }}>Ready for your next challenge?</h2>
+        <p style={{ marginBottom: '2rem', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto 2rem' }}>
           Start a proctored AI interview to analyze your skills. Please ensure your camera and microphone are connected.
         </p>
-        <Link to="/active-interview" className="btn btn-primary" style={{ fontSize: '1.1rem', padding: '0.8rem 2.5rem', borderRadius: '30px', boxShadow: '0 4px 12px rgba(49, 130, 206, 0.3)' }}>
+        <Link to="/active-interview" className="btn btn-primary" style={{ fontSize: '1.1rem', padding: '0.8rem 2.5rem', borderRadius: '30px', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)' }}>
           Start Interview Now
         </Link>
       </div>
 
       <div className="card">
-        <h3 style={{ color: '#1e3a5f', borderBottom: '2px solid #edf2f7', paddingBottom: '10px', marginBottom: '20px' }}>
+        <h3 style={{ color: 'var(--text-primary)', borderBottom: '2px solid var(--border-color)', paddingBottom: '10px', marginBottom: '20px' }}>
           🎓 Your Past & Recent Interviews
         </h3>
         {pastInterviews.length > 0 ? (
@@ -147,19 +147,19 @@ function UserDashboard({ user: initialUser }) {
             {pastInterviews.map((intv) => (
               <div key={intv.id} style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                background: '#f8fafc', padding: '1.5rem', borderRadius: '12px',
-                border: '1px solid #edf2f7', flexWrap: 'wrap', gap: '15px'
+                background: 'var(--bg-primary)', padding: '1.5rem', borderRadius: '12px',
+                border: '1px solid var(--border-color)', flexWrap: 'wrap', gap: '15px'
               }}>
                 <div style={{ flex: 1, minWidth: '250px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                    <span style={{ fontWeight: 'bold', color: '#1e3a5f', fontSize: '1.05rem' }}>
+                    <span style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '1.05rem' }}>
                       {intv.role}
                     </span>
-                    <span style={{ background: '#e2e8f0', color: '#4a5568', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                    <span style={{ background: 'var(--border-color)', color: 'var(--text-secondary)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>
                       #{intv.id}
                     </span>
                   </div>
-                  <div style={{ fontSize: '0.85rem', color: '#718096', display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
                     <span>📅 {intv.created_at ? new Date(intv.created_at).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' }) : 'N/A'} (IST)</span>
                     <span>📝 Answered: {intv.answered_count || 0}/30</span>
                   </div>
@@ -167,30 +167,22 @@ function UserDashboard({ user: initialUser }) {
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.75rem', color: '#718096', fontWeight: 'bold', textTransform: 'uppercase' }}>STATUS</div>
-                    <span style={{
-                      padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold',
-                      background: intv.status === 'completed' ? '#dcfce7' : (intv.status === 'failed' || intv.status === 'terminated' ? '#fee2e2' : '#fef3c7'),
-                      color: intv.status === 'completed' ? '#166534' : (intv.status === 'failed' || intv.status === 'terminated' ? '#991b1b' : '#d97706')
-                    }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 'bold', textTransform: 'uppercase' }}>STATUS</div>
+                    <span className={`badge badge-${intv.status === 'completed' ? 'completed' : (intv.status === 'failed' || intv.status === 'terminated' ? 'terminated' : 'pending')}`}>
                       {intv.status}
                     </span>
                   </div>
 
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.75rem', color: '#718096', fontWeight: 'bold', textTransform: 'uppercase' }}>SCORE</div>
-                    <span style={{ fontSize: '1rem', fontWeight: 'bold', color: '#1e3a5f' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 'bold', textTransform: 'uppercase' }}>SCORE</div>
+                    <span style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                       {intv.status === 'completed' ? `${intv.score}%` : 'Pending'}
                     </span>
                   </div>
 
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.75rem', color: '#718096', fontWeight: 'bold', textTransform: 'uppercase' }}>QUALIFIED</div>
-                    <span style={{
-                      padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 'bold',
-                      background: intv.qualified === 'Qualified' ? '#d1fae5' : '#fee2e2',
-                      color: intv.qualified === 'Qualified' ? '#065f46' : '#991b1b'
-                    }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 'bold', textTransform: 'uppercase' }}>QUALIFIED</div>
+                    <span className={`badge ${intv.qualified === 'Qualified' ? 'badge-completed' : 'badge-terminated'}`}>
                       {intv.qualified}
                     </span>
                   </div>
@@ -214,7 +206,7 @@ function UserDashboard({ user: initialUser }) {
             ))}
           </div>
         ) : (
-          <div style={{ textAlign: 'center', padding: '30px', color: '#a0aec0' }}>
+          <div style={{ textAlign: 'center', padding: '30px', color: 'var(--text-secondary)' }}>
             <p>No recent interviews taken yet. Complete an interview to see your detailed reports and scores.</p>
           </div>
         )}
@@ -229,7 +221,8 @@ function UserDashboard({ user: initialUser }) {
   );
 }
 
-const infoRowStyle = { fontSize: '0.95rem', color: '#4a5568', display: 'flex', gap: '8px' };
-const labelStyle = { fontWeight: '700', color: '#1e3a5f', minWidth: '85px' };
+const infoRowStyle = { fontSize: '0.95rem', color: 'var(--text-primary)', display: 'flex', gap: '8px' };
+const labelStyle = { fontWeight: '700', color: 'var(--primary-color)', minWidth: '85px' };
 
 export default UserDashboard;
+

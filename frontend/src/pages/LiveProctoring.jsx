@@ -89,8 +89,8 @@ function LiveProctoring() {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
         <div className="card" style={{ padding: '3rem', textAlign: 'center', maxWidth: '400px' }}>
-          <h3 style={{ color: '#1e3a5f' }}>Loading Live Feed...</h3>
-          <p style={{ color: '#718096', marginTop: '10px' }}>Synchronizing with active candidate sessions.</p>
+          <h3 style={{ color: 'var(--text-primary)' }}>Loading Live Feed...</h3>
+          <p style={{ color: 'var(--text-secondary)', marginTop: '10px' }}>Synchronizing with active candidate sessions.</p>
         </div>
       </div>
     );
@@ -110,10 +110,10 @@ function LiveProctoring() {
 
       <div className="card" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ color: '#1e3a5f', margin: 0 }}>Live Proctoring Dashboard</h1>
-          <p style={{ margin: '0.5rem 0 0', color: '#718096' }}>Real-time monitoring of candidates currently in session.</p>
+          <h1 style={{ color: 'var(--text-primary)', margin: 0 }}>Live Proctoring Dashboard</h1>
+          <p style={{ margin: '0.5rem 0 0', color: 'var(--text-secondary)' }}>Real-time monitoring of candidates currently in session.</p>
         </div>
-        <div style={{ background: activeInterviews.length > 0 ? '#38a169' : '#718096', color: '#fff', padding: '0.5rem 1.2rem', borderRadius: '20px', fontSize: '0.9rem', fontWeight: 'bold' }}>
+        <div style={{ background: activeInterviews.length > 0 ? '#38a169' : 'var(--text-secondary)', color: '#fff', padding: '0.5rem 1.2rem', borderRadius: '20px', fontSize: '0.9rem', fontWeight: 'bold' }}>
           {activeInterviews.length} CANDIDATES ACTIVE
         </div>
       </div>
@@ -121,7 +121,7 @@ function LiveProctoring() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(480px, 1fr))', gap: '20px' }}>
         {activeInterviews.length > 0 ? activeInterviews.map((intv) => (
           <div key={intv.interview_id} className="card" style={{ padding: '0', overflow: 'hidden', border: intv.warning_count >= 3 ? '2px solid #e53e3e' : '1px solid #e2e8f0' }}>
-            <div style={{ background: '#1e3a5f', color: '#fff', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ background: 'var(--text-primary)', color: '#fff', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: '1.1rem' }}>{intv.candidate_name || 'N/A'}</h3>
                 <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>ID: #{intv.interview_id} | {intv.candidate_email}</span>
@@ -149,21 +149,21 @@ function LiveProctoring() {
                 </div>
 
                 <div style={{ fontSize: '0.9rem' }}>
-                  <div style={{ marginBottom: '10px' }}>Role: <strong style={{ color: '#1e3a5f' }}>{intv.role || 'N/A'}</strong></div>
+                  <div style={{ marginBottom: '10px' }}>Role: <strong style={{ color: 'var(--text-primary)' }}>{intv.role || 'N/A'}</strong></div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '15px' }}>
                     <StatusBadge label="Camera" active={intv.camera_status === 'active'} />
                     <StatusBadge label="Mic" active={intv.mic_status === 'active'} />
                     <StatusBadge label="Face" active={intv.face_status === 'detected'} />
                   </div>
-                  <div style={{ fontSize: '0.8rem', color: '#4a5568' }}>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                     <div>📞 Phone: {intv.phone || 'N/A'}</div>
                     <div style={{ marginTop: '5px' }}>⏱️ Started: {intv.started_at_ist || 'N/A'}</div>
                   </div>
                 </div>
               </div>
 
-              <div style={{ background: '#f8fafc', borderRadius: '10px', padding: '15px', height: '140px', overflowY: 'auto', marginBottom: '20px', border: '1px solid #edf2f7' }}>
-                <h5 style={{ margin: '0 0 10px 0', fontSize: '0.8rem', color: '#64748b', position: 'sticky', top: 0, background: '#f8fafc', paddingBottom: '5px', borderBottom: '1px solid #e2e8f0' }}>ACTIVITY LOG</h5>
+              <div style={{ background: 'var(--bg-primary)', borderRadius: '10px', padding: '15px', height: '140px', overflowY: 'auto', marginBottom: '20px', border: '1px solid var(--border-color)' }}>
+                <h5 style={{ margin: '0 0 10px 0', fontSize: '0.8rem', color: '#64748b', position: 'sticky', top: 0, background: 'var(--bg-primary)', paddingBottom: '5px', borderBottom: '1px solid #e2e8f0' }}>ACTIVITY LOG</h5>
                 {(() => {
                   const rawLogs = logs[intv.interview_id] || [];
                   const uniqueLogs = [];
@@ -177,7 +177,7 @@ function LiveProctoring() {
                   });
                   return uniqueLogs.length > 0 ? uniqueLogs.map((log, idx) => (
                     <div key={idx} style={{ fontSize: '0.75rem', marginBottom: '6px', paddingBottom: '4px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: log.message.toLowerCase().includes('warning') ? '#e53e3e' : '#2d3748' }}>{log.message}</span>
+                      <span style={{ color: log.message.toLowerCase().includes('warning') ? '#e53e3e' : 'var(--text-primary)' }}>{log.message}</span>
                       <span style={{ color: '#a0aec0', fontSize: '0.7rem' }}>
                         {new Date(log.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}
                       </span>
@@ -196,7 +196,7 @@ function LiveProctoring() {
           <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '100px 20px' }} className="card">
             <div style={{ fontSize: '4rem', marginBottom: '20px' }}>📡</div>
             <h2 style={{ color: '#a0aec0' }}>No active interviews right now.</h2>
-            <p style={{ color: '#cbd5e0', maxWidth: '400px', margin: '0 auto' }}>Live candidate feeds will appear here once they start their interview sessions.</p>
+            <p style={{ color: 'var(--border-color)', maxWidth: '400px', margin: '0 auto' }}>Live candidate feeds will appear here once they start their interview sessions.</p>
           </div>
         )}
       </div>
@@ -205,7 +205,7 @@ function LiveProctoring() {
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.35)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 10000 }}>
           <div className="card" style={{ maxWidth: '500px', padding: '2rem', textAlign: 'center' }}>
             <h3 style={{ color: '#e53e3e' }}>Terminate Interview</h3>
-            <p style={{ margin: '1rem 0', color: '#4a5568' }}>Are you sure you want to terminate <strong>{terminatingIntv.candidate_name}</strong>'s interview?</p>
+            <p style={{ margin: '1rem 0', color: 'var(--text-secondary)' }}>Are you sure you want to terminate <strong>{terminatingIntv.candidate_name}</strong>'s interview?</p>
             <div style={{ textAlign: 'left', marginBottom: '1.5rem' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>Termination Reason:</label>
               <textarea 

@@ -43,7 +43,7 @@ def get_all_notifications():
         
     rows = cur.fetchall()
     cols = [d[0] for d in cur.description]
-    notifications = [ensure_ist(dict(zip(cols, row))) for row in rows]
+    notifications = [ensure_ist(dict(row)) for row in rows]
     
     if role == 'admin':
         cur.execute("SELECT COUNT(*) FROM notifications WHERE target_role = 'admin' AND status = 'unread'")
@@ -70,7 +70,7 @@ def get_user_notifications(email):
     cur.execute("SELECT * FROM notifications WHERE user_email = %s OR target_role = 'all' ORDER BY created_at DESC", (email,))
     rows = cur.fetchall()
     cols = [d[0] for d in cur.description]
-    notifications = [ensure_ist(dict(zip(cols, row))) for row in rows]
+    notifications = [ensure_ist(dict(row)) for row in rows]
     
     cur.execute("SELECT COUNT(*) FROM notifications WHERE user_email = %s AND status = 'unread'", (email,))
     unread_count = cur.fetchone()[0]
@@ -86,7 +86,7 @@ def get_admin_notifications():
     cur.execute("SELECT * FROM notifications WHERE target_role = 'admin' OR target_role = 'all' ORDER BY created_at DESC")
     rows = cur.fetchall()
     cols = [d[0] for d in cur.description]
-    notifications = [ensure_ist(dict(zip(cols, row))) for row in rows]
+    notifications = [ensure_ist(dict(row)) for row in rows]
 
     cur.execute("SELECT COUNT(*) FROM notifications WHERE target_role = 'admin' AND status = 'unread'")
     unread_count = cur.fetchone()[0]

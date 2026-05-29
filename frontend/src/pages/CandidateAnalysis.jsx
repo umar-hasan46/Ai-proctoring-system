@@ -40,7 +40,7 @@ function CandidateAnalysis() {
       <div className="card">
         <h3>Question Breakdown</h3>
         {analysis.map((a, i) => (
-          <div key={i} className="card" style={{ background: '#f7fafc', borderLeft: '5px solid #1e3a5f' }}>
+          <div key={i} className="card" style={{ background: 'var(--bg-primary)', borderLeft: '5px solid var(--text-primary)' }}>
             <p><strong>Q: {a.question}</strong></p>
             <p style={{ marginTop: '0.5rem' }}><strong>Answer:</strong> {a.answer_text}</p>
             <hr style={{ margin: '1rem 0' }} />

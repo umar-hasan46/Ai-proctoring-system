@@ -855,7 +855,7 @@ function StudentsDashboard({ user }) {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '80vh' }}>
         <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
           <div className="spinner" style={{ border: '4px solid #f3f3f3', borderTop: '4px solid #3182ce', borderRadius: '50%', width: '40px', height: '40px', animation: 'spin 1s linear infinite', margin: '0 auto' }}></div>
-          <h3 style={{ marginTop: '20px', color: '#4a5568' }}>Loading students dashboard...</h3>
+          <h3 style={{ marginTop: '20px', color: 'var(--text-secondary)' }}>Loading students dashboard...</h3>
         </div>
       </div>
     );
@@ -888,7 +888,7 @@ function StudentsDashboard({ user }) {
       <div className="card" style={{ marginBottom: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <h1 style={{ color: '#1e3a5f', margin: 0, fontSize: '1.8rem' }}>Admin Students Dashboard</h1>
+            <h1 style={{ color: 'var(--text-primary)', margin: 0, fontSize: '1.8rem' }}>Admin Students Dashboard</h1>
             <span style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -911,7 +911,7 @@ function StudentsDashboard({ user }) {
               Live Synced
             </span>
           </div>
-          <p style={{ color: '#718096', margin: '5px 0 0' }}>Comprehensive performance analysis and live proctoring control.</p>
+          <p style={{ color: 'var(--text-secondary)', margin: '5px 0 0' }}>Comprehensive performance analysis and live proctoring control.</p>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
           <button onClick={() => setActiveTab('performance')} className={`btn ${activeTab === 'performance' ? 'btn-primary' : 'btn-outline'}`} style={{ fontWeight: '600' }}>Performance Overview</button>
@@ -941,13 +941,13 @@ function StudentsDashboard({ user }) {
           </div>
 
           <div className="card" style={{ marginBottom: '30px', background: '#fff', borderLeft: '5px solid #d946ef' }}>
-            <h3 style={{ color: '#1e3a5f', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h3 style={{ color: 'var(--text-primary)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span>📡</span> Recent Live Proctoring Sessions
             </h3>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ textAlign: 'left', background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+                  <tr style={{ textAlign: 'left', background: 'var(--bg-primary)', borderBottom: '2px solid #e2e8f0' }}>
                     <th style={{ padding: '12px' }}>Candidate Details</th>
                     <th style={{ padding: '12px' }}>Role & ID</th>
                     <th style={{ padding: '12px', textAlign: 'center' }}>Proctoring Status</th>
@@ -1003,9 +1003,9 @@ function StudentsDashboard({ user }) {
             </div>
           </div>
 
-          <div className="card" style={{ marginBottom: '25px', padding: '20px', background: '#f8fafc' }}>
+          <div className="card" style={{ marginBottom: '25px', padding: '20px', background: 'var(--bg-primary)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-              <h3 style={{ margin: 0, color: '#1e3a5f' }}>Filters & Export</h3>
+              <h3 style={{ margin: 0, color: 'var(--text-primary)' }}>Filters & Export</h3>
               <button onClick={handleDownloadAll} className="btn btn-primary" style={{ background: '#4f46e5', color: 'white', padding: '8px 16px', borderRadius: '6px' }}>
                 Download All Users Data
               </button>
@@ -1047,8 +1047,7 @@ function StudentsDashboard({ user }) {
                   <th style={{ padding: '15px', textAlign: 'center' }}>Tech / Comm / Conf</th>
                   <th style={{ padding: '15px', textAlign: 'center' }}>Integrity</th>
                   <th style={{ padding: '15px' }}>Timing (IST)</th>
-                  <th style={{ padding: '15px' }}>Recommendation</th>
-                  <th style={{ padding: '15px', textAlign: 'center' }}>Action</th>
+                  <th style={{ padding: '15px', textAlign: 'center' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -1059,19 +1058,13 @@ function StudentsDashboard({ user }) {
                   const interviewId = s.interview_id || (s.student_id ? `INT-${s.student_id}-99` : null);
                   const statusVal = s.interview_status || s.status || 'No Interview Yet';
                   const scoreVal = s.recent_score !== null && s.recent_score !== undefined ? s.recent_score : (s.score !== null && s.score !== undefined ? s.score : null);
-                  const techCommConfVal = s.tech_comm_conf !== null && s.tech_comm_conf !== undefined && s.tech_comm_conf !== 'Not Provided' 
-                    ? s.tech_comm_conf 
-                    : ((s.technical_score && s.communication_score) 
-                        ? `${s.technical_score} / ${s.communication_score} / ${s.confidence_level || 'High'}` 
-                        : '80 / 80 / 80');
                   const alertsVal = s.cheating_alerts !== null && s.cheating_alerts !== undefined ? s.cheating_alerts : (s.warnings !== null && s.warnings !== undefined ? s.warnings : 0);
                   const startedVal = s.started_at_ist && s.started_at_ist !== 'N/A' ? formatToDDMMYYYY(s.started_at_ist) : (s.date_ist || 'Not Started');
                   const endedVal = s.ended_at_ist && s.ended_at_ist !== 'N/A' ? formatToDDMMYYYY(s.ended_at_ist) : (s.date_ist ? 'Ended' : 'Not Ended');
                   const durationVal = s.duration && s.duration !== 'Not Provided' ? s.duration : '15m 0s';
-                  const recommendationVal = s.final_recommendation && s.final_recommendation !== 'Not Provided' ? s.final_recommendation : (s.admin_status || 'Shortlisted');
 
                   return (
-                    <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+                    <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-primary)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
                       <td style={{ padding: '15px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <Avatar
@@ -1083,100 +1076,127 @@ function StudentsDashboard({ user }) {
                           <div>
                             <div style={{ fontWeight: 'bold', color: '#1e293b' }}>{studentName}</div>
                             <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{emailVal}</div>
-                            <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>{phoneVal}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#0f766e', fontWeight: '600', marginTop: '2px' }}>{s.role || s.role_applied || 'Software Engineer'}</div>
                           </div>
                         </div>
                       </td>
                       <td style={{ padding: '15px' }}>
-                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>ID: {interviewId || 'No Interview'}</div>
-                        <div style={{ marginTop: '4px' }}>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '500' }}>ID: {interviewId || 'No Interview'}</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '4px' }}>
                           <span style={{
-                            padding: '4px 10px', borderRadius: '20px', fontSize: '0.65rem', fontWeight: 'bold',
-                            background: statusVal === 'completed' ? '#dcfce7' : (statusVal === 'active' ? '#e0f2fe' : (statusVal === 'terminated' ? '#fee2e2' : '#f1f5f9')),
-                            color: statusVal === 'completed' ? '#166534' : (statusVal === 'active' ? '#0369a1' : (statusVal === 'terminated' ? '#991b1b' : '#475569'))
+                            padding: '4px 10px', borderRadius: '20px', fontSize: '0.65rem', fontWeight: 'bold', width: 'fit-content',
+                            background: '#dcfce7', color: '#166534'
                           }}>
-                            {statusVal.toUpperCase()}
+                            Completed
                           </span>
+                          {s.skipped_count && parseInt(s.skipped_count) > 0 ? (
+                            <span style={{
+                              padding: '4px 10px', borderRadius: '20px', fontSize: '0.65rem', fontWeight: 'bold', width: 'fit-content',
+                              background: '#fef3c7', color: '#b45309'
+                            }}>
+                              {s.skipped_count} unanswered questions
+                            </span>
+                          ) : (
+                            <span style={{
+                              padding: '4px 10px', borderRadius: '20px', fontSize: '0.65rem', fontWeight: 'bold', width: 'fit-content',
+                              background: '#dcfce7', color: '#166534'
+                            }}>
+                              All questions answered
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td style={{ padding: '15px', textAlign: 'center' }}>
                         <div style={{ fontSize: '1.1rem', fontWeight: '800', color: (scoreVal !== null && scoreVal !== undefined) ? (parseInt(scoreVal) >= 50 ? '#10b981' : '#ef4444') : '#94a3b8' }}>
-                          {scoreVal !== null && scoreVal !== undefined ? `${scoreVal}%` : 'Pending'}
+                          {scoreVal !== null && scoreVal !== undefined ? `${parseInt(scoreVal)}%` : 'Pending'}
                         </div>
                       </td>
                       <td style={{ padding: '15px', textAlign: 'center' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <button 
-                            className="btn-shortlist" 
-                            style={{ 
-                              background: s.admin_status === 'Shortlisted' ? '#059669' : '#e5e7eb', 
-                              color: s.admin_status === 'Shortlisted' ? 'white' : '#1f2937', 
-                              border: 'none', 
-                              padding: '5px 10px', 
-                              borderRadius: '6px', 
-                              fontSize: '0.75rem', 
-                              fontWeight: 'bold', 
-                              cursor: s.admin_status === 'Shortlisted' ? 'default' : 'pointer',
-                              opacity: (loadingStatus.userId === s.student_id && loadingStatus.status !== 'Shortlisted') ? 0.5 : 1
-                            }}
-                            disabled={s.admin_status === 'Shortlisted' || loadingStatus.userId === s.student_id}
-                            onClick={() => handleStatusUpdate(s.student_id, interviewId, 'Shortlisted')}
-                          >
-                            {loadingStatus.userId === s.student_id && loadingStatus.status === 'Shortlisted' ? 'Updating...' : 'Shortlisted'}
-                          </button>
-                          <button 
-                            className="btn-hiring" 
-                            style={{ 
-                              background: s.admin_status === 'Hiring in Process' ? '#d97706' : '#e5e7eb', 
-                              color: s.admin_status === 'Hiring in Process' ? 'white' : '#1f2937', 
-                              border: 'none', 
-                              padding: '5px 10px', 
-                              borderRadius: '6px', 
-                              fontSize: '0.75rem', 
-                              fontWeight: 'bold', 
-                              cursor: s.admin_status === 'Hiring in Process' ? 'default' : 'pointer',
-                              opacity: (loadingStatus.userId === s.student_id && loadingStatus.status !== 'Hiring in Process') ? 0.5 : 1
-                            }}
-                            disabled={s.admin_status === 'Hiring in Process' || loadingStatus.userId === s.student_id}
-                            onClick={() => handleStatusUpdate(s.student_id, interviewId, 'Hiring in Process')}
-                          >
-                            {loadingStatus.userId === s.student_id && loadingStatus.status === 'Hiring in Process' ? 'Updating...' : 'Hiring in Process'}
-                          </button>
-                          <button 
-                            className="btn-reject" 
-                            style={{ 
-                              background: s.admin_status === 'Not Shortlisted' ? '#dc2626' : '#e5e7eb', 
-                              color: s.admin_status === 'Not Shortlisted' ? 'white' : '#1f2937', 
-                              border: 'none', 
-                              padding: '5px 10px', 
-                              borderRadius: '6px', 
-                              fontSize: '0.75rem', 
-                              fontWeight: 'bold', 
-                              cursor: s.admin_status === 'Not Shortlisted' ? 'default' : 'pointer',
-                              opacity: (loadingStatus.userId === s.student_id && loadingStatus.status !== 'Not Shortlisted') ? 0.5 : 1
-                            }}
-                            disabled={s.admin_status === 'Not Shortlisted' || loadingStatus.userId === s.student_id}
-                            onClick={() => handleStatusUpdate(s.student_id, interviewId, 'Not Shortlisted')}
-                          >
-                            {loadingStatus.userId === s.student_id && loadingStatus.status === 'Not Shortlisted' ? 'Updating...' : 'Not Shortlisted'}
-                          </button>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
+                          {(!s.admin_status || s.admin_status.toLowerCase() === 'pending review' || s.admin_status.toLowerCase() === 'pending') && (
+                            <span style={{
+                              padding: '4px 10px', borderRadius: '20px', fontSize: '0.65rem', fontWeight: 'bold',
+                              background: '#fee2e2', color: '#991b1b', marginBottom: '4px'
+                            }}>
+                              Pending Hiring Decision
+                            </span>
+                          )}
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <button 
+                              className="btn-shortlist" 
+                              style={{ 
+                                background: s.admin_status === 'Shortlisted' ? '#059669' : '#e5e7eb', 
+                                color: s.admin_status === 'Shortlisted' ? 'white' : '#1f2937', 
+                                border: 'none', 
+                                padding: '5px 8px', 
+                                borderRadius: '6px', 
+                                fontSize: '0.70rem', 
+                                fontWeight: 'bold', 
+                                cursor: s.admin_status === 'Shortlisted' ? 'default' : 'pointer',
+                              }}
+                              disabled={s.admin_status === 'Shortlisted'}
+                              onClick={() => handleStatusUpdate(s.student_id, interviewId, 'Shortlisted')}
+                            >
+                              Shortlist
+                            </button>
+                            <button 
+                              className="btn-hiring" 
+                              style={{ 
+                                background: s.admin_status === 'Hiring in Process' ? '#d97706' : '#e5e7eb', 
+                                color: s.admin_status === 'Hiring in Process' ? 'white' : '#1f2937', 
+                                border: 'none', 
+                                padding: '5px 8px', 
+                                borderRadius: '6px', 
+                                fontSize: '0.70rem', 
+                                fontWeight: 'bold', 
+                                cursor: s.admin_status === 'Hiring in Process' ? 'default' : 'pointer',
+                              }}
+                              disabled={s.admin_status === 'Hiring in Process'}
+                              onClick={() => handleStatusUpdate(s.student_id, interviewId, 'Hiring in Process')}
+                            >
+                              Hiring
+                            </button>
+                            <button 
+                              className="btn-reject" 
+                              style={{ 
+                                background: s.admin_status === 'Not Shortlisted' ? '#dc2626' : '#e5e7eb', 
+                                color: s.admin_status === 'Not Shortlisted' ? 'white' : '#1f2937', 
+                                border: 'none', 
+                                padding: '5px 8px', 
+                                borderRadius: '6px', 
+                                fontSize: '0.70rem', 
+                                fontWeight: 'bold', 
+                                cursor: s.admin_status === 'Not Shortlisted' ? 'default' : 'pointer',
+                              }}
+                              disabled={s.admin_status === 'Not Shortlisted'}
+                              onClick={() => handleStatusUpdate(s.student_id, interviewId, 'Not Shortlisted')}
+                            >
+                              Reject
+                            </button>
+                          </div>
                         </div>
                       </td>
                       <td style={{ padding: '15px', textAlign: 'center', fontSize: '0.75rem', color: '#475569' }}>
-                        <div style={{ fontWeight: '600' }}>{techCommConfVal}</div>
+                        <div style={{ fontWeight: '700' }}>
+                          T: {s.technical_score || 0}% / C: {s.communication_score || 0}%
+                        </div>
+                        <div style={{ fontSize: '0.65rem', color: '#64748b', marginTop: '2px', fontWeight: 'bold' }}>
+                          {s.confidence_level || 'High Confidence'}
+                        </div>
                       </td>
-                      <td style={{ padding: '15px', textAlign: 'center' }}>
+                      <td style={{ padding: '15px', textAlign: 'center', fontSize: '0.75rem' }}>
                         <div style={{ color: alertsVal >= 3 ? '#ef4444' : '#10b981', fontWeight: 'bold' }}>{alertsVal} Alerts</div>
+                        <div style={{ fontSize: '0.65rem', color: '#64748b', marginTop: '2px' }}>
+                          Tab Switches: {s.tab_switch_count || 0}
+                        </div>
+                        <div style={{ fontSize: '0.65rem', color: '#64748b' }}>
+                          Suspicious: {s.suspicious_activity_count || 0}
+                        </div>
                       </td>
                       <td style={{ padding: '15px', fontSize: '0.7rem', color: '#64748b' }}>
-                        <div>Started: {startedVal}</div>
-                        <div>Ended: {endedVal}</div>
+                        <div>Start: {s.started_at_ist || startedVal}</div>
+                        <div>End: {s.ended_at_ist || endedVal}</div>
                         <div style={{ color: '#3b82f6', fontWeight: '600', marginTop: '2px' }}>Dur: {durationVal}</div>
-                      </td>
-                      <td style={{ padding: '15px' }}>
-                        <div style={{ fontSize: '0.75rem', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#475569' }} title={recommendationVal}>
-                          {recommendationVal}
-                        </div>
                       </td>
                       <td style={{ padding: '15px', textAlign: 'center' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
@@ -1207,7 +1227,7 @@ function StudentsDashboard({ user }) {
                                 className="btn btn-outline" 
                                 style={{ fontSize: '0.7rem', padding: '4px 10px', width: '110px', color: '#0f766e', borderColor: '#0f766e' }}
                               >
-                                Download
+                                Download Report
                               </button>
                             </>
                           )}
@@ -1229,22 +1249,22 @@ function StudentsDashboard({ user }) {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: '30px', alignItems: 'start' }}>
           <div className="card" style={{ borderTop: '5px solid #4f46e5' }}>
-            <h3 style={{ color: '#1e3a5f', marginBottom: '20px' }}>Register New Student</h3>
+            <h3 style={{ color: 'var(--text-primary)', marginBottom: '20px' }}>Register New Student</h3>
             <form onSubmit={handleSaveUser}>
               <div style={{ marginBottom: '18px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', color: '#4a5568', fontWeight: '600' }}>Full Name *</label>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Full Name *</label>
                 <input type="text" value={newUser.name} onChange={(e) => setNewUser({...newUser, name: e.target.value})} style={inputStyle} placeholder="Enter full name" />
               </div>
               <div style={{ marginBottom: '18px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', color: '#4a5568', fontWeight: '600' }}>Email Address *</label>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Email Address *</label>
                 <input type="email" value={newUser.email} onChange={(e) => setNewUser({...newUser, email: e.target.value})} style={inputStyle} placeholder="example@domain.com" />
               </div>
               <div style={{ marginBottom: '18px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', color: '#4a5568', fontWeight: '600' }}>Phone Number *</label>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Phone Number *</label>
                 <input type="text" value={newUser.phone} onChange={(e) => setNewUser({...newUser, phone: e.target.value})} style={inputStyle} placeholder="+91 XXXXX XXXXX" />
               </div>
               <div style={{ marginBottom: '25px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', color: '#4a5568', fontWeight: '600' }}>Department / Role *</label>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Department / Role *</label>
                 <input type="text" value={newUser.role} onChange={(e) => setNewUser({...newUser, role: e.target.value})} style={inputStyle} placeholder="e.g. Software Engineer" />
               </div>
               <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '12px', fontWeight: 'bold' }} disabled={savingUser}>
@@ -1255,12 +1275,12 @@ function StudentsDashboard({ user }) {
 
           <div className="card" style={{ padding: '0', borderTop: '5px solid #64748b' }}>
             <div style={{ padding: '20px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ color: '#1e3a5f', margin: 0 }}>Registered Students Database</h3>
-              <div style={{ fontSize: '0.85rem', color: '#718096' }}>Total: {data.students.length} Records</div>
+              <h3 style={{ color: 'var(--text-primary)', margin: 0 }}>Registered Students Database</h3>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Total: {data.students.length} Records</div>
             </div>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead style={{ background: '#f8fafc' }}>
+                <thead style={{ background: 'var(--bg-primary)' }}>
                   <tr style={{ textAlign: 'left' }}>
                     <th style={{ padding: '15px' }}>Name & Contact</th>
                     <th style={{ padding: '15px' }}>Department</th>
@@ -1295,7 +1315,7 @@ function StudentsDashboard({ user }) {
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #f1f5f9', paddingBottom: '16px' }}>
               <div>
-                <h2 style={{ color: '#1e3a5f', margin: 0, fontSize: '1.6rem' }}>Interview Detail — Student</h2>
+                <h2 style={{ color: 'var(--text-primary)', margin: 0, fontSize: '1.6rem' }}>Interview Detail — Student</h2>
                 <div style={{ display: 'flex', gap: '15px', marginTop: '5px', fontSize: '0.9rem', color: '#64748b' }}>
                   <span><strong>Candidate:</strong> {selectedStudent.candidate?.name}</span>
                   <span>|</span>
@@ -1324,10 +1344,10 @@ function StudentsDashboard({ user }) {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '15px', background: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '15px', background: 'var(--bg-primary)', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
               <div>
                 <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>Student ID</span>
-                <div style={{ fontSize: '1.1rem', fontWeight: '700', marginTop: '2px', color: '#1e3a5f' }}>{selectedStudent.interview?.id || 'N/A'}</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: '700', marginTop: '2px', color: 'var(--text-primary)' }}>{selectedStudent.interview?.id || 'N/A'}</div>
               </div>
               <div>
                 <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>Rating Score</span>
@@ -1472,12 +1492,12 @@ function StudentsDashboard({ user }) {
                     <>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         <div style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                          <h3 style={{ margin: '0 0 10px', color: '#1e3a5f', fontSize: '1.05rem', fontWeight: 'bold' }}>Resume Summary</h3>
+                          <h3 style={{ margin: '0 0 10px', color: 'var(--text-primary)', fontSize: '1.05rem', fontWeight: 'bold' }}>Resume Summary</h3>
                           <p style={{ margin: 0, color: '#475569', fontSize: '0.9rem', lineHeight: '1.6' }}>{selectedStudent.resume.summary_paragraph || 'No summary available.'}</p>
                         </div>
                         
                         <div style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                          <h3 style={{ margin: '0 0 12px', color: '#1e3a5f', fontSize: '1.05rem', fontWeight: 'bold' }}>Skill Matrix</h3>
+                          <h3 style={{ margin: '0 0 12px', color: 'var(--text-primary)', fontSize: '1.05rem', fontWeight: 'bold' }}>Skill Matrix</h3>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                             {(selectedStudent.resume.skills || []).map((skill, sIdx) => (
                               <span key={sIdx} style={{ background: '#e0f2fe', color: '#0369a1', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: '600' }}>{skill}</span>
@@ -1487,7 +1507,7 @@ function StudentsDashboard({ user }) {
                         </div>
 
                         <div style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                          <h3 style={{ margin: '0 0 12px', color: '#1e3a5f', fontSize: '1.05rem', fontWeight: 'bold' }}>Strengths & Weaknesses</h3>
+                          <h3 style={{ margin: '0 0 12px', color: 'var(--text-primary)', fontSize: '1.05rem', fontWeight: 'bold' }}>Strengths & Weaknesses</h3>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             <div>
                               <div style={{ color: '#15803d', fontWeight: 'bold', fontSize: '0.85rem', marginBottom: '4px' }}>💪 Key Strengths</div>
@@ -1507,7 +1527,7 @@ function StudentsDashboard({ user }) {
                         </div>
 
                         <div style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                          <h3 style={{ margin: '0 0 10px', color: '#1e3a5f', fontSize: '1.05rem', fontWeight: 'bold' }}>Recommended Roles</h3>
+                          <h3 style={{ margin: '0 0 10px', color: 'var(--text-primary)', fontSize: '1.05rem', fontWeight: 'bold' }}>Recommended Roles</h3>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                             {(selectedStudent.resume.recommended_roles || []).map((role, idx) => (
                               <span key={idx} style={{ background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: '600' }}>{role}</span>
@@ -1519,7 +1539,7 @@ function StudentsDashboard({ user }) {
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         <div style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                          <h3 style={{ margin: '0', color: '#1e3a5f', fontSize: '1.05rem', fontWeight: 'bold' }}>Resume Scores Breakdown</h3>
+                          <h3 style={{ margin: '0', color: 'var(--text-primary)', fontSize: '1.05rem', fontWeight: 'bold' }}>Resume Scores Breakdown</h3>
                           
                           <div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px' }}>
@@ -1583,7 +1603,7 @@ function StudentsDashboard({ user }) {
                         </div>
 
                         <div style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                          <h3 style={{ margin: '0 0 12px', color: '#1e3a5f', fontSize: '1.05rem', fontWeight: 'bold' }}>Matched vs Missing Skills</h3>
+                          <h3 style={{ margin: '0 0 12px', color: 'var(--text-primary)', fontSize: '1.05rem', fontWeight: 'bold' }}>Matched vs Missing Skills</h3>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                             <div>
                               <div style={{ fontSize: '0.8rem', color: '#15803d', fontWeight: 'bold', marginBottom: '4px' }}>Matched Skills ({selectedStudent.resume.matched_skills?.length || 0})</div>
@@ -1607,8 +1627,8 @@ function StudentsDashboard({ user }) {
                         </div>
 
                         {selectedStudent.combined_analysis && (
-                          <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0', borderLeft: '4px solid #4f46e5' }}>
-                            <h3 style={{ margin: '0 0 8px', color: '#1e3a5f', fontSize: '1.05rem', fontWeight: 'bold' }}>Combined Assessment Analysis</h3>
+                          <div style={{ background: 'var(--bg-primary)', padding: '20px', borderRadius: '10px', border: '1px solid #e2e8f0', borderLeft: '4px solid #4f46e5' }}>
+                            <h3 style={{ margin: '0 0 8px', color: 'var(--text-primary)', fontSize: '1.05rem', fontWeight: 'bold' }}>Combined Assessment Analysis</h3>
                             <p style={{ margin: '0 0 8px', color: '#475569', fontSize: '0.85rem', lineHeight: '1.5' }}>{selectedStudent.combined_analysis.summary}</p>
                             <div style={{ fontSize: '0.85rem', color: '#4f46e5', fontWeight: 'bold' }}>Recommendation: {selectedStudent.combined_analysis.recommendation}</div>
                           </div>
@@ -1626,13 +1646,13 @@ function StudentsDashboard({ user }) {
                   {Object.keys(selectedStudent.skill_groups || {}).length > 0 ? (
                     Object.entries(selectedStudent.skill_groups).map(([skillName, items]) => (
                       <details key={skillName} open style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
-                        <summary style={{ background: '#f8fafc', padding: '12px 18px', fontWeight: 'bold', color: '#1e3a5f', cursor: 'pointer', userSelect: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <summary style={{ background: 'var(--bg-primary)', padding: '12px 18px', fontWeight: 'bold', color: 'var(--text-primary)', cursor: 'pointer', userSelect: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span>💻 {skillName}</span>
                           <span style={{ fontSize: '0.8rem', background: '#cbd5e1', color: '#334155', padding: '2px 8px', borderRadius: '12px' }}>{items.length} Questions</span>
                         </summary>
                         <div style={{ padding: '15px', background: '#fff', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                           {items.map((item, idx) => (
-                            <div key={idx} style={{ padding: '12px', background: '#f8fafc', borderRadius: '6px', borderLeft: '4px solid #cbd5e1' }}>
+                            <div key={idx} style={{ padding: '12px', background: 'var(--bg-primary)', borderRadius: '6px', borderLeft: '4px solid #cbd5e1' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '0.85rem', color: '#1e293b', marginBottom: '6px' }}>
                                 <span>Q: {item.question_text}</span>
                                 <span style={{
@@ -1658,7 +1678,7 @@ function StudentsDashboard({ user }) {
               )}
 
               {modalTab === 'chat' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', background: '#f8fafc', padding: '20px', borderRadius: '12px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', background: 'var(--bg-primary)', padding: '20px', borderRadius: '12px' }}>
                   {selectedStudent.chat && selectedStudent.chat.length > 0 ? (
                     selectedStudent.chat.map((msg, i) => (
                       <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'ai' ? 'flex-start' : 'flex-end' }}>
@@ -1684,7 +1704,7 @@ function StudentsDashboard({ user }) {
 
               {modalTab === 'technical' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', background: 'var(--bg-primary)', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                     <input 
                       type="text" 
                       placeholder="Search questions or answers..." 
@@ -1738,7 +1758,7 @@ function StudentsDashboard({ user }) {
                       <div key={i} style={{ padding: '18px', background: '#fff', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', gap: '10px' }}>
                           <div>
-                            <span style={{ fontWeight: 'bold', color: '#1e3a5f', fontSize: '0.95rem' }}>Q{q.question_no}: {q.question_text}</span>
+                            <span style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '0.95rem' }}>Q{q.question_no}: {q.question_text}</span>
                             <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
                               <span style={{ background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: '600' }}>Diff: {q.difficulty}</span>
                               <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: '600' }}>Category: {q.category || 'General'}</span>
@@ -1753,7 +1773,7 @@ function StudentsDashboard({ user }) {
                             {q.correctness_status || q.result}
                           </span>
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', margin: '12px 0', background: '#f8fafc', padding: '10px', borderRadius: '8px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', margin: '12px 0', background: 'var(--bg-primary)', padding: '10px', borderRadius: '8px' }}>
                           <div style={{ textAlign: 'center' }}>
                             <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: '600' }}>TECHNICAL SCORE</div>
                             <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#1e293b' }}>{q.content_score} / 5</div>
@@ -1787,7 +1807,7 @@ function StudentsDashboard({ user }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {selectedStudent.ignored_prompts && selectedStudent.ignored_prompts.length > 0 ? (
                     selectedStudent.ignored_prompts.map((q, i) => (
-                      <div key={i} style={{ padding: '15px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                      <div key={i} style={{ padding: '15px', background: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                           <span style={{ fontWeight: 'bold', color: '#475569', fontSize: '0.85rem' }}>Q{q.question_no}: {q.question_text}</span>
                           <span style={{ background: '#e2e8f0', color: '#475569', padding: '2px 8px', borderRadius: '10px', fontSize: '0.7rem', fontWeight: '600' }}>
@@ -1842,11 +1862,11 @@ function StudentsDashboard({ user }) {
                   </div>
 
                   <div className="card" style={{ background: '#fff', padding: '20px', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
-                    <h4 style={{ margin: '0 0 15px', color: '#1e3a5f', fontSize: '1rem', fontWeight: 'bold' }}>Proctoring Activity Event Log</h4>
+                    <h4 style={{ margin: '0 0 15px', color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 'bold' }}>Proctoring Activity Event Log</h4>
                     <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {selectedStudent.logs && selectedStudent.logs.length > 0 ? (
                         selectedStudent.logs.map((log, idx) => (
-                          <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: '#f8fafc', borderRadius: '6px', fontSize: '0.85rem', borderLeft: '3px solid #cbd5e1', borderColor: (log.message || '').toLowerCase().includes('terminate') ? '#ef4444' : (log.message || '').toLowerCase().includes('warning') ? '#f59e0b' : '#3b82f6' }}>
+                          <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: 'var(--bg-primary)', borderRadius: '6px', fontSize: '0.85rem', borderLeft: '3px solid #cbd5e1', borderColor: (log.message || '').toLowerCase().includes('terminate') ? '#ef4444' : (log.message || '').toLowerCase().includes('warning') ? '#f59e0b' : '#3b82f6' }}>
                             <span style={{ fontWeight: '500', color: '#334155' }}>{log.message}</span>
                             <span style={{ color: '#64748b', fontSize: '0.75rem' }}>{log.created_at_ist || log.created_at}</span>
                           </div>
@@ -1861,31 +1881,31 @@ function StudentsDashboard({ user }) {
             </div>
 
             <div style={{ marginTop: '45px', borderTop: '2px solid #e2e8f0', paddingTop: '30px' }}>
-              <h4 style={{ margin: '0 0 20px', color: '#1e3a5f', fontSize: '1.2rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h4 style={{ margin: '0 0 20px', color: 'var(--text-primary)', fontSize: '1.2rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 📝 Detailed Questions & Answers
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {(selectedStudent.scored_technical || []).map((q, idx) => (
-                  <div key={idx} style={{ padding: '20px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                  <div key={idx} style={{ padding: '20px', background: 'var(--bg-primary)', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px', marginBottom: '12px' }}>
                       <div>
-                        <span style={{ fontWeight: 'bold', color: '#1e3a5f', fontSize: '1.05rem' }}>Question {q.question_no}: {q.question_text}</span>
+                        <span style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '1.05rem' }}>Question {q.question_no}: {q.question_text}</span>
                         <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-                          <span style={{ background: '#e2e8f0', color: '#4a5568', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600' }}>Difficulty: {q.difficulty || 'Medium'}</span>
+                          <span style={{ background: '#e2e8f0', color: 'var(--text-secondary)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600' }}>Difficulty: {q.difficulty || 'Medium'}</span>
                           <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600' }}>Skill: {q.skill || q.category || 'General'}</span>
                         </div>
                       </div>
                       <span style={{
                         padding: '6px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold',
-                        background: (q.candidate_answer || q.answer_text || '').toLowerCase() === 'skipped' ? '#edf2f7' : '#dcfce7',
-                        color: (q.candidate_answer || q.answer_text || '').toLowerCase() === 'skipped' ? '#4a5568' : '#15803d'
+                        background: (q.candidate_answer || q.answer_text || '').toLowerCase() === 'skipped' ? 'var(--border-color)' : '#dcfce7',
+                        color: (q.candidate_answer || q.answer_text || '').toLowerCase() === 'skipped' ? 'var(--text-secondary)' : '#15803d'
                       }}>
                         {(q.candidate_answer || q.answer_text || '').toLowerCase() === 'skipped' ? 'Skipped' : 'Answered'}
                       </span>
                     </div>
                     <div style={{ background: '#fff', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '10px', fontSize: '0.9rem' }}>
-                      <strong style={{ color: '#4a5568', display: 'block', marginBottom: '4px' }}>Candidate Answer:</strong>
-                      <span style={{ color: '#2d3748', lineHeight: '1.5' }}>{q.candidate_answer || q.answer_text || 'Skipped'}</span>
+                      <strong style={{ color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>Candidate Answer:</strong>
+                      <span style={{ color: 'var(--text-primary)', lineHeight: '1.5' }}>{q.candidate_answer || q.answer_text || 'Skipped'}</span>
                     </div>
                     {q.ai_feedback || q.feedback ? (
                       <div style={{ background: '#f0fdf4', padding: '12px 16px', borderRadius: '8px', border: '1px solid #bbf7d0', fontSize: '0.9rem' }}>
@@ -1896,7 +1916,7 @@ function StudentsDashboard({ user }) {
                   </div>
                 ))}
                 {(!selectedStudent.scored_technical || selectedStudent.scored_technical.length === 0) && (
-                  <div style={{ textAlign: 'center', padding: '30px', color: '#718096' }}>No question evaluations available.</div>
+                  <div style={{ textAlign: 'center', padding: '30px', color: 'var(--text-secondary)' }}>No question evaluations available.</div>
                 )}
               </div>
             </div>
@@ -1972,7 +1992,7 @@ function StudentsDashboard({ user }) {
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.35)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 10000 }}>
           <div className="card" style={{ maxWidth: '500px', padding: '2rem', textAlign: 'center' }}>
             <h3 style={{ color: '#e53e3e' }}>Terminate Interview</h3>
-            <p style={{ margin: '1rem 0', color: '#4a5568' }}>Are you sure you want to terminate <strong>{terminatingLp.student_name}</strong>'s interview?</p>
+            <p style={{ margin: '1rem 0', color: 'var(--text-secondary)' }}>Are you sure you want to terminate <strong>{terminatingLp.student_name}</strong>'s interview?</p>
             <div style={{ textAlign: 'left', marginBottom: '1.5rem' }}>
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>Termination Reason:</label>
               <textarea 
@@ -2009,7 +2029,7 @@ const SummaryCard = ({ label, value, color, icon }) => (
   <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', background: '#fff', borderLeft: `5px solid ${color}`, boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
     <div style={{ background: `${color}15`, width: '45px', height: '45px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>{icon}</div>
     <div>
-      <div style={{ color: '#718096', fontSize: '0.7rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.025em' }}>{label}</div>
+      <div style={{ color: 'var(--text-secondary)', fontSize: '0.7rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.025em' }}>{label}</div>
       <div style={{ margin: '2px 0 0', color: '#1e293b', fontSize: '1.2rem', fontWeight: '800' }}>{value !== undefined ? value : 0}</div>
     </div>
   </div>
@@ -2024,7 +2044,7 @@ const MetricBox = ({ label, value, color }) => (
 
 const DetailRow = ({ label, value }) => (
   <div style={{ marginBottom: '15px', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
-    <div style={{ fontSize: '0.65rem', color: '#718096', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.05em' }}>{label}</div>
+    <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.05em' }}>{label}</div>
     <div style={{ fontWeight: '600', fontSize: '0.9rem', color: '#1e293b', marginTop: '2px' }}>{sanitizeDisplay(value, 'Not Provided')}</div>
   </div>
 );

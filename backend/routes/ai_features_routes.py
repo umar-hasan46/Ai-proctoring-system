@@ -20,7 +20,7 @@ def get_all_interview_results():
             cur.execute("SELECT * FROM results ORDER BY created_at DESC")
         rows = cur.fetchall()
         columns = [d[0] for d in cur.description]
-        return jsonify({"success": True, "results": [dict(zip(columns, row)) for row in rows]})
+        return jsonify({"success": True, "results": [dict(row) for row in rows]})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
     finally:
@@ -36,7 +36,7 @@ def get_single_result(interview_id):
         row = cur.fetchone()
         if row:
             columns = [d[0] for d in cur.description]
-            return jsonify({"success": True, "result": dict(zip(columns, row))})
+            return jsonify({"success": True, "result": dict(row)})
         return jsonify({"success": True, "result": None, "message": "Result not found"}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
@@ -88,7 +88,7 @@ def get_candidate_feedback(interview_id):
         row = cur.fetchone()
         if row:
             columns = [d[0] for d in cur.description]
-            feedback = dict(zip(columns, row))
+            feedback = dict(row)
             try:
                 if isinstance(feedback['strengths'], str): feedback['strengths'] = json.loads(feedback['strengths'])
                 if isinstance(feedback['areas_to_improve'], str): feedback['areas_to_improve'] = json.loads(feedback['areas_to_improve'])
@@ -159,7 +159,7 @@ def get_admin_report(interview_id):
         row = cur.fetchone()
         if row:
             columns = [d[0] for d in cur.description]
-            return jsonify({"success": True, "report": dict(zip(columns, row))})
+            return jsonify({"success": True, "report": dict(row)})
         return jsonify({"success": True, "report": None, "message": "Report not found"}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
@@ -175,7 +175,7 @@ def get_admin_reports():
         cur.execute("SELECT * FROM admin_ai_reports ORDER BY created_at DESC")
         rows = cur.fetchall()
         columns = [d[0] for d in cur.description]
-        return jsonify({"success": True, "reports": [dict(zip(columns, row)) for row in rows]})
+        return jsonify({"success": True, "reports": [dict(row) for row in rows]})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
     finally:
@@ -313,7 +313,7 @@ def chatbot_history(user_email):
         cur.execute("SELECT * FROM chatbot_messages WHERE user_email = %s ORDER BY created_at ASC", (user_email,))
         rows = cur.fetchall()
         columns = [d[0] for d in cur.description]
-        return jsonify({"success": True, "history": [dict(zip(columns, row)) for row in rows]})
+        return jsonify({"success": True, "history": [dict(row) for row in rows]})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
     finally:
@@ -328,7 +328,7 @@ def get_all_notifications():
         cur.execute("SELECT * FROM notifications ORDER BY created_at DESC")
         rows = cur.fetchall()
         columns = [d[0] for d in cur.description]
-        return jsonify({"success": True, "notifications": [dict(zip(columns, row)) for row in rows]})
+        return jsonify({"success": True, "notifications": [dict(row) for row in rows]})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
     finally:
@@ -343,7 +343,7 @@ def get_user_notifications(email):
         cur.execute("SELECT * FROM notifications WHERE user_email = %s ORDER BY created_at DESC", (email,))
         rows = cur.fetchall()
         columns = [d[0] for d in cur.description]
-        return jsonify({"success": True, "notifications": [dict(zip(columns, row)) for row in rows]})
+        return jsonify({"success": True, "notifications": [dict(row) for row in rows]})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
     finally:

@@ -62,7 +62,7 @@ function Settings({ user: propUser, onUpdate }) {
     return (
       <div className="card" style={{ maxWidth: '600px', margin: '100px auto', textAlign: 'center', padding: '50px' }}>
         <h2 style={{ color: '#e53e3e' }}>Access Denied</h2>
-        <p style={{ color: '#718096' }}>Please login again to change settings.</p>
+        <p style={{ color: 'var(--text-secondary)' }}>Please login again to change settings.</p>
         <button className="btn btn-primary" style={{ marginTop: '20px' }} onClick={() => navigate('/login')}>Go to Login</button>
       </div>
     );
@@ -163,8 +163,8 @@ function Settings({ user: propUser, onUpdate }) {
   return (
     <div style={{ maxWidth: '700px', margin: '40px auto' }} className="card">
       <div style={{ padding: '20px' }}>
-        <h2 style={{ color: '#1e3a5f', marginBottom: '0.5rem' }}>Account Settings</h2>
-        <p style={{ color: '#718096', marginBottom: '2rem' }}>Update your personal information and profile security.</p>
+        <h2 style={{ color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Account Settings</h2>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Update your personal information and profile security.</p>
 
         {message.text && (
           <div style={{
@@ -180,7 +180,7 @@ function Settings({ user: propUser, onUpdate }) {
         )}
 
         <form onSubmit={handleSubmit}>
-          <div style={{ textAlign: 'center', marginBottom: '2.5rem', background: '#f8fafc', padding: '30px', borderRadius: '15px', position: 'relative' }}>
+          <div style={{ textAlign: 'center', marginBottom: '2.5rem', background: 'var(--bg-primary)', padding: '30px', borderRadius: '15px', position: 'relative' }}>
             <div style={{ position: 'relative', display: 'inline-block' }}>
               {previewUrl ? (
                 <img
@@ -237,7 +237,7 @@ function Settings({ user: propUser, onUpdate }) {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             <div className="form-group">
-              <label style={{ fontWeight: '600', color: '#4a5568' }}>Full Name</label>
+              <label style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>Full Name</label>
               <input
                 type="text"
                 value={formData.full_name}
@@ -247,7 +247,7 @@ function Settings({ user: propUser, onUpdate }) {
               />
             </div>
             <div className="form-group">
-              <label style={{ fontWeight: '600', color: '#4a5568' }}>Email Address</label>
+              <label style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>Email Address</label>
               <input
                 type="email"
                 value={formData.email}
@@ -260,7 +260,7 @@ function Settings({ user: propUser, onUpdate }) {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
             <div className="form-group">
-              <label style={{ fontWeight: '600', color: '#4a5568' }}>Phone Number</label>
+              <label style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>Phone Number</label>
               <input
                 type="text"
                 value={formData.phone}
@@ -270,7 +270,7 @@ function Settings({ user: propUser, onUpdate }) {
               />
             </div>
             <div className="form-group">
-              <label style={{ fontWeight: '600', color: '#4a5568' }}>New Password (Optional)</label>
+              <label style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>New Password (Optional)</label>
               <input
                 type="password"
                 placeholder="Leave blank to keep current"
@@ -283,9 +283,9 @@ function Settings({ user: propUser, onUpdate }) {
 
           {user.role === 'admin' && (
             <div style={{ marginTop: '30px', borderTop: '1px solid #e2e8f0', paddingTop: '20px' }}>
-              <h3 style={{ color: '#1e3a5f', marginBottom: '1.2rem', fontSize: '1.2rem' }}>Notification Settings</h3>
+              <h3 style={{ color: 'var(--text-primary)', marginBottom: '1.2rem', fontSize: '1.2rem' }}>Notification Settings</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: '#4a5568' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: 'var(--text-secondary)' }}>
                   <input
                     type="checkbox"
                     checked={adminSettings.emailAlerts}
@@ -294,7 +294,7 @@ function Settings({ user: propUser, onUpdate }) {
                   />
                   <span>Receive email alerts for new student registrations and interview submissions</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: '#4a5568' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: 'var(--text-secondary)' }}>
                   <input
                     type="checkbox"
                     checked={adminSettings.securityFlags}
@@ -305,9 +305,9 @@ function Settings({ user: propUser, onUpdate }) {
                 </label>
               </div>
 
-              <h3 style={{ color: '#1e3a5f', marginBottom: '1.2rem', marginTop: '25px', fontSize: '1.2rem' }}>System Settings</h3>
+              <h3 style={{ color: 'var(--text-primary)', marginBottom: '1.2rem', marginTop: '25px', fontSize: '1.2rem' }}>System Settings</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: '#4a5568' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: 'var(--text-secondary)' }}>
                   <input
                     type="checkbox"
                     checked={adminSettings.maintenanceMode}
@@ -316,7 +316,7 @@ function Settings({ user: propUser, onUpdate }) {
                   />
                   <span>Enable System Maintenance Mode (locks non-admin logins)</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: '#4a5568' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: 'var(--text-secondary)' }}>
                   <input
                     type="checkbox"
                     checked={adminSettings.autoEvaluate}
@@ -325,8 +325,8 @@ function Settings({ user: propUser, onUpdate }) {
                   />
                   <span>Automatically evaluate candidate answers using Gemini AI</span>
                 </label>
-                <h3 style={{ color: '#1e3a5f', marginBottom: '1.2rem', marginTop: '25px', fontSize: '1.2rem' }}>Proctoring Settings</h3>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: '#4a5568' }}>
+                <h3 style={{ color: 'var(--text-primary)', marginBottom: '1.2rem', marginTop: '25px', fontSize: '1.2rem' }}>Proctoring Settings</h3>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: 'var(--text-secondary)' }}>
                   <input
                     type="checkbox"
                     checked={adminSettings.tabSwitchDetection}
@@ -335,7 +335,7 @@ function Settings({ user: propUser, onUpdate }) {
                   />
                   <span>Enable Tab-Switch Detection</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: '#4a5568' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: 'var(--text-secondary)' }}>
                   <input
                     type="checkbox"
                     checked={adminSettings.faceDetection}
@@ -344,7 +344,7 @@ function Settings({ user: propUser, onUpdate }) {
                   />
                   <span>Enable Face Detection</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: '#4a5568' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.95rem', color: 'var(--text-secondary)' }}>
                   <input
                     type="checkbox"
                     checked={adminSettings.audioMonitoring}
@@ -381,8 +381,8 @@ function Settings({ user: propUser, onUpdate }) {
       {showRemoveConfirm && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.35)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 10000 }}>
           <div className="card" style={{ maxWidth: '450px', padding: '2rem', textAlign: 'center' }}>
-            <h3 style={{ color: '#1e3a5f' }}>Remove Photo</h3>
-            <p style={{ margin: '1.5rem 0', color: '#4a5568' }}>Are you sure you want to remove your profile picture?</p>
+            <h3 style={{ color: 'var(--text-primary)' }}>Remove Photo</h3>
+            <p style={{ margin: '1.5rem 0', color: 'var(--text-secondary)' }}>Are you sure you want to remove your profile picture?</p>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
               <button className="btn btn-outline" onClick={() => setShowRemoveConfirm(false)}>Cancel</button>
               <button className="btn btn-danger" onClick={handleRemovePic}>Yes, Remove</button>

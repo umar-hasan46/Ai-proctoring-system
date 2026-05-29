@@ -870,6 +870,16 @@ function ActiveInterview({ user }) {
   };
 
   
+  const onClickSubmitButton = () => {
+    const { answered, skipped, notAttempted } = computeCounts();
+    const unansweredCount = skipped + notAttempted;
+    if (unansweredCount === 0) {
+      handleSubmitInterview();
+    } else {
+      setShowConfirmSubmit(true);
+    }
+  };
+
   const handleNextQuestion = async () => {
     stopListening();
     setSubmitting(true);
@@ -883,7 +893,13 @@ function ActiveInterview({ user }) {
       if (textareaRef.current) textareaRef.current.value = "";
       setLiveTranscript("");
     } else {
-      await handleFinishInterview("Completed");
+      const { answered, skipped, notAttempted } = computeCounts();
+      const unansweredCount = skipped + notAttempted;
+      if (unansweredCount === 0) {
+        await handleFinishInterview("Completed");
+      } else {
+        setShowConfirmSubmit(true);
+      }
     }
     setSubmitting(false);
   };
@@ -912,7 +928,7 @@ const handlePrev = async () => {
         textareaRef.current.value = newAnswers[questions[nextIdx]?.id] || '';
       }
     } else {
-      handleSubmitInterview();
+      onClickSubmitButton();
     }
   };
 
@@ -992,7 +1008,7 @@ const handlePrev = async () => {
   if (authLoading) {
     return (
       <div className="card" style={{ maxWidth: '400px', margin: '100px auto', textAlign: 'center', padding: '3rem' }}>
-        <h3 style={{ color: '#1e3a5f' }}>Loading interview...</h3>
+        <h3 style={{ color: 'var(--text-primary)' }}>Loading interview...</h3>
       </div>
     );
   }
@@ -1008,8 +1024,8 @@ const handlePrev = async () => {
   if (backendStatus === 'checking') {
     return (
       <div className="card" style={{ maxWidth: '450px', margin: '100px auto', textAlign: 'center', padding: '3rem' }}>
-        <h3 style={{ color: '#1e3a5f' }}>Connecting to Server...</h3>
-        <p style={{ color: '#718096', marginTop: '10px' }}>Please wait while we establish a connection.</p>
+        <h3 style={{ color: 'var(--text-primary)' }}>Connecting to Server...</h3>
+        <p style={{ color: 'var(--text-secondary)', marginTop: '10px' }}>Please wait while we establish a connection.</p>
         <p style={{ fontSize: '0.85rem', color: '#a0aec0', marginTop: '1rem' }}>Note: Free tier servers may take up to 50 seconds to wake up.</p>
       </div>
     );
@@ -1019,7 +1035,7 @@ const handlePrev = async () => {
     return (
       <div className="card" style={{ maxWidth: '400px', margin: '100px auto', textAlign: 'center', padding: '3rem' }}>
         <h3 style={{ color: '#e53e3e' }}>{backendError || 'Backend Server Offline'}</h3>
-        <p style={{ color: '#718096', marginTop: '10px' }}>Could not connect to the backend server. It might be sleeping or down.</p>
+        <p style={{ color: 'var(--text-secondary)', marginTop: '10px' }}>Could not connect to the backend server. It might be sleeping or down.</p>
         <button className="btn btn-primary" onClick={checkBackendHealth} style={{ marginTop: '1rem' }}>Retry Connection</button>
       </div>
     );
@@ -1041,8 +1057,8 @@ const handlePrev = async () => {
   if (loading) {
     return (
       <div className="card" style={{ maxWidth: '400px', margin: '100px auto', textAlign: 'center', padding: '3rem' }}>
-        <h3 style={{ color: '#1e3a5f' }}>Loading Interview...</h3>
-        <p style={{ color: '#718096', marginTop: '10px' }}>Preparing questions and setting up proctoring environment.</p>
+        <h3 style={{ color: 'var(--text-primary)' }}>Loading Interview...</h3>
+        <p style={{ color: 'var(--text-secondary)', marginTop: '10px' }}>Preparing questions and setting up proctoring environment.</p>
       </div>
     );
   }
@@ -1050,8 +1066,8 @@ const handlePrev = async () => {
   if (!isStarted) {
     return (
       <div className="card" style={{ maxWidth: '600px', margin: '100px auto', textAlign: 'center', padding: '3rem' }}>
-        <h1 style={{ color: '#1e3a5f' }}>Proctored Interview</h1>
-        <p style={{ margin: '1.5rem 0', color: '#718096' }}>Please ensure you are in a well-lit, quiet environment.</p>
+        <h1 style={{ color: 'var(--text-primary)' }}>Proctored Interview</h1>
+        <p style={{ margin: '1.5rem 0', color: 'var(--text-secondary)' }}>Please ensure you are in a well-lit, quiet environment.</p>
         <button className="btn btn-primary" onClick={handleStart} style={{ padding: '1rem 2rem' }}>Start Interview Now</button>
         {warningMessage && <p style={{ color: '#e53e3e', marginTop: '1rem', fontWeight: 'bold' }}>{warningMessage}</p>}
       </div>
@@ -1115,7 +1131,7 @@ const handlePrev = async () => {
           </div>
         )}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <span style={{ fontWeight: 'bold', color: '#1e3a5f', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <span style={{ fontWeight: 'bold', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <span>Session: {currentQuestion?.category || 'General'} | Topic: {currentQuestion?.topic || 'General'}</span>
             <span style={{ 
               color: timeLeft <= 300 ? '#e53e3e' : '#3182ce',
@@ -1150,8 +1166,8 @@ const handlePrev = async () => {
                 justifyContent: 'center',
                 padding: '6px 12px',
                 borderRadius: '8px',
-                backgroundColor: voiceEnabled ? '#ebf8ff' : '#f7fafc',
-                color: voiceEnabled ? '#3182ce' : '#718096',
+                backgroundColor: voiceEnabled ? '#ebf8ff' : 'var(--bg-primary)',
+                color: voiceEnabled ? '#3182ce' : 'var(--text-secondary)',
                 border: '1px solid ' + (voiceEnabled ? '#bee3f8' : '#e2e8f0'),
                 transition: 'all 0.2s',
                 height: 'fit-content',
@@ -1193,7 +1209,7 @@ const handlePrev = async () => {
           </div>
         )}
 
-        <p className="question-text" style={{ color: '#0f172a', fontSize: '20px', fontWeight: '600', lineHeight: '1.6', background: '#f8fafc', padding: '18px', borderRadius: '12px', border: '1px solid #e2e8f0', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
+        <p className="question-text" style={{ color: '#0f172a', fontSize: '20px', fontWeight: '600', lineHeight: '1.6', background: 'var(--bg-primary)', padding: '18px', borderRadius: '12px', border: '1px solid #e2e8f0', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
           {currentQuestion?.question || currentQuestion?.question_text || currentQuestion?.text || "Question text not available"}
         </p>
         <div style={{ marginBottom: '0.5rem' }}>
@@ -1204,7 +1220,7 @@ const handlePrev = async () => {
             defaultValue={answers[currentQuestion?.id] || ''}
             onChange={(e) => handleAnswerChange(e.target.value)}
             disabled={isTerminated || submitting}
-            style={{ width: '100%', padding: '1rem', fontSize: '1.1rem', borderRadius: '8px', border: '1px solid #cbd5e0', marginBottom: 0, boxSizing: 'border-box' }}
+            style={{ width: '100%', padding: '1rem', fontSize: '1.1rem', borderRadius: '8px', border: '1px solid var(--border-color)', marginBottom: 0, boxSizing: 'border-box' }}
           ></textarea>
         </div>
         {liveTranscript && (
@@ -1223,8 +1239,8 @@ const handlePrev = async () => {
                 width: '68px',
                 height: '68px',
                 borderRadius: '50%',
-                border: '2px solid ' + (isListening ? '#ef4444' : (isMicEnabled ? '#22c55e' : '#cbd5e0')),
-                background: isListening ? '#fee2e2' : (isMicEnabled ? '#f0fdf4' : '#f8fafc'),
+                border: '2px solid ' + (isListening ? '#ef4444' : (isMicEnabled ? '#22c55e' : 'var(--border-color)')),
+                background: isListening ? '#fee2e2' : (isMicEnabled ? '#f0fdf4' : 'var(--bg-primary)'),
                 color: isListening ? '#ef4444' : (isMicEnabled ? '#16a34a' : '#64748b'),
                 display: 'flex',
                 alignItems: 'center',
@@ -1277,10 +1293,10 @@ const handlePrev = async () => {
             {currentIdx < questions.length - 1 ? (
               <>
                 <button className="btn btn-primary" onClick={handleNextQuestion} disabled={isTerminated || submitting}>{submitting ? 'Saving...' : 'Next'}</button>
-                <button className="btn btn-primary" onClick={() => setShowConfirmSubmit(true)} disabled={submitting || isTerminated}>Submit Interview</button>
+                <button className="btn btn-primary" onClick={onClickSubmitButton} disabled={submitting || isTerminated}>Submit Interview</button>
               </>
             ) : (
-              <button className="btn btn-primary" onClick={() => setShowConfirmSubmit(true)} disabled={submitting || isTerminated}>{submitting ? 'Submitting...' : 'Submit Interview'}</button>
+              <button className="btn btn-primary" onClick={onClickSubmitButton} disabled={submitting || isTerminated}>{submitting ? 'Submitting...' : 'Submit Interview'}</button>
             )}
           </div>
         </div>
@@ -1308,7 +1324,7 @@ const handlePrev = async () => {
         </div>
         <div className="card" style={{ marginTop: '1rem', padding: '1rem' }}>
           <h4>Instructions</h4>
-          <ul style={{ fontSize: '0.75rem', paddingLeft: '1.2rem', marginTop: '0.5rem', color: '#4a5568' }}>
+          <ul style={{ fontSize: '0.75rem', paddingLeft: '1.2rem', marginTop: '0.5rem', color: 'var(--text-secondary)' }}>
             <li>Stay in focus of the camera.</li>
             <li>No tab switching allowed.</li>
             <li>Maintain silence in surroundings.</li>
@@ -1320,31 +1336,37 @@ const handlePrev = async () => {
       {showConfirmSubmit && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(255, 255, 255, 0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 10000 }}>
           <div className="card" style={{ maxWidth: '480px', width: '90%', padding: '2.5rem', textAlign: 'center', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', background: '#ffffff', border: '1px solid #e2e8f0' }}>
-            <h3 style={{ color: '#1e3a5f', fontSize: '1.5rem', marginBottom: '1rem' }}>Submit Interview?</h3>
-            <p style={{ color: '#4a5568', fontSize: '1rem', marginBottom: '1.5rem' }}>Are you sure you want to submit the interview?</p>
+            <h3 style={{ color: 'var(--text-primary)', fontSize: '1.5rem', marginBottom: '1rem' }}>
+              {computeCounts().skipped + computeCounts().notAttempted > 0 ? "Unanswered Questions Warning" : "Submit Interview?"}
+            </h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', fontWeight: '600', marginBottom: '1.5rem', lineHeight: '1.5' }}>
+              {computeCounts().skipped + computeCounts().notAttempted > 0 
+                ? "You have unanswered questions. Do you still want to submit?" 
+                : "Are you sure you want to submit the interview?"}
+            </p>
             
-            <div style={{ background: '#f7fafc', padding: '1.5rem', borderRadius: '12px', textAlign: 'left', marginBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #edf2f7', paddingBottom: '0.5rem' }}>
-                <span style={{ color: '#4a5568', fontWeight: '500' }}>Total Questions</span>
+            <div style={{ background: 'var(--bg-primary)', padding: '1.5rem', borderRadius: '12px', textAlign: 'left', marginBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>Total Questions</span>
                 <span style={{ color: '#1a0dab', fontWeight: 'bold' }}>30</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #edf2f7', paddingBottom: '0.5rem' }}>
-                <span style={{ color: '#4a5568', fontWeight: '500' }}>Answered Questions</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>Answered Questions</span>
                 <span style={{ color: '#38a169', fontWeight: 'bold' }}>{computeCounts().answered}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #edf2f7', paddingBottom: '0.5rem' }}>
-                <span style={{ color: '#4a5568', fontWeight: '500' }}>Skipped Questions</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>Skipped Questions</span>
                 <span style={{ color: '#d69e2e', fontWeight: 'bold' }}>{computeCounts().skipped}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #edf2f7', paddingBottom: '0.5rem' }}>
-                <span style={{ color: '#4a5568', fontWeight: '500' }}>Not Attempted Questions</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>Not Attempted Questions</span>
                 <span style={{ color: '#e53e3e', fontWeight: 'bold' }}>{computeCounts().notAttempted}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <span style={{ fontWeight: 'bold', color: '#4a5568' }}>Question {currentIdx + 1} of 30</span>
+                <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>Question {currentIdx + 1} of 30</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#4a5568', fontWeight: '500' }}>Time Left</span>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>Time Left</span>
                 <span style={{ color: '#3182ce', fontWeight: 'bold' }}><InterviewTimer /></span>
               </div>
             </div>
@@ -1488,7 +1510,7 @@ const handlePrev = async () => {
         <div ref={liveTranscriptBottomRef} style={{flex:1,color:"#93c5fd",fontSize:"0.78rem",fontStyle:"italic",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
           {assistantSpeaking ? "AI Assistant is speaking..." : (isListening ? "Mic Active — speak now" : "Mic OFF — click Turn On Mic to start speaking")}
         </div>
-        <div style={{ padding: '1rem', background: '#e2e8f0', color: '#4a5568', fontWeight: 'bold', textAlign: 'center' }}>
+        <div style={{ padding: '1rem', background: '#e2e8f0', color: 'var(--text-secondary)', fontWeight: 'bold', textAlign: 'center' }}>
           Q{currentIdx + 1}/30
         </div>
       </div>

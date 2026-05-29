@@ -12,7 +12,7 @@ function BackButton({ onClick, label = "Back" }) {
         border: '1px solid #e2e8f0',
         padding: '0.6rem 1.2rem',
         borderRadius: '8px',
-        color: '#4a5568',
+        color: 'var(--text-secondary)',
         fontWeight: '600',
         cursor: 'pointer',
         boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
@@ -21,8 +21,8 @@ function BackButton({ onClick, label = "Back" }) {
         marginBottom: '1rem'
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.background = '#f7fafc';
-        e.currentTarget.style.borderColor = '#cbd5e0';
+        e.currentTarget.style.background = 'var(--bg-primary)';
+        e.currentTarget.style.borderColor = 'var(--border-color)';
         e.currentTarget.style.transform = 'translateX(-2px)';
       }}
       onMouseLeave={(e) => {

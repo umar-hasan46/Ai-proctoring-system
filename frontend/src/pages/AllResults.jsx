@@ -165,8 +165,8 @@ function AllResults({ isReportView = false }) {
     <div style={{ maxWidth: '1300px', margin: '0 auto', padding: '20px' }}>
       <div className="card" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
         <div>
-          <h1 style={{ color: '#1e3a5f', margin: 0 }}>{isReportView ? 'Interview Performance Reports' : 'My Interview Results'}</h1>
-          <p style={{ color: '#718096', margin: '0.5rem 0 0' }}>Comprehensive audit of candidate integrity and skills.</p>
+          <h1 style={{ color: 'var(--text-primary)', margin: 0 }}>{isReportView ? 'Interview Performance Reports' : 'My Interview Results'}</h1>
+          <p style={{ color: 'var(--text-secondary)', margin: '0.5rem 0 0' }}>Comprehensive audit of candidate integrity and skills.</p>
         </div>
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
           {isReportView && (
@@ -174,7 +174,7 @@ function AllResults({ isReportView = false }) {
               📥 Export CSV
             </button>
           )}
-          <select value={filter} onChange={(e) => setFilter(e.target.value)} style={{ padding: '0.6rem 1rem', borderRadius: '8px', border: '1px solid #cbd5e0', outline: 'none' }}>
+          <select value={filter} onChange={(e) => setFilter(e.target.value)} style={{ padding: '0.6rem 1rem', borderRadius: '8px', border: '1px solid var(--border-color)', outline: 'none' }}>
             <option value="all">All Status</option>
             <option value="completed">Completed</option>
             <option value="terminated">Terminated</option>
@@ -205,7 +205,7 @@ function AllResults({ isReportView = false }) {
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1000px' }}>
             <thead>
-              <tr style={{ background: '#f8fafc', borderBottom: '2px solid #edf2f7' }}>
+              <tr style={{ background: 'var(--bg-primary)', borderBottom: '2px solid var(--border-color)' }}>
                 <th style={{ padding: '18px 15px', textAlign: 'left', color: '#64748b', fontSize: '0.85rem' }}>Candidate / Role</th>
                 {isReportView && <th style={{ padding: '18px 15px', textAlign: 'center', color: '#64748b', fontSize: '0.85rem' }}>Attempt</th>}
                 <th style={{ padding: '18px 15px', textAlign: 'left', color: '#64748b', fontSize: '0.85rem' }}>Interview ID</th>
@@ -222,14 +222,14 @@ function AllResults({ isReportView = false }) {
             </thead>
             <tbody>
               {filteredResults.map((r, idx) => (
-                <tr key={idx} style={{ borderBottom: '1px solid #edf2f7', transition: 'background 0.2s' }} onMouseOver={(e) => e.currentTarget.style.background = '#fcfcfc'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
+                <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background 0.2s' }} onMouseOver={(e) => e.currentTarget.style.background = '#fcfcfc'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
                   <td style={{ padding: '15px' }}>
                     <div style={{ fontWeight: '700', color: '#1e293b' }}>{r.candidate_name || r.full_name || 'N/A'}</div>
                     <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{r.candidate_email || r.user_email || 'N/A'} • {r.role || r.role_applied}</div>
                   </td>
                   {isReportView && (
                     <td style={{ padding: '15px', textAlign: 'center' }}>
-                      <span style={{ fontWeight: '600', color: '#4a5568' }}>#{r.attempt_no || 1}</span>
+                      <span style={{ fontWeight: '600', color: 'var(--text-secondary)' }}>#{r.attempt_no || 1}</span>
                     </td>
                   )}
                   <td style={{ padding: '15px' }}>

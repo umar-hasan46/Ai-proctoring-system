@@ -7,6 +7,19 @@ const Navbar = React.memo(function Navbar({ user, onLogout }) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [theme, setTheme] = React.useState(() => {
+    return localStorage.getItem("theme") || "light";
+  });
+
+  React.useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === "light" ? "dark" : "light");
+  };
+
   const handleLogoutClick = () => {
     localStorage.clear();
     sessionStorage.clear();
@@ -29,19 +42,20 @@ const Navbar = React.memo(function Navbar({ user, onLogout }) {
     fontWeight: isActive(path) ? 'bold' : 'normal'
   });
 
-
   return (
     <nav style={{
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
       padding: '0.8rem 2rem',
-      background: 'linear-gradient(135deg, #1e3a5f 0%, #152b47 100%)',
+      background: theme === 'light' ? 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)' : 'var(--bg-secondary)',
       color: '#fff',
       boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
       position: 'sticky',
       top: 0,
-      zIndex: 1000
+      zIndex: 1000,
+      borderBottom: theme === 'light' ? 'none' : '1px solid var(--border-color)',
+      transition: 'background 0.3s ease, border-color 0.3s ease'
     }}>
       <div style={{ fontSize: '1.4rem', fontWeight: 'bold', letterSpacing: '1px' }}>
         <Link to="/dashboard" style={{ color: '#fff', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -69,6 +83,26 @@ const Navbar = React.memo(function Navbar({ user, onLogout }) {
           </>
         )}
         <div style={{ margin: '0 10px', height: '24px', width: '1px', background: 'rgba(255,255,255,0.2)' }}></div>
+        <button
+          onClick={toggleTheme}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#fff',
+            fontSize: '1.2rem',
+            cursor: 'pointer',
+            padding: '0.4rem',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'background 0.2s',
+            marginRight: '8px',
+          }}
+          title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+        >
+          {theme === 'light' ? '🌙' : '☀️'}
+        </button>
         <NotificationBell user={user} />
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: '10px' }}>
           <Avatar

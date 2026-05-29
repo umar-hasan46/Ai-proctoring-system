@@ -13,6 +13,12 @@ class HybridRow(psycopg2.extras.RealDictRow):
             return list(self.values())[key]
         return super().__getitem__(key)
 
+    def __iter__(self):
+        """Yield values instead of keys so tuple unpacking works correctly.
+        e.g. `a, b, c = row` gives column values, not column names."""
+        return iter(self.values())
+
+
 class RealDictCursor(psycopg2.extras.RealDictCursor):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -23,10 +29,19 @@ def get_ist_time():
 
 def get_db_connection():
     try:
+        from dotenv import load_dotenv
+        # Try loading .env from backend directory first, then current working directory
+        load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+        load_dotenv()
+        
         database_url = os.environ.get("DATABASE_URL")
         if not database_url:
-            print("DATABASE_URL not found")
-            return None
+            host = os.environ.get("DB_HOST", "127.0.0.1")
+            port = os.environ.get("DB_PORT", "5432")
+            db_name = os.environ.get("DB_NAME", "ai_detection")
+            user = os.environ.get("DB_USER", "postgres")
+            password = os.environ.get("DB_PASSWORD", "umarhasan46")
+            database_url = f"postgresql://{user}:{password}@{host}:{port}/{db_name}"
 
         conn = psycopg2.connect(
             database_url,

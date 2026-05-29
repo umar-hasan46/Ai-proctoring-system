@@ -166,7 +166,7 @@ const AIChatbot = ({ user: propUser }) => {
           width: '65px',
           height: '65px',
           borderRadius: '50%',
-          background: 'linear-gradient(135deg, #1e3a5f 0%, #4f46e5 100%)',
+          background: 'linear-gradient(135deg, var(--text-primary) 0%, #4f46e5 100%)',
           border: 'none',
           color: '#fff',
           fontSize: '28px',
@@ -202,7 +202,7 @@ const AIChatbot = ({ user: propUser }) => {
           {}
           <div style={{
             padding: '20px',
-            background: 'linear-gradient(135deg, #1e3a5f 0%, #4f46e5 100%)',
+            background: 'linear-gradient(135deg, var(--text-primary) 0%, #4f46e5 100%)',
             color: '#fff',
             display: 'flex',
             justifyContent: 'space-between',

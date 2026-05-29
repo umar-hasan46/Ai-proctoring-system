@@ -94,7 +94,7 @@ def get_analysis(id):
         cur.execute("SELECT * FROM answers WHERE interview_id = %s ORDER BY question_no ASC", (id,))
         rows = cur.fetchall()
         columns = [d[0] for d in cur.description]
-        return jsonify({"success": True, "analysis": [dict(zip(columns, row)) for row in rows]})
+        return jsonify({"success": True, "analysis": [dict(row) for row in rows]})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
     finally:

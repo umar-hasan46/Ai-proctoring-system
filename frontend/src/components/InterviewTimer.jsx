@@ -40,7 +40,7 @@ function InterviewTimer({ onTimeUp, currentQuestionIdx, totalQuestions }) {
   const timerStyle = {
     padding: '0.5rem 1rem',
     borderRadius: '8px',
-    backgroundColor: isCritical ? '#fff5f5' : (isWarning ? '#fffaf0' : '#f7fafc'),
+    backgroundColor: isCritical ? '#fff5f5' : (isWarning ? '#fffaf0' : 'var(--bg-primary)'),
     color: isCritical ? '#c53030' : (isWarning ? '#dd6b20' : '#2b6cb0'),
     border: isCritical ? '2px solid #e53e3e' : (isWarning ? '2px solid #dd6b20' : '1px solid #e2e8f0'),
     fontWeight: 'bold',

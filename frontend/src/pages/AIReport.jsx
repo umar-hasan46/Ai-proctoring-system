@@ -129,8 +129,8 @@ function AIReport() {
 
       <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', padding: '20px 30px', flexWrap: 'wrap', gap: '15px' }}>
         <div>
-          <h1 style={{ color: '#1e3a5f', margin: 0, fontSize: '1.8rem' }}>AI Interview Report</h1>
-          <p style={{ color: '#718096', margin: '5px 0 0', fontSize: '0.95rem' }}>
+          <h1 style={{ color: 'var(--text-primary)', margin: 0, fontSize: '1.8rem' }}>AI Interview Report</h1>
+          <p style={{ color: 'var(--text-secondary)', margin: '5px 0 0', fontSize: '0.95rem' }}>
             <strong>Candidate:</strong> {report.candidate_name || 'N/A'} | <strong>ID:</strong> #{id} | <strong>Date:</strong> {formatToDDMMYYYY(report.interview_date_ist || report.created_at || report.indian_time)}
           </p>
         </div>
@@ -154,12 +154,12 @@ function AIReport() {
           </div>
 
           <div className="card" style={{ padding: '25px' }}>
-            <h3 style={{ color: '#1e3a5f', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h3 style={{ color: 'var(--text-primary)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span>🕒</span> Timestamped AI Analysis Log
             </h3>
             <div style={{ maxHeight: '480px', overflowY: 'auto', border: '1px solid #f1f5f9', borderRadius: '12px' }}>
               <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0' }}>
-                <thead style={{ position: 'sticky', top: 0, background: '#f8fafc', zIndex: 10 }}>
+                <thead style={{ position: 'sticky', top: 0, background: 'var(--bg-primary)', zIndex: 10 }}>
                   <tr>
                     <th style={{ textAlign: 'left', padding: '15px', borderBottom: '1px solid #f1f5f9', color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Time</th>
                     <th style={{ textAlign: 'left', padding: '15px', borderBottom: '1px solid #f1f5f9', color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Event</th>
@@ -185,8 +185,8 @@ function AIReport() {
                       id={`log-${log.timestamp}`}
                       className="log-item"
                       onClick={() => handleJump(log.timestamp)}
-                      style={{ cursor: 'pointer', borderBottom: '1px solid #f8fafc', transition: 'all 0.2s' }}
-                      onMouseOver={(e) => e.currentTarget.style.background = '#f8fafc'}
+                      style={{ cursor: 'pointer', borderBottom: '1px solid var(--bg-primary)', transition: 'all 0.2s' }}
+                      onMouseOver={(e) => e.currentTarget.style.background = 'var(--bg-primary)'}
                       onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
                     >
                       <td style={{ padding: '15px', color: '#4f46e5', fontWeight: '700', fontSize: '0.9rem' }}>{log.timestamp || 'N/A'}</td>
@@ -218,7 +218,7 @@ function AIReport() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
           <div className="card" style={{ padding: '25px' }}>
-            <h3 style={{ color: '#1e3a5f', marginBottom: '20px' }}>Candidate Metrics</h3>
+            <h3 style={{ color: 'var(--text-primary)', marginBottom: '20px' }}>Candidate Metrics</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Overall Score</span>
@@ -240,7 +240,7 @@ function AIReport() {
                 <span style={{ fontSize: '1.1rem', fontWeight: '800', color: (report.cheating_alert_count || 0) > 0 ? '#dc2626' : '#1e293b' }}>{report.cheating_alert_count || 0}</span>
               </div>
 
-              <div style={{ marginTop: '10px', padding: '18px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+              <div style={{ marginTop: '10px', padding: '18px', background: 'var(--bg-primary)', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
                 <h4 style={{ margin: '0 0 10px', color: '#1e293b', fontSize: '0.95rem' }}>AI Executive Summary</h4>
                 <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: '1.6', margin: 0 }}>{report.admin_summary || 'No summary generated for this interview.'}</p>
               </div>
@@ -272,7 +272,7 @@ function AIReport() {
           )}
 
           <div className="card" style={{ padding: '25px', border: '1px solid #e2e8f0' }}>
-            <h3 style={{ color: '#1e3a5f', marginBottom: '15px' }}>Recruiter Decision</h3>
+            <h3 style={{ color: 'var(--text-primary)', marginBottom: '15px' }}>Recruiter Decision</h3>
             <div style={{ marginBottom: '15px' }}>
               <label style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 'bold', display: 'block', marginBottom: '6px' }}>Hiring Status</label>
               <select
@@ -282,7 +282,7 @@ function AIReport() {
                   width: '100%',
                   padding: '10px',
                   borderRadius: '8px',
-                  border: '1px solid #cbd5e0',
+                  border: '1px solid var(--border-color)',
                   fontSize: '0.95rem',
                   outline: 'none',
                   background: '#fff'
@@ -307,7 +307,7 @@ function AIReport() {
                   height: '100px',
                   padding: '15px',
                   borderRadius: '12px',
-                  border: '1px solid #cbd5e0',
+                  border: '1px solid var(--border-color)',
                   fontSize: '0.95rem',
                   outline: 'none',
                   resize: 'none',

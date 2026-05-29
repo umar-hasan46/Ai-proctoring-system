@@ -149,19 +149,19 @@ function App() {
           zIndex: 9999, maxWidth: '380px', display: 'flex', flexDirection: 'column', gap: '4px'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h4 style={{ margin: 0, color: '#1e3a5f', fontSize: '1rem' }}>{toast.title}</h4>
+            <h4 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1rem' }}>{toast.title}</h4>
             <span style={{ fontSize: '0.7rem', color: '#a0aec0' }}>{toast.created_at_ist}</span>
           </div>
-          <p style={{ margin: 0, fontSize: '0.9rem', color: '#4a5568', lineHeight: '1.4' }}>{toast.message}</p>
-          <button onClick={() => setToast(null)} style={{ position: 'absolute', top: '8px', right: '8px', background: 'none', border: 'none', cursor: 'pointer', color: '#718096', fontSize: '14px' }} aria-label="Close Toast">✕</button>
+          <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>{toast.message}</p>
+          <button onClick={() => setToast(null)} style={{ position: 'absolute', top: '8px', right: '8px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', fontSize: '14px' }} aria-label="Close Toast">✕</button>
         </div>
       )}
 
       <div className="container">
         <React.Suspense fallback={
           <div className="card" style={{ maxWidth: '400px', margin: '100px auto', textAlign: 'center', padding: '3rem' }}>
-            <h3 style={{ color: '#1e3a5f' }}>Loading...</h3>
-            <p style={{ color: '#718096', marginTop: '10px' }}>Preparing component resources...</p>
+            <h3 style={{ color: 'var(--text-primary)' }}>Loading...</h3>
+            <p style={{ color: 'var(--text-secondary)', marginTop: '10px' }}>Preparing component resources...</p>
           </div>
         }>
           <Routes>

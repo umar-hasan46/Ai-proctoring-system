@@ -240,7 +240,7 @@ def export_all_users():
         rows = cur.fetchall()
         columns = [d[0] for d in cur.description]
         
-        data = [dict(zip(columns, r)) for r in rows]
+        data = [dict(r) for r in rows]
         if not data:
             data = [{"Info": "No data available"}]
             
@@ -276,7 +276,7 @@ def export_single_user(interview_id):
             return jsonify({"success": False, "message": "Interview not found"}), 404
             
         user_cols = [d[0] for d in cur.description]
-        user_data = dict(zip(user_cols, user_row))
+        user_data = dict(user_row)
         
         cur.execute("""
             SELECT question_no, question_text, candidate_answer, ai_score, ai_feedback
@@ -316,7 +316,7 @@ def get_users():
     columns = [d[0] for d in cur.description]
     cur.close()
     conn.close()
-    return jsonify({"success": True, "users": [dict(zip(columns, u)) for u in users]})
+    return jsonify({"success": True, "users": [dict(u) for u in users]})
 
 @bp.route('/users', methods=['POST'])
 def save_user():
@@ -414,7 +414,7 @@ def get_students_dashboard():
         cols = [desc[0] for desc in cur.description]
         students = []
         for r in rows:
-            s = dict(zip(cols, r))
+            s = dict(r)
             # Set recommendation
             score = float(s.get('recent_score') or 0.0)
             status = s.get('admin_status') or 'Pending Review'
@@ -499,7 +499,7 @@ def get_students_dashboard():
         """)
         live_rows = cur.fetchall()
         live_cols = [desc[0] for desc in cur.description]
-        active_live = [dict(zip(live_cols, r)) for r in live_rows]
+        active_live = [dict(r) for r in live_rows]
 
         return jsonify({
             "success": True,
@@ -547,7 +547,7 @@ def get_student_details_by_id(student_id):
         interview_data = None
         if intv_row:
             cols = [d[0] for d in cur.description]
-            interview_data = dict(zip(cols, intv_row))
+            interview_data = dict(intv_row)
             interview_data['overall_score'] = interview_data.get('overall_score') or 0
             interview_data['technical_score'] = interview_data.get('technical_score') or 0
             interview_data['communication_score'] = interview_data.get('communication_score') or 0
@@ -567,12 +567,12 @@ def get_student_details_by_id(student_id):
             cur.execute("SELECT * FROM answers WHERE interview_id = %s ORDER BY question_no ASC", (interview_data['id'],))
             ans_rows = cur.fetchall()
             ans_cols = [d[0] for d in cur.description]
-            interview_data['evaluations'] = [dict(zip(ans_cols, a)) for a in ans_rows]
+            interview_data['evaluations'] = [dict(a) for a in ans_rows]
 
             cur.execute("SELECT * FROM interview_ai_logs WHERE interview_id = %s ORDER BY created_at ASC", (interview_data['id'],))
             log_rows = cur.fetchall()
             log_cols = [d[0] for d in cur.description]
-            interview_data['ai_logs'] = [dict(zip(log_cols, l)) for l in log_rows]
+            interview_data['ai_logs'] = [dict(l) for l in log_rows]
 
         return jsonify({
             "success": True,
@@ -701,7 +701,7 @@ def get_user_full_detail(user_id):
 
         if intv_row:
             intv_cols = [d[0] for d in cur.description]
-            intv = dict(zip(intv_cols, intv_row))
+            intv = dict(intv_row)
             intv_id = intv["id"]
 
             cur.execute("""
@@ -713,7 +713,7 @@ def get_user_full_detail(user_id):
             log_rows = cur.fetchall()
             log_cols = [desc[0] for desc in cur.description]
             for lr in log_rows:
-                l_dict = dict(zip(log_cols, lr))
+                l_dict = dict(lr)
                 if l_dict.get('created_at'):
                     l_dict['created_at_ist'] = safe_format_datetime(l_dict['created_at'], ist)
                     l_dict['created_at'] = l_dict['created_at'].isoformat()
@@ -807,7 +807,7 @@ def get_user_full_detail(user_id):
             """, (intv_id,))
             eval_rows = cur.fetchall()
             eval_cols = [d[0] for d in cur.description]
-            evaluations = [dict(zip(eval_cols, er)) for er in eval_rows]
+            evaluations = [dict(er) for er in eval_rows]
 
             if not evaluations:
                 cur.execute("""
@@ -821,7 +821,7 @@ def get_user_full_detail(user_id):
                 """, (intv_id,))
                 ans_rows = cur.fetchall()
                 ans_cols = [d[0] for d in cur.description]
-                evaluations = [dict(zip(ans_cols, ar)) for ar in ans_rows]
+                evaluations = [dict(ar) for ar in ans_rows]
 
             def scale_to_5(val):
                 try:
@@ -1054,7 +1054,7 @@ def get_admin_live_proctoring():
         cols = [d[0] for d in cur.description]
         data = []
         for r in rows:
-            ld = dict(zip(cols, r))
+            ld = dict(r)
             started_ist = 'N/A'
             curr_duration = '0m 0s'
             if ld.get('start_time'):
@@ -1130,7 +1130,7 @@ def get_all_reports():
         cols = [d[0] for d in cur.description]
         reports = []
         for r in rows:
-            d = dict(zip(cols, r))
+            d = dict(r)
             reports.append({
                 "student_name": d['full_name'] or 'N/A',
                 "candidate_name": d['full_name'] or 'N/A',
@@ -1259,7 +1259,7 @@ def get_admin_report(id):
         if not row:
             return jsonify({"success": False, "message": "Report not found"}), 404
         cols = [d[0] for d in cur.description]
-        report_dict = dict(zip(cols, row))
+        report_dict = dict(row)
         
         cur.execute("SELECT admin_note FROM interviews WHERE id = %s", (id,))
         intv_row = cur.fetchone()
@@ -1482,7 +1482,7 @@ def get_admin_interview_detail(interview_id):
         interview_id = row[0]
         
         cols = [d[0] for d in cur.description]
-        intv = dict(zip(cols, row))
+        intv = dict(row)
         
         ist = pytz.timezone('Asia/Kolkata')
         started_at = ""
@@ -1511,7 +1511,7 @@ def get_admin_interview_detail(interview_id):
         """, (interview_id,))
         eval_rows = cur.fetchall()
         eval_cols = [d[0] for d in cur.description]
-        evaluations = [dict(zip(eval_cols, er)) for er in eval_rows]
+        evaluations = [dict(er) for er in eval_rows]
 
         if not evaluations:
             cur.execute("""
@@ -1525,7 +1525,7 @@ def get_admin_interview_detail(interview_id):
             """, (interview_id,))
             ans_rows = cur.fetchall()
             ans_cols = [d[0] for d in cur.description]
-            evaluations = [dict(zip(ans_cols, ar)) for ar in ans_rows]
+            evaluations = [dict(ar) for ar in ans_rows]
 
         chat = []
         scored_technical = []
@@ -1711,14 +1711,14 @@ def download_pdf(iid):
         row = cur.fetchone()
         if not row:
             return jsonify({"success": False, "message": "Interview not found"}), 404
-        iv = dict(zip(cols, row))
+        iv = dict(row)
         cur.execute("SELECT * FROM users WHERE id = %s", (iv.get("user_id"),))
         ucols = [d[0] for d in cur.description]
         urow = cur.fetchone()
-        u = dict(zip(ucols, urow)) if urow else {}
+        u = dict(urow) if urow else {}
         cur.execute("SELECT * FROM answers WHERE interview_id = %s ORDER BY question_no", (iid,))
         acols = [d[0] for d in cur.description]
-        answers = [dict(zip(acols, r)) for r in cur.fetchall()]
+        answers = [dict(r) for r in cur.fetchall()]
         cur.close()
         conn.close()
 
@@ -1764,61 +1764,125 @@ def download_pdf(iid):
 @bp.route('/dashboard-stats', methods=['GET'])
 def admin_stats():
     conn = get_db_connection()
+    if not conn:
+        return jsonify({"success": False, "message": "Database connection failed"}), 500
     cur = conn.cursor()
     try:
+        # 1. Total real candidates
         cur.execute("SELECT COUNT(*) FROM users WHERE role != 'admin'")
-        total_users = cur.fetchone()[0] or 0
+        real_candidates = cur.fetchone()[0] or 0
+        total_candidates = real_candidates + 4  # plus 4 demo candidates
 
-        cur.execute("SELECT COUNT(*) FROM interviews WHERE status = 'active'")
+        # 2. Total real interviews
+        cur.execute("SELECT COUNT(*) FROM interviews")
+        real_interviews = cur.fetchone()[0] or 0
+        total_interviews = real_interviews + 4
+
+        # 3. Active real interviews
+        cur.execute("SELECT COUNT(*) FROM interviews WHERE LOWER(status) = 'active'")
         active = cur.fetchone()[0] or 0
 
+        # 4. Completed real interviews
+        cur.execute("SELECT COUNT(*) FROM interviews WHERE LOWER(status) IN ('completed', 'ready')")
+        completed = cur.fetchone()[0] or 0
+        completed_interviews = completed + 3
+
+        # 5. Terminated real interviews
         cur.execute("SELECT COUNT(*) FROM interviews WHERE LOWER(status) = 'terminated'")
         terminated = cur.fetchone()[0] or 0
+        terminated_interviews = terminated + 1
 
-        cur.execute("SELECT COUNT(*) FROM interviews WHERE LOWER(status) = 'completed'")
-        completed = cur.fetchone()[0] or 0
-
-        cur.execute("SELECT COUNT(*) FROM interviews")
-        total_interviews = cur.fetchone()[0] or 0
-
+        # 6. Average score of real interviews
         cur.execute("SELECT AVG(COALESCE(overall_score, final_percentage, 0)) FROM interviews WHERE COALESCE(overall_score, final_percentage, 0) > 0")
         avg_row = cur.fetchone()
-        avg = round(float(avg_row[0] or 0), 1)
+        real_avg = float(avg_row[0] or 0.0) if avg_row else 0.0
+        
+        # Weighted average of score
+        if real_interviews > 0:
+            avg_score = round(((real_avg * real_interviews) + (77.5 * 4)) / (real_interviews + 4), 1)
+        else:
+            avg_score = 77.5
 
+        # 7. Average confidence of real interviews
+        cur.execute("SELECT AVG(COALESCE(confidence_score, overall_score, final_percentage, 0)) FROM interviews WHERE COALESCE(confidence_score, overall_score, final_percentage, 0) > 0")
+        conf_row = cur.fetchone()
+        real_conf = float(conf_row[0] or 0.0) if conf_row else 0.0
+        if real_interviews > 0:
+            avg_confidence = round(((real_conf * real_interviews) + (77.5 * 4)) / (real_interviews + 4), 1)
+        else:
+            avg_confidence = 77.5
+
+        # 8. Pending hiring decisions
+        cur.execute("""
+            SELECT COUNT(*) FROM users 
+            WHERE role != 'admin' AND LOWER(COALESCE(admin_status, 'pending review')) IN ('pending review', 'pending', 'hiring in process')
+        """)
+        real_pending = cur.fetchone()[0] or 0
+        pending_hiring_decisions = real_pending + 2  # plus 2 demo (John, Sarah)
+
+        # 9. Proctoring alerts
+        cur.execute("SELECT SUM(COALESCE(warning_count, 0)) FROM interviews")
+        alert_row = cur.fetchone()
+        real_alerts = int(alert_row[0] or 0)
+        proctoring_alert_count = real_alerts + 5  # plus 5 demo alerts
+
+        # 10. Recent submissions count
+        cur.execute("SELECT COUNT(*) FROM interviews WHERE LOWER(status) IN ('completed', 'ready')")
+        real_recent = cur.fetchone()[0] or 0
+        recent_submission_count = real_recent + 3
+
+        # For backward compatibility
         cur.execute("""
             SELECT
-                COUNT(CASE WHEN LOWER(admin_hiring_status) = 'shortlisted' OR LOWER(admin_status) = 'shortlisted' THEN 1 END),
-                COUNT(CASE WHEN LOWER(admin_hiring_status) IN ('not shortlisted', 'rejected') OR LOWER(admin_status) IN ('not shortlisted', 'rejected') THEN 1 END),
-                COUNT(CASE WHEN LOWER(admin_hiring_status) IN ('hiring in process', 'pending review') OR LOWER(admin_status) IN ('hiring in process', 'pending review') THEN 1 END),
-                COUNT(CASE WHEN LOWER(admin_hiring_status) = 'selected' OR LOWER(admin_status) = 'selected' THEN 1 END)
+                COUNT(CASE WHEN LOWER(admin_hiring_status) = 'shortlisted' OR LOWER(admin_status) = 'shortlisted' THEN 1 END) AS cnt_shortlisted,
+                COUNT(CASE WHEN LOWER(admin_hiring_status) IN ('not shortlisted', 'rejected') OR LOWER(admin_status) IN ('not shortlisted', 'rejected') THEN 1 END) AS cnt_rejected,
+                COUNT(CASE WHEN LOWER(admin_hiring_status) IN ('hiring in process', 'pending review') OR LOWER(admin_status) IN ('hiring in process', 'pending review') THEN 1 END) AS cnt_hiring,
+                COUNT(CASE WHEN LOWER(admin_hiring_status) = 'selected' OR LOWER(admin_status) = 'selected' THEN 1 END) AS cnt_selected
             FROM users WHERE role != 'admin'
         """)
-        user_stats_row = cur.fetchone() or (0, 0, 0, 0)
-        shortlisted = user_stats_row[0] or 0
-        rejected = user_stats_row[1] or 0
-        hiring = user_stats_row[2] or 0
-        selected = user_stats_row[3] or 0
+        user_stats_row = cur.fetchone()
+        shortlisted = (user_stats_row['cnt_shortlisted'] if user_stats_row else 0) or 0
+        rejected = (user_stats_row['cnt_rejected'] if user_stats_row else 0) or 0
+        hiring = (user_stats_row['cnt_hiring'] if user_stats_row else 0) or 0
+        selected = (user_stats_row['cnt_selected'] if user_stats_row else 0) or 0
+
+        shortlisted += 1 # Jane Smith
+        rejected += 1 # Mike Johnson
+        hiring += 1 # Sarah Williams
 
         cur.execute("SELECT COUNT(*) FROM interviews WHERE COALESCE(answered_questions, 0) >= 15")
         passed = cur.fetchone()[0] or 0
+        passed += 3 # John, Jane, Sarah
 
         cur.execute("SELECT COUNT(*) FROM interviews WHERE COALESCE(answered_questions, 0) > 0 AND COALESCE(answered_questions, 0) < 15")
         failed = cur.fetchone()[0] or 0
+        failed += 1 # Mike Johnson
 
-        return jsonify({"success": True, "stats": {
-            "total_users": total_users,
-            "active_interviews": active,
-            "terminated_interviews": terminated,
-            "completed_interviews": completed,
-            "total_interviews": total_interviews,
-            "avg_score": avg,
-            "shortlisted": shortlisted,
-            "rejected": rejected,
-            "hiring_in_process": hiring,
-            "selected": selected,
-            "passed_users": passed,
-            "failed_users": failed
-        }})
+        return jsonify({
+            "success": True, 
+            "stats": {
+                "total_users": total_candidates,
+                "total_candidates": total_candidates,
+                "active_interviews": active,
+                "terminated_interviews": terminated_interviews,
+                "completed_interviews": completed_interviews,
+                "completed": completed_interviews,
+                "total_interviews": total_interviews,
+                "avg_score": avg_score,
+                "average_score": avg_score,
+                "avg_confidence": avg_confidence,
+                "average_confidence": avg_confidence,
+                "pending_hiring_decisions": pending_hiring_decisions,
+                "hiring_in_process": hiring,
+                "shortlisted": shortlisted,
+                "rejected": rejected,
+                "selected": selected,
+                "passed_users": passed,
+                "failed_users": failed,
+                "proctoring_alert_count": proctoring_alert_count,
+                "recent_submission_count": recent_submission_count
+            }
+        })
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
     finally:
@@ -1839,7 +1903,7 @@ def get_admin_notifications_list():
             ORDER BY n.created_at DESC LIMIT 100
         """)
         cols = [d[0] for d in cur.description]
-        rows = [dict(zip(cols, r)) for r in cur.fetchall()]
+        rows = [dict(r) for r in cur.fetchall()]
         cur.execute("SELECT COUNT(*) FROM notifications WHERE target_role = 'admin' AND status = 'unread'")
         unread = cur.fetchone()[0] or 0
         return jsonify({"success": True, "notifications": rows, "unread_count": unread})
@@ -1873,10 +1937,17 @@ def get_recent_interviews():
               COALESCE(i.created_at::text, 'N/A') as started_at_ist,
               COALESCE(i.ended_at_ist, 'N/A') as ended_at_ist,
               COALESCE(i.duration, '15m 0s') as duration,
-              COALESCE(i.answered_questions, 0) as answered_count,
-              COALESCE(i.skipped_questions, 0) as skipped_count,
+              COALESCE(i.answered_questions_count, i.answered_questions, 0) as answered_count,
+              COALESCE(i.unanswered_questions_count, i.skipped_questions, 0) as skipped_count,
               COALESCE(i.total_questions, 30) as total_technical,
-              COALESCE(i.role_applied, 'Software Engineer') as role
+              COALESCE(i.role_applied, 'Software Engineer') as role,
+              COALESCE(i.tab_switch_count, 0) as tab_switch_count,
+              COALESCE(i.suspicious_activity_count, 0) as suspicious_activity_count,
+              COALESCE(i.technical_score, 0) as technical_score,
+              COALESCE(i.communication_score, 0) as communication_score,
+              COALESCE(i.confidence_level, 'High Confidence') as confidence_level,
+              COALESCE(i.confidence_score, 0) as confidence_score,
+              COALESCE(i.hiring_status, 'Pending') as hiring_status
             FROM users u
             JOIN interviews i ON i.user_email = u.email
             WHERE u.role != 'admin'
@@ -1886,18 +1957,17 @@ def get_recent_interviews():
         cols = [desc[0] for desc in cur.description]
         real_interviews = []
         for r in rows:
-            s = dict(zip(cols, r))
-            score = float(s.get('recent_score') or 0.0)
+            s = dict(r)
             status = s.get('admin_status') or 'Pending Review'
             s["final_recommendation"] = status
             real_interviews.append(s)
 
         # Merge with DEMO_STUDENTS (filter out duplicates by email)
         DEMO_STUDENTS = [
-            { "student_id": 101, "student_name": "John Doe", "email": "john@demo.com", "role": "Software Engineer", "role_applied": "Software Engineer", "started_at_ist": "26 May 2026, 02:30 PM", "ended_at_ist": "26 May 2026, 03:00 PM", "admin_status": "Pending Review", "admin_hiring_status": "Pending Review", "final_recommendation": "Pending Review", "recent_score": 85, "score": 85, "technical_score": 82, "communication_score": 88, "confidence_level": "High", "cheating_alerts": 0, "warnings": 0, "interview_status": "completed", "status": "completed", "duration": "30m 0s", "interview_id": 101 },
-            { "student_id": 102, "student_name": "Jane Smith", "email": "jane@demo.com", "role": "Data Scientist", "role_applied": "Data Scientist", "started_at_ist": "26 May 2026, 01:15 PM", "ended_at_ist": "26 May 2026, 01:45 PM", "admin_status": "Shortlisted", "admin_hiring_status": "Shortlisted", "final_recommendation": "Shortlisted", "recent_score": 92, "score": 92, "technical_score": 95, "communication_score": 90, "confidence_level": "High", "cheating_alerts": 1, "warnings": 1, "interview_status": "completed", "status": "completed", "duration": "30m 0s", "interview_id": 102 },
-            { "student_id": 103, "student_name": "Mike Johnson", "email": "mike@demo.com", "role": "Frontend Dev", "role_applied": "Frontend Dev", "started_at_ist": "26 May 2026, 11:45 AM", "ended_at_ist": "26 May 2026, 12:15 PM", "admin_status": "Not Shortlisted", "admin_hiring_status": "Not Shortlisted", "final_recommendation": "Not Shortlisted", "recent_score": 45, "score": 45, "technical_score": 40, "communication_score": 50, "confidence_level": "Low", "cheating_alerts": 4, "warnings": 4, "interview_status": "terminated", "status": "terminated", "duration": "30m 0s", "interview_id": 103 },
-            { "student_id": 104, "student_name": "Sarah Williams", "email": "sarah@demo.com", "role": "Backend Dev", "role_applied": "Backend Dev", "started_at_ist": "26 May 2026, 10:00 AM", "ended_at_ist": "26 May 2026, 10:30 AM", "admin_status": "Hiring in Process", "admin_hiring_status": "Hiring in Process", "final_recommendation": "Hiring in Process", "recent_score": 88, "score": 88, "technical_score": 90, "communication_score": 85, "confidence_level": "High", "cheating_alerts": 0, "warnings": 0, "interview_status": "completed", "status": "completed", "duration": "30m 0s", "interview_id": 104 }
+            { "student_id": 101, "student_name": "John Doe", "email": "john@demo.com", "role": "Software Engineer", "role_applied": "Software Engineer", "started_at_ist": "26 May 2026, 02:30 PM", "ended_at_ist": "26 May 2026, 03:00 PM", "admin_status": "Pending Review", "admin_hiring_status": "Pending Review", "final_recommendation": "Pending Review", "recent_score": 85, "score": 85, "technical_score": 82, "communication_score": 88, "confidence_level": "High Confidence", "cheating_alerts": 0, "warnings": 0, "interview_status": "Completed", "status": "Completed", "duration": "30m 0s", "interview_id": 101, "answered_count": 30, "skipped_count": 0, "tab_switch_count": 0, "suspicious_activity_count": 0, "hiring_status": "Pending" },
+            { "student_id": 102, "student_name": "Jane Smith", "email": "jane@demo.com", "role": "Data Scientist", "role_applied": "Data Scientist", "started_at_ist": "26 May 2026, 01:15 PM", "ended_at_ist": "26 May 2026, 01:45 PM", "admin_status": "Shortlisted", "admin_hiring_status": "Shortlisted", "final_recommendation": "Shortlisted", "recent_score": 92, "score": 92, "technical_score": 95, "communication_score": 90, "confidence_level": "High Confidence", "cheating_alerts": 1, "warnings": 1, "interview_status": "Completed", "status": "Completed", "duration": "30m 0s", "interview_id": 102, "answered_count": 29, "skipped_count": 1, "tab_switch_count": 0, "suspicious_activity_count": 1, "hiring_status": "Shortlisted" },
+            { "student_id": 103, "student_name": "Mike Johnson", "email": "mike@demo.com", "role": "Frontend Dev", "role_applied": "Frontend Dev", "started_at_ist": "26 May 2026, 11:45 AM", "ended_at_ist": "26 May 2026, 12:15 PM", "admin_status": "Not Shortlisted", "admin_hiring_status": "Not Shortlisted", "final_recommendation": "Not Shortlisted", "recent_score": 45, "score": 45, "technical_score": 40, "communication_score": 50, "confidence_level": "Low Confidence", "cheating_alerts": 4, "warnings": 4, "interview_status": "Completed", "status": "Completed", "duration": "30m 0s", "interview_id": 103, "answered_count": 14, "skipped_count": 16, "tab_switch_count": 2, "suspicious_activity_count": 4, "hiring_status": "Not Shortlisted" },
+            { "student_id": 104, "student_name": "Sarah Williams", "email": "sarah@demo.com", "role": "Backend Dev", "role_applied": "Backend Dev", "started_at_ist": "26 May 2026, 10:00 AM", "ended_at_ist": "26 May 2026, 10:30 AM", "admin_status": "Hiring in Process", "admin_hiring_status": "Hiring in Process", "final_recommendation": "Hiring in Process", "recent_score": 88, "score": 88, "technical_score": 90, "communication_score": 85, "confidence_level": "High Confidence", "cheating_alerts": 0, "warnings": 0, "interview_status": "Completed", "status": "Completed", "duration": "30m 0s", "interview_id": 104, "answered_count": 30, "skipped_count": 0, "tab_switch_count": 0, "suspicious_activity_count": 0, "hiring_status": "Hiring in Process" }
         ]
 
         filtered_demo = [d for d in DEMO_STUDENTS if not any(r['email'] == d['email'] for r in real_interviews)]
@@ -2054,6 +2124,147 @@ def patch_interview_status(interview_id):
         })
     except Exception as e:
         conn.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cur.close()
+        conn.close()
+
+
+@bp.route('/drill-down', methods=['GET'])
+@bp.route('/admin/drill-down', methods=['GET'])
+def admin_drill_down():
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"success": False, "message": "Database connection failed"}), 500
+    cur = conn.cursor()
+    try:
+        # Fetch all real interviews
+        cur.execute("""
+            SELECT 
+                i.id as interview_id,
+                u.name as student_name,
+                u.email,
+                COALESCE(i.role_applied, 'Software Engineer') as role,
+                COALESCE(i.status, 'No Interview Yet') as interview_status,
+                COALESCE(u.admin_status, 'Pending Review') as admin_status,
+                COALESCE(i.overall_score, 0) as overall_score,
+                COALESCE(i.technical_score, 0) as technical_score,
+                COALESCE(i.communication_score, 0) as communication_score,
+                COALESCE(i.confidence_score, 0) as confidence_score,
+                COALESCE(i.confidence_level, 'High Confidence') as confidence_level,
+                COALESCE(i.created_at::text, 'N/A') as started_at_ist,
+                COALESCE(i.ended_at_ist, 'N/A') as ended_at_ist,
+                COALESCE(i.duration, '15m 0s') as duration,
+                COALESCE(i.answered_questions_count, 0) as answered_count,
+                COALESCE(i.unanswered_questions_count, 0) as skipped_count
+            FROM users u
+            JOIN interviews i ON i.user_email = u.email
+            WHERE u.role != 'admin'
+        """)
+        rows = cur.fetchall()
+        cols = [desc[0] for desc in cur.description]
+        real_interviews = [dict(r) for r in rows]
+
+        # Merge with DEMO STUDENTS
+        DEMO_STUDENTS = [
+            { "interview_id": 101, "student_name": "John Doe", "email": "john@demo.com", "role": "Software Engineer", "interview_status": "Completed", "admin_status": "Pending Review", "overall_score": 85, "technical_score": 82, "communication_score": 88, "confidence_score": 85, "confidence_level": "High Confidence", "started_at_ist": "26 May 2026, 02:30 PM", "ended_at_ist": "26 May 2026, 03:00 PM", "duration": "30m 0s", "answered_count": 30, "skipped_count": 0 },
+            { "interview_id": 102, "student_name": "Jane Smith", "email": "jane@demo.com", "role": "Data Scientist", "interview_status": "Completed", "admin_status": "Shortlisted", "overall_score": 92, "technical_score": 95, "communication_score": 90, "confidence_score": 92, "confidence_level": "High Confidence", "started_at_ist": "26 May 2026, 01:15 PM", "ended_at_ist": "26 May 2026, 01:45 PM", "duration": "30m 0s", "answered_count": 29, "skipped_count": 1 },
+            { "interview_id": 103, "student_name": "Mike Johnson", "email": "mike@demo.com", "role": "Frontend Dev", "interview_status": "Completed", "admin_status": "Not Shortlisted", "overall_score": 45, "technical_score": 40, "communication_score": 50, "confidence_score": 45, "confidence_level": "Low Confidence", "started_at_ist": "26 May 2026, 11:45 AM", "ended_at_ist": "26 May 2026, 12:15 PM", "duration": "30m 0s", "answered_count": 14, "skipped_count": 16 },
+            { "interview_id": 104, "student_name": "Sarah Williams", "email": "sarah@demo.com", "role": "Backend Dev", "interview_status": "Completed", "admin_status": "Hiring in Process", "overall_score": 88, "technical_score": 90, "communication_score": 85, "confidence_score": 88, "confidence_level": "High Confidence", "started_at_ist": "26 May 2026, 10:00 AM", "ended_at_ist": "26 May 2026, 10:30 AM", "duration": "30m 0s", "answered_count": 30, "skipped_count": 0 }
+        ]
+
+        filtered_demo = [d for d in DEMO_STUDENTS if not any(r['email'] == d['email'] for r in real_interviews)]
+        all_interviews = real_interviews + filtered_demo
+
+        # Calculate aggregations
+        month_wise = {}
+        role_wise = {}
+        completed_count = 0
+        pending_hiring_count = 0
+        
+        total_overall = 0.0
+        total_tech = 0.0
+        total_comm = 0.0
+        total_conf = 0.0
+        score_count = 0
+
+        confidence_levels = {"High Confidence": 0, "Moderate Confidence": 0, "Low Confidence": 0}
+
+        for i in all_interviews:
+            # Month extraction
+            ist_time = i.get("started_at_ist") or "N/A"
+            month = "May 2026"
+            try:
+                parts = ist_time.split()
+                if len(parts) >= 3:
+                    month = f"{parts[1]} {parts[2]}"
+            except:
+                pass
+            month_wise[month] = month_wise.get(month, 0) + 1
+
+            # Role extraction
+            role = i.get("role") or "Software Engineer"
+            role_wise[role] = role_wise.get(role, 0) + 1
+
+            # Completed count
+            status_lower = (i.get("interview_status") or "").lower()
+            if status_lower == "completed" or status_lower == "ready":
+                completed_count += 1
+
+            # Pending review/hiring
+            admin_status_val = (i.get("admin_status") or "").strip().lower()
+            if admin_status_val in ["pending review", "pending", "hiring in process"]:
+                pending_hiring_count += 1
+
+            # Score calculations
+            score_val = float(i.get("overall_score") or 0.0)
+            tech_val = float(i.get("technical_score") or 0.0)
+            comm_val = float(i.get("communication_score") or 0.0)
+            conf_val = float(i.get("confidence_score") or 0.0)
+
+            total_overall += score_val
+            total_tech += tech_val
+            total_comm += comm_val
+            total_conf += conf_val
+            score_count += 1
+
+            # Confidence level count
+            lvl = i.get("confidence_level") or "High Confidence"
+            if "high" in lvl.lower():
+                confidence_levels["High Confidence"] += 1
+            elif "moderate" in lvl.lower() or "medium" in lvl.lower():
+                confidence_levels["Moderate Confidence"] += 1
+            else:
+                confidence_levels["Low Confidence"] += 1
+
+        avg_overall = round(total_overall / score_count, 1) if score_count > 0 else 0.0
+        avg_tech = round(total_tech / score_count, 1) if score_count > 0 else 0.0
+        avg_comm = round(total_comm / score_count, 1) if score_count > 0 else 0.0
+        avg_conf = round(total_conf / score_count, 1) if score_count > 0 else 0.0
+
+        # Sort evaluations by interview_id desc for recent list
+        recent_evals = sorted(all_interviews, key=lambda x: x.get("interview_id", 0), reverse=True)
+
+        return jsonify({
+            "success": True,
+            "analytics": {
+                "monthWiseCount": month_wise,
+                "roleWiseCount": role_wise,
+                "completedCount": completed_count,
+                "pendingHiringStatusCount": pending_hiring_count,
+                "scoreAnalytics": {
+                    "averageOverallScore": avg_overall,
+                    "averageTechnicalScore": avg_tech,
+                    "averageCommunicationScore": avg_comm
+                },
+                "confidenceAnalytics": {
+                    "averageConfidenceScore": avg_conf,
+                    "levels": confidence_levels
+                },
+                "recentEvaluations": recent_evals[:15]
+            }
+        })
+    except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
     finally:
         cur.close()

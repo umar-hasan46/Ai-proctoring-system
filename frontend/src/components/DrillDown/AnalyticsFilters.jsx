@@ -23,7 +23,7 @@ function AnalyticsFilters({ filters, onFilterChange, rolesList = [], monthsList 
 
   return (
     <div className="card" style={{ padding: '1.5rem', background: '#ffffff', borderRadius: '12px', marginBottom: '2rem' }}>
-      <h3 style={{ fontSize: '1.1rem', color: '#2d3748', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginBottom: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span>Filter Candidate Records</span>
         <button
           onClick={handleClear}
@@ -33,16 +33,16 @@ function AnalyticsFilters({ filters, onFilterChange, rolesList = [], monthsList 
             fontSize: '0.75rem',
             borderRadius: '6px',
             borderColor: '#e2e8f0',
-            color: '#718096',
+            color: 'var(--text-secondary)',
             fontWeight: '600'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#f7fafc';
-            e.currentTarget.style.color = '#2d3748';
+            e.currentTarget.style.background = 'var(--bg-primary)';
+            e.currentTarget.style.color = 'var(--text-primary)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = 'transparent';
-            e.currentTarget.style.color = '#718096';
+            e.currentTarget.style.color = 'var(--text-secondary)';
           }}
         >
           Reset Filters
@@ -57,7 +57,7 @@ function AnalyticsFilters({ filters, onFilterChange, rolesList = [], monthsList 
       }}>
         {/* Search by Name */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase' }}>Candidate Name</label>
+          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Candidate Name</label>
           <input
             type="text"
             placeholder="Search by name..."
@@ -69,7 +69,7 @@ function AnalyticsFilters({ filters, onFilterChange, rolesList = [], monthsList 
 
         {/* Search by Email */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase' }}>Email Address</label>
+          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Email Address</label>
           <input
             type="text"
             placeholder="Search by email..."
@@ -81,7 +81,7 @@ function AnalyticsFilters({ filters, onFilterChange, rolesList = [], monthsList 
 
         {/* Filter by Role */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase' }}>Applied Role</label>
+          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Applied Role</label>
           <select
             value={filters.role || ''}
             onChange={(e) => handleChange('role', e.target.value)}
@@ -90,7 +90,7 @@ function AnalyticsFilters({ filters, onFilterChange, rolesList = [], monthsList 
               fontSize: '0.85rem',
               width: '100%',
               borderRadius: '8px',
-              border: '1px solid #cbd5e0',
+              border: '1px solid var(--border-color)',
               height: '38px',
               background: '#fff',
               cursor: 'pointer'
@@ -105,7 +105,7 @@ function AnalyticsFilters({ filters, onFilterChange, rolesList = [], monthsList 
 
         {/* Filter by Status */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase' }}>Hiring Status</label>
+          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Hiring Status</label>
           <select
             value={filters.status || ''}
             onChange={(e) => handleChange('status', e.target.value)}
@@ -114,7 +114,7 @@ function AnalyticsFilters({ filters, onFilterChange, rolesList = [], monthsList 
               fontSize: '0.85rem',
               width: '100%',
               borderRadius: '8px',
-              border: '1px solid #cbd5e0',
+              border: '1px solid var(--border-color)',
               height: '38px',
               background: '#fff',
               cursor: 'pointer'
@@ -129,7 +129,7 @@ function AnalyticsFilters({ filters, onFilterChange, rolesList = [], monthsList 
 
         {/* Filter by Confidence Level */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase' }}>Confidence level</label>
+          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Confidence level</label>
           <select
             value={filters.confidence || ''}
             onChange={(e) => handleChange('confidence', e.target.value)}
@@ -138,7 +138,7 @@ function AnalyticsFilters({ filters, onFilterChange, rolesList = [], monthsList 
               fontSize: '0.85rem',
               width: '100%',
               borderRadius: '8px',
-              border: '1px solid #cbd5e0',
+              border: '1px solid var(--border-color)',
               height: '38px',
               background: '#fff',
               cursor: 'pointer'
@@ -153,7 +153,7 @@ function AnalyticsFilters({ filters, onFilterChange, rolesList = [], monthsList 
 
         {/* Filter by Month */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase' }}>Interview Month</label>
+          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Interview Month</label>
           <select
             value={filters.month || ''}
             onChange={(e) => handleChange('month', e.target.value)}
@@ -162,7 +162,7 @@ function AnalyticsFilters({ filters, onFilterChange, rolesList = [], monthsList 
               fontSize: '0.85rem',
               width: '100%',
               borderRadius: '8px',
-              border: '1px solid #cbd5e0',
+              border: '1px solid var(--border-color)',
               height: '38px',
               background: '#fff',
               cursor: 'pointer'
@@ -177,9 +177,9 @@ function AnalyticsFilters({ filters, onFilterChange, rolesList = [], monthsList 
 
         {/* Filter by Min Score */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase', display: 'flex', justifyContent: 'space-between' }}>
+          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'flex', justifyContent: 'space-between' }}>
             <span>Min Score</span>
-            <span style={{ fontWeight: 'bold', color: '#1e3a5f' }}>{filters.minScore || 0}%</span>
+            <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{filters.minScore || 0}%</span>
           </label>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', height: '38px' }}>
             <input
@@ -195,7 +195,7 @@ function AnalyticsFilters({ filters, onFilterChange, rolesList = [], monthsList 
 
         {/* Sort controls */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase' }}>Sort Candidates</label>
+          <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Sort Candidates</label>
           <select
             value={filters.sortBy || 'latest'}
             onChange={(e) => handleChange('sortBy', e.target.value)}
@@ -204,7 +204,7 @@ function AnalyticsFilters({ filters, onFilterChange, rolesList = [], monthsList 
               fontSize: '0.85rem',
               width: '100%',
               borderRadius: '8px',
-              border: '1px solid #cbd5e0',
+              border: '1px solid var(--border-color)',
               height: '38px',
               background: '#fff',
               cursor: 'pointer'

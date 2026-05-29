@@ -180,7 +180,7 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
       <div className="card" style={{ padding: '4rem 2rem', textAlign: 'center', background: '#fff', borderRadius: '12px' }}>
         <div style={{
           border: '4px solid #e2e8f0',
-          borderTop: '4px solid #1e3a5f',
+          borderTop: '4px solid var(--text-primary)',
           borderRadius: '50%',
           width: '40px',
           height: '40px',
@@ -193,7 +193,7 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
             100% { transform: rotate(360deg); }
           }
         `}</style>
-        <h4 style={{ color: '#4a5568', margin: 0 }}>Compiling detailed AI evaluation report...</h4>
+        <h4 style={{ color: 'var(--text-secondary)', margin: 0 }}>Compiling detailed AI evaluation report...</h4>
         <p style={{ color: '#a0aec0', fontSize: '0.85rem', marginTop: '6px' }}>Fetching resume skills, grading metrics, and proctoring telemetry...</p>
       </div>
     );
@@ -203,7 +203,7 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
     return (
       <div className="card" style={{ padding: '3rem', textAlign: 'center', background: '#fff', borderRadius: '12px', borderLeft: '5px solid #e53e3e' }}>
         <h3 style={{ color: '#e53e3e', marginBottom: '1rem' }}>Failed to Load Report</h3>
-        <p style={{ color: '#718096', marginBottom: '1.5rem' }}>{error || 'The interview record could not be located in the database.'}</p>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>{error || 'The interview record could not be located in the database.'}</p>
         <button onClick={onBack} className="btn btn-outline">Return to Candidate List</button>
       </div>
     );
@@ -249,7 +249,7 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
     <div>
       {/* 1. Header Card */}
       <div className="card" style={{
-        background: 'linear-gradient(135deg, #1e3a5f 0%, #152b47 100%)',
+        background: 'linear-gradient(135deg, var(--text-primary) 0%, #152b47 100%)',
         color: '#fff',
         padding: '2rem',
         borderRadius: '16px',
@@ -319,30 +319,30 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
           
           {/* Detailed Scores Cards */}
           <div className="card" style={{ margin: 0, padding: '1.5rem', background: '#fff', borderRadius: '12px' }}>
-            <h3 style={{ fontSize: '1.1rem', color: '#2d3748', marginBottom: '1.25rem', borderBottom: '1px solid #edf2f7', paddingBottom: '0.5rem' }}>
+            <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
               Core Scoring Metrics
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
-              <div style={{ textAlign: 'center', padding: '0.75rem', background: '#f7fafc', borderRadius: '8px' }}>
-                <div style={{ fontSize: '0.75rem', color: '#718096', fontWeight: '600', textTransform: 'uppercase' }}>Overall Score</div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e3a5f', marginTop: '4px' }}>
+              <div style={{ textAlign: 'center', padding: '0.75rem', background: 'var(--bg-primary)', borderRadius: '8px' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: '600', textTransform: 'uppercase' }}>Overall Score</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)', marginTop: '4px' }}>
                   {Math.round(interview.overall_score)}%
                 </div>
               </div>
-              <div style={{ textAlign: 'center', padding: '0.75rem', background: '#f7fafc', borderRadius: '8px' }}>
-                <div style={{ fontSize: '0.75rem', color: '#718096', fontWeight: '600', textTransform: 'uppercase' }}>Technical Score</div>
+              <div style={{ textAlign: 'center', padding: '0.75rem', background: 'var(--bg-primary)', borderRadius: '8px' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: '600', textTransform: 'uppercase' }}>Technical Score</div>
                 <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#8b5cf6', marginTop: '4px' }}>
                   {interview.technical_score}/100
                 </div>
               </div>
-              <div style={{ textAlign: 'center', padding: '0.75rem', background: '#f7fafc', borderRadius: '8px' }}>
-                <div style={{ fontSize: '0.75rem', color: '#718096', fontWeight: '600', textTransform: 'uppercase' }}>Communication</div>
+              <div style={{ textAlign: 'center', padding: '0.75rem', background: 'var(--bg-primary)', borderRadius: '8px' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: '600', textTransform: 'uppercase' }}>Communication</div>
                 <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#319795', marginTop: '4px' }}>
                   {interview.communication_score}/100
                 </div>
               </div>
-              <div style={{ textAlign: 'center', padding: '0.75rem', background: '#f7fafc', borderRadius: '8px' }}>
-                <div style={{ fontSize: '0.75rem', color: '#718096', fontWeight: '600', textTransform: 'uppercase' }}>ATS Match</div>
+              <div style={{ textAlign: 'center', padding: '0.75rem', background: 'var(--bg-primary)', borderRadius: '8px' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: '600', textTransform: 'uppercase' }}>ATS Match</div>
                 <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#38a169', marginTop: '4px' }}>
                   {jobMatchPercent}%
                 </div>
@@ -352,16 +352,16 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
 
           {/* Resume Assessment section */}
           <div className="card" style={{ margin: 0, padding: '1.5rem', background: '#fff', borderRadius: '12px' }}>
-            <h3 style={{ fontSize: '1.1rem', color: '#2d3748', marginBottom: '1rem' }}>Resume & Skills Assessment</h3>
+            <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>Resume & Skills Assessment</h3>
             <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
               <div style={{ flex: 1, minWidth: '250px' }}>
-                <h5 style={{ fontSize: '0.85rem', color: '#718096', textTransform: 'uppercase', marginBottom: '6px' }}>Resume Executive Summary</h5>
-                <p style={{ fontSize: '0.9rem', color: '#4a5568', lineHeight: '1.5', margin: 0 }}>
+                <h5 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '6px' }}>Resume Executive Summary</h5>
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.5', margin: 0 }}>
                   The candidate displays strong conceptual alignment with the required tech stack. The resume highlights strong background in building web services and database architectures. Experienced with modular React components and scalable microservice architectures.
                 </p>
               </div>
               <div style={{ width: '220px', flexShrink: 0 }}>
-                <h5 style={{ fontSize: '0.85rem', color: '#718096', textTransform: 'uppercase', marginBottom: '8px' }}>Extracted Resume Skills</h5>
+                <h5 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px' }}>Extracted Resume Skills</h5>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   {mockSkills.map((sk, idx) => (
                     <span key={idx} style={{
@@ -382,9 +382,9 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
 
           {/* Admin Evaluation Summary paragraph */}
           <div className="card" style={{ margin: 0, padding: '1.5rem', background: '#fff', borderRadius: '12px' }}>
-            <h3 style={{ fontSize: '1.1rem', color: '#2d3748', marginBottom: '0.75rem' }}>AI Performance Overview</h3>
+            <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginBottom: '0.75rem' }}>AI Performance Overview</h3>
             <div style={{ padding: '1rem', background: '#eff6ff', borderLeft: '4px solid #3b82f6', borderRadius: '0 8px 8px 0' }}>
-              <p style={{ fontSize: '0.9rem', color: '#1e3a5f', fontWeight: '500', lineHeight: '1.5', margin: 0 }}>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: '500', lineHeight: '1.5', margin: 0 }}>
                 {summary || 'No summary available.'}
               </p>
             </div>
@@ -397,13 +397,13 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
           
           {/* Admin Recruiter Actions */}
           <div className="card" style={{ margin: 0, padding: '1.5rem', background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-            <h3 style={{ fontSize: '1.1rem', color: '#2d3748', marginBottom: '1.25rem', borderBottom: '1px solid #edf2f7', paddingBottom: '0.5rem' }}>
+            <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
               Recruiter Decisions
             </h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1rem' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase' }}>Hiring Status Decision</label>
+                <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Hiring Status Decision</label>
                 <select
                   value={decision || 'Pending Review'}
                   onChange={(e) => handleStatusChange(e.target.value)}
@@ -411,10 +411,10 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
                     padding: '0.6rem 0.8rem',
                     fontSize: '0.85rem',
                     borderRadius: '8px',
-                    border: '1px solid #cbd5e0',
+                    border: '1px solid var(--border-color)',
                     background: '#fff',
                     fontWeight: 'bold',
-                    color: '#2d3748',
+                    color: 'var(--text-primary)',
                     cursor: 'pointer'
                   }}
                 >
@@ -425,7 +425,7 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase' }}>Recruiter Internal Notes</label>
+                <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Recruiter Internal Notes</label>
                 <textarea
                   placeholder="Enter private recruiter comments, rating points, or candidate follow-up steps here..."
                   rows="4"
@@ -435,7 +435,7 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
                     padding: '0.6rem 0.8rem',
                     fontSize: '0.85rem',
                     borderRadius: '8px',
-                    border: '1px solid #cbd5e0',
+                    border: '1px solid var(--border-color)',
                     resize: 'vertical',
                     fontFamily: 'inherit'
                   }}
@@ -470,49 +470,49 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
 
           {/* Proctoring & Integrity Telemetry */}
           <div className="card" style={{ margin: 0, padding: '1.5rem', background: '#fff', borderRadius: '12px' }}>
-            <h3 style={{ fontSize: '1.1rem', color: '#2d3748', marginBottom: '1.25rem', borderBottom: '1px solid #edf2f7', paddingBottom: '0.5rem' }}>
+            <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
               Proctoring Audit Logs
             </h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                <span style={{ color: '#718096', fontWeight: '500' }}>Webcam Feed:</span>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>Webcam Feed:</span>
                 <span style={{ fontWeight: 'bold', color: '#38a169' }}>Detected & Online</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                <span style={{ color: '#718096', fontWeight: '500' }}>Microphone Status:</span>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>Microphone Status:</span>
                 <span style={{ fontWeight: 'bold', color: '#38a169' }}>Active & Recording</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                <span style={{ color: '#718096', fontWeight: '500' }}>Interview Duration:</span>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>Interview Duration:</span>
                 <span style={{ fontWeight: 'bold', color: '#1a202c' }}>{interview.duration}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', borderTop: '1px solid #edf2f7', paddingTop: '8px' }}>
-                <span style={{ color: '#718096', fontWeight: '500' }}>Tab Switches count:</span>
-                <span style={{ fontWeight: 'bold', color: (violations.tab_switches > 3 ? '#e53e3e' : '#4a5568') }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', borderTop: '1px solid var(--border-color)', paddingTop: '8px' }}>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>Tab Switches count:</span>
+                <span style={{ fontWeight: 'bold', color: (violations.tab_switches > 3 ? '#e53e3e' : 'var(--text-secondary)') }}>
                   {violations.tab_switches || 0}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                <span style={{ color: '#718096', fontWeight: '500' }}>Camera Turned Off:</span>
-                <span style={{ fontWeight: 'bold', color: (violations.camera_off > 0 ? '#e53e3e' : '#4a5568') }}>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>Camera Turned Off:</span>
+                <span style={{ fontWeight: 'bold', color: (violations.camera_off > 0 ? '#e53e3e' : 'var(--text-secondary)') }}>
                   {violations.camera_off || 0}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                <span style={{ color: '#718096', fontWeight: '500' }}>No Face Detected:</span>
-                <span style={{ fontWeight: 'bold', color: (violations.no_face > 2 ? '#e53e3e' : '#4a5568') }}>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>No Face Detected:</span>
+                <span style={{ fontWeight: 'bold', color: (violations.no_face > 2 ? '#e53e3e' : 'var(--text-secondary)') }}>
                   {violations.no_face || 0}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                <span style={{ color: '#718096', fontWeight: '500' }}>Multiple People detected:</span>
-                <span style={{ fontWeight: 'bold', color: (violations.multiple_faces > 0 ? '#e53e3e' : '#4a5568') }}>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>Multiple People detected:</span>
+                <span style={{ fontWeight: 'bold', color: (violations.multiple_faces > 0 ? '#e53e3e' : 'var(--text-secondary)') }}>
                   {violations.multiple_faces || 0}
                 </span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', borderTop: '1px solid #edf2f7', paddingTop: '8px' }}>
-                <span style={{ color: '#718096', fontWeight: '600' }}>Proctoring Alerts Status:</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', borderTop: '1px solid var(--border-color)', paddingTop: '8px' }}>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: '600' }}>Proctoring Alerts Status:</span>
                 <span style={{
                   fontWeight: 'bold',
                   color: (interview.warning_count > 5 || interview.status === 'terminated' ? '#e53e3e' : '#38a169')
@@ -530,16 +530,16 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
 
       {/* 2. Detailed Q&A Table */}
       <div className="card" style={{ padding: '1.5rem', background: '#fff', borderRadius: '12px' }}>
-        <h3 style={{ fontSize: '1.1rem', color: '#2d3748', marginBottom: '1.25rem', borderBottom: '1px solid #edf2f7', paddingBottom: '0.5rem' }}>
+        <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
           AI Answer Evaluation Timeline ({scored_technical.length} Questions Graded)
         </h3>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {scored_technical.map((q, idx) => {
             const isCorrect = q.correctness_status && q.correctness_status.toLowerCase() === 'correct';
-            const isSkipped = q.candidate_answer.trim().toLowerCase() === 'skipped' || q.candidate_answer.trim() === '';
-            const badgeColor = isCorrect ? '#15803d' : (isSkipped ? '#718096' : '#b91c1c');
-            const badgeBg = isCorrect ? '#eafaf1' : (isSkipped ? '#f3f4f6' : '#fdf2f2');
+            const isSkipped = !q.candidate_answer || q.candidate_answer.trim().toLowerCase() === 'skipped' || q.candidate_answer.trim() === '' || q.candidate_answer.trim().toLowerCase() === 'not answered' || q.status === 'Unanswered' || (q.question_status && q.question_status.toLowerCase() === 'unanswered');
+            const badgeColor = isCorrect ? '#15803d' : (isSkipped ? '#b45309' : '#b91c1c');
+            const badgeBg = isCorrect ? '#eafaf1' : (isSkipped ? '#fef3c7' : '#fdf2f2');
 
             return (
               <div
@@ -548,7 +548,7 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
                   border: '1px solid #e2e8f0',
                   borderRadius: '10px',
                   padding: '1.25rem',
-                  background: '#fcfdfd',
+                  background: isSkipped ? '#fffbeb' : '#fcfdfd',
                   transition: 'box-shadow 0.2s'
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.02)'}
@@ -556,7 +556,7 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
               >
                 {/* Q header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px', marginBottom: '8px' }}>
-                  <h4 style={{ color: '#2d3748', fontSize: '0.95rem', fontWeight: '700', flex: 1 }}>
+                  <h4 style={{ color: 'var(--text-primary)', fontSize: '0.95rem', fontWeight: '700', flex: 1 }}>
                     Question {q.question_no}: {q.question_text}
                   </h4>
                   <span style={{
@@ -568,7 +568,7 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
                     color: badgeColor,
                     textTransform: 'uppercase'
                   }}>
-                    {q.correctness_status || (isSkipped ? 'SKIPPED' : 'INCORRECT')}
+                    {isSkipped ? 'NOT ANSWERED' : (q.correctness_status || 'INCORRECT')}
                   </span>
                 </div>
 
@@ -576,47 +576,47 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
                   {/* QA & Feedback */}
                   <div>
                     <div style={{ marginBottom: '10px' }}>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Candidate Answer:</span>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Candidate Answer:</span>
                       <p style={{
                         fontSize: '0.85rem',
-                        color: isSkipped ? '#a0aec0' : '#2d3748',
+                        color: isSkipped ? '#b45309' : 'var(--text-primary)',
                         margin: 0,
                         fontStyle: isSkipped ? 'italic' : 'normal',
-                        background: '#f8fafc',
+                        background: isSkipped ? '#fef3c7' : 'var(--bg-primary)',
                         padding: '0.75rem',
                         borderRadius: '6px',
-                        border: '1px solid #edf2f7',
+                        border: '1px solid var(--border-color)',
                         lineHeight: '1.4'
                       }}>
-                        {q.candidate_answer || 'No answer submitted.'}
+                        {isSkipped ? 'Not Answered' : (q.candidate_answer || 'No answer submitted.')}
                       </p>
                     </div>
 
                     <div>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#718096', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>AI Core Feedback:</span>
-                      <p style={{ fontSize: '0.85rem', color: '#4a5568', margin: 0, lineHeight: '1.4' }}>
-                        {q.ai_feedback || 'No feedback available.'}
+                      <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>AI Core Feedback:</span>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.4' }}>
+                        {isSkipped ? 'Candidate did not answer this question.' : (q.ai_feedback || 'No feedback available.')}
                       </p>
                     </div>
                   </div>
 
                   {/* Stars / breakdown */}
-                  <div style={{ background: '#f7fafc', padding: '0.75rem', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '8px', justifyContent: 'center' }}>
+                  <div style={{ background: 'var(--bg-primary)', padding: '0.75rem', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '8px', justifyContent: 'center' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#718096' }}>Clarity</span>
-                      {renderStars(q.clarity_score)}
+                      <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Clarity</span>
+                      {renderStars(isSkipped ? 0 : q.clarity_score)}
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#718096' }}>Content</span>
-                      {renderStars(q.content_score)}
+                      <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Content</span>
+                      {renderStars(isSkipped ? 0 : q.content_score)}
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#718096' }}>Relevance</span>
-                      {renderStars(q.relevance_score)}
+                      <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Relevance</span>
+                      {renderStars(isSkipped ? 0 : q.relevance_score)}
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#718096' }}>Confidence</span>
-                      {renderStars(q.confidence_score)}
+                      <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-secondary)' }}>Confidence</span>
+                      {renderStars(isSkipped ? 0 : q.confidence_score)}
                     </div>
                   </div>
                 </div>

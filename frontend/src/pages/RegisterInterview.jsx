@@ -130,7 +130,7 @@ function RegisterInterview({ user }) {
 
   return (
     <div style={{ maxWidth: '600px', margin: '50px auto', padding: '2rem', background: '#fff', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
-      <h2 style={{ color: '#1e3a5f', marginBottom: '1.5rem', textAlign: 'center' }}>Interview Registration</h2>
+      <h2 style={{ color: 'var(--text-primary)', marginBottom: '1.5rem', textAlign: 'center' }}>Interview Registration</h2>
 
       {error && <div className="alert alert-error" style={{ marginBottom: '1rem' }}>{error}</div>}
 
@@ -181,10 +181,10 @@ function RegisterInterview({ user }) {
       {skills && (
         <div style={{ textAlign: 'center' }}>
           <div className="alert alert-success" style={{ marginBottom: '1.5rem' }}>Skills detected successfully!</div>
-          <h3 style={{ color: '#1e3a5f' }}>Detected Skills:</h3>
+          <h3 style={{ color: 'var(--text-primary)' }}>Detected Skills:</h3>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center', margin: '1rem 0' }}>
             {skills.map((skill, index) => (
-              <span key={index} style={{ background: '#edf2f7', padding: '0.5rem 1rem', borderRadius: '20px', fontSize: '0.9rem', color: '#2d3748' }}>{skill}</span>
+              <span key={index} style={{ background: 'var(--border-color)', padding: '0.5rem 1rem', borderRadius: '20px', fontSize: '0.9rem', color: 'var(--text-primary)' }}>{skill}</span>
             ))}
             {skills.length === 0 && <p style={{ color: '#e53e3e' }}>No skills detected. Please try with a better resume.</p>}
           </div>

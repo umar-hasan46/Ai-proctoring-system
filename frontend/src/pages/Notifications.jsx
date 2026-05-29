@@ -47,36 +47,7 @@ function Notifications({ user }) {
   useEffect(() => {
     fetchNotifications(false);
     const interval = setInterval(() => fetchNotifications(true), 4000);
-    
-  const formatTitle = (type) => {
-    if (!type) return "System Notification";
-    const str = type.replace(/_/g, ' ');
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  };
-
-  const buildNotificationMessage = (n) => {
-    if (n.message && n.message !== 'message') return n.message;
-    const name = n.studentName || n.candidate_name || n.student_name || "A candidate";
-    if (n.event_type === 'interview_started') return `${name} started an interview.`;
-    if (n.event_type === 'answer_submitted') return `${name} submitted an answer.`;
-    if (n.event_type === 'warning_added') return `Warning: ${name} received a proctoring warning.`;
-    if (n.event_type === 'interview_completed') return `${name} completed the interview.`;
-    if (n.event_type === 'result_generated') return `Result generated for ${name}.`;
-    return "No detailed message provided.";
-  };
-
-  const normalizedNotifications = (notifications || []).map(n => ({
-    ...n,
-    id: n.id || Date.now() + Math.random(),
-    type: n.type || n.event_type || "system",
-    title: n.title || formatTitle(n.event_type),
-    message: n.message || buildNotificationMessage(n),
-    studentName: n.studentName || n.candidate_name || n.student_name || localStorage.getItem("userName") || "Candidate",
-    interviewId: n.interviewId || n.interview_id || "",
-    createdAt: n.createdAt || n.created_at || n.created_at_ist || new Date().toISOString()
-  }));
-
-  return () => clearInterval(interval);
+    return () => clearInterval(interval);
   }, [user?.email, user?.role]);
 
   const markRead = async (id) => {
@@ -106,9 +77,8 @@ function Notifications({ user }) {
     }
   };
 
-  if (loading && notifications.length === 0) return <div style={{ textAlign: 'center', marginTop: '50px' }}>Loading...</div>;
+  if (loading && notifications.length === 0) return <div style={{ textAlign: 'center', marginTop: '50px', color: 'var(--text-secondary)' }}>Loading...</div>;
 
-  
   const formatTitle = (type) => {
     if (!type) return "System Notification";
     const str = type.replace(/_/g, ' ');
@@ -137,12 +107,12 @@ function Notifications({ user }) {
     createdAt: n.createdAt || n.created_at || n.created_at_ist || new Date().toISOString()
   }));
 
-return (
+  return (
     <div style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px' }}>
       <div className="card" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
         <div>
-          <h2 style={{ color: '#1e3a5f', margin: 0 }}>System Notifications</h2>
-          <p style={{ margin: '5px 0 0', color: '#718096' }}>Real-time alerts and updates.</p>
+          <h2 style={{ color: 'var(--text-primary)', margin: 0 }}>System Notifications</h2>
+          <p style={{ margin: '5px 0 0', color: 'var(--text-secondary)' }}>Real-time alerts and updates.</p>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
           {unreadCount > 0 && <button onClick={markAllRead} className="btn btn-outline" style={{ fontSize: '0.8rem' }}>Mark All Read</button>}
@@ -156,29 +126,29 @@ return (
             padding: '1.5rem',
             marginBottom: '1rem',
             borderLeft: `5px solid ${n.type === 'success' ? '#10b981' : (n.type === 'info' ? '#3b82f6' : (n.type === 'warning' ? '#f59e0b' : (n.type === 'error' ? '#ef4444' : '#64748b')))}`,
-            background: n.status === 'unread' ? '#f7fafc' : '#fff',
+            background: n.status === 'unread' ? 'var(--bg-primary)' : 'var(--card-bg)',
             position: 'relative'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: '15px' }}>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', background: '#edf2f7', color: '#4a5568' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', padding: '2px 8px', borderRadius: '4px', background: 'var(--bg-primary)', color: 'var(--text-secondary)' }}>
                     {n.type}
                   </span>
                   {n.status === 'unread' && <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#e53e3e' }}></span>}
                 </div>
-                <h4 style={{ margin: '5px 0', color: '#2d3748' }}>{n.title}</h4>
-                <p style={{ margin: '8px 0', color: '#4a5568', lineHeight: '1.5' }}>{n.message}</p>
+                <h4 style={{ margin: '5px 0', color: 'var(--text-primary)' }}>{n.title}</h4>
+                <p style={{ margin: '8px 0', color: 'var(--text-secondary)', lineHeight: '1.5' }}>{n.message}</p>
                 
                 {(n.candidate_name || n.candidate_email || n.interview_id) && (
-                  <div style={{ fontSize: '0.8rem', background: 'rgba(0,0,0,0.03)', padding: '8px', borderRadius: '4px', margin: '10px 0', display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
+                  <div style={{ fontSize: '0.8rem', background: 'rgba(0,0,0,0.03)', padding: '8px', borderRadius: '4px', margin: '10px 0', display: 'flex', flexWrap: 'wrap', gap: '15px', color: 'var(--text-secondary)' }}>
                     {<span><strong>Student:</strong> {n.studentName}</span>}
                     {n.candidate_email && n.candidate_email !== 'candidate_email' && <span><strong>Email:</strong> {n.candidate_email}</span>}
                     {n.interview_id && n.interview_id !== 'interview_id' && <span><strong>ID:</strong> #{n.interview_id}</span>}
                   </div>
                 )}
 
-                <div style={{ fontSize: '0.75rem', color: '#a0aec0', fontWeight: 'bold', marginTop: '5px' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 'bold', marginTop: '5px' }}>
                   🕒 {new Date(n.createdAt).toLocaleString()}
                 </div>
               </div>
@@ -195,7 +165,7 @@ return (
           </div>
         ))
       ) : (
-        <div className="card" style={{ textAlign: 'center', padding: '4rem', color: '#a0aec0' }}>
+        <div className="card" style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-secondary)' }}>
           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔔</div>
           <h3>No notifications yet.</h3>
           <p>We'll notify you here when there's an update.</p>

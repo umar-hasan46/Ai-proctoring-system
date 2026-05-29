@@ -23,7 +23,7 @@ def get_user_interviews(email):
         columns = [d[0] for d in cur.description]
         interviews_list = []
         for row in rows:
-            intv = dict(zip(columns, row))
+            intv = dict(row)
             score = intv.get('final_percentage') or intv.get('overall_score') or 0.0
             answered = intv.get('answered_questions') or 0
             interviews_list.append({
@@ -302,7 +302,7 @@ def get_questions(interview_id):
         columns = [d[0] for d in cur.description]
         all_questions = []
         for row in rows:
-            q = dict(zip(columns, row))
+            q = dict(row)
             formatted_q = format_question_response(q)
             all_questions.append(formatted_q)
         return jsonify({"success": True, "questions": all_questions})
@@ -448,7 +448,7 @@ def get_all_results():
     cols = [d[0] for d in cur.description]
     cur.close()
     conn.close()
-    return jsonify({"success": True, "results": [dict(zip(cols, r)) for r in rows]})
+    return jsonify({"success": True, "results": [dict(r) for r in rows]})
 
 @bp.route('/results/<int:interview_id>', methods=['GET'])
 def get_result_by_id(interview_id):
@@ -459,7 +459,7 @@ def get_result_by_id(interview_id):
     cols = [d[0] for d in cur.description]
     cur.close()
     conn.close()
-    res_dict = dict(zip(cols, row)) if row else None
+    res_dict = dict(row) if row else None
     return jsonify({"success": True, "result": res_dict, "data": res_dict})
 
 @bp.route('/results-by-email/<email>', methods=['GET'])
@@ -471,7 +471,7 @@ def get_results_by_email(email):
     cols = [d[0] for d in cur.description]
     cur.close()
     conn.close()
-    return jsonify({"success": True, "results": [dict(zip(cols, r)) for r in rows]})
+    return jsonify({"success": True, "results": [dict(r) for r in rows]})
 
 @bp.route('/interviews/evaluations/<int:interview_id>', methods=['GET'])
 @bp.route('/interview/evaluations/<int:interview_id>', methods=['GET'])
@@ -483,7 +483,7 @@ def get_evaluations(interview_id):
     cols = [d[0] for d in cur.description]
     cur.close()
     conn.close()
-    return jsonify({"success": True, "evaluations": [dict(zip(cols, r)) for r in rows]})
+    return jsonify({"success": True, "evaluations": [dict(r) for r in rows]})
 
 @bp.route('/confidence/<int:interview_id>', methods=['GET'])
 def get_confidence_details(interview_id):
@@ -551,7 +551,7 @@ def get_proctoring_logs(intv_id):
         cur.execute("SELECT * FROM proctoring_logs WHERE interview_id = %s ORDER BY created_at DESC", (intv_id,))
         rows = cur.fetchall()
         columns = [d[0] for d in cur.description]
-        return jsonify({"success": True, "logs": [dict(zip(columns, row)) for row in rows]})
+        return jsonify({"success": True, "logs": [dict(row) for row in rows]})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
     finally:
@@ -594,7 +594,7 @@ def get_current_interview(email):
         row = cur.fetchone()
         if row:
             columns = [d[0] for d in cur.description]
-            return jsonify({"success": True, "interview": dict(zip(columns, row))})
+            return jsonify({"success": True, "interview": dict(row)})
         return jsonify({"success": True, "interview": None})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
@@ -611,7 +611,7 @@ def get_interview_questions(id):
         cur.execute("SELECT * FROM interview_questions WHERE interview_id = %s ORDER BY question_no ASC", (id,))
         rows = cur.fetchall()
         columns = [d[0] for d in cur.description]
-        return jsonify({"success": True, "questions": [dict(zip(columns, row)) for row in rows]})
+        return jsonify({"success": True, "questions": [dict(row) for row in rows]})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
     finally:
@@ -805,7 +805,7 @@ def start_interview():
         cur.execute("SELECT * FROM interview_questions WHERE interview_id = %s ORDER BY question_no ASC", (intv_id,))
         q_rows = cur.fetchall()
         q_columns = [d[0] for d in cur.description]
-        questions_list = [dict(zip(q_columns, row)) for row in q_rows]
+        questions_list = [dict(row) for row in q_rows]
 
         return jsonify({
             "success": True,
@@ -836,7 +836,7 @@ def get_active_interviews():
     columns = [d[0] for d in cur.description]
     cur.close()
     conn.close()
-    return jsonify({"success": True, "interviews": [dict(zip(columns, row)) for row in rows]})
+    return jsonify({"success": True, "interviews": [dict(row) for row in rows]})
 
 @bp.route('/interviews/latest/<email>', methods=['GET'])
 def get_latest_interview(email):
@@ -860,7 +860,7 @@ def get_latest_interview(email):
         row = cur.fetchone()
         if row:
             columns = [d[0] for d in cur.description]
-            data = dict(zip(columns, row))
+            data = dict(row)
             if data.get('r_tech') is not None:
                 data['technical_score'] = data['r_tech']
                 data['communication_score'] = data['r_comm']
@@ -905,7 +905,7 @@ def get_ai_logs(id):
         cur.execute("SELECT * FROM interview_ai_logs WHERE interview_id = %s ORDER BY created_at ASC", (id,))
         rows = cur.fetchall()
         cols = [d[0] for d in cur.description]
-        return jsonify({"success": True, "logs": [dict(zip(cols, r)) for r in rows]})
+        return jsonify({"success": True, "logs": [dict(r) for r in rows]})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
     finally:
@@ -1912,7 +1912,7 @@ def get_or_generate_question(*args, **kwargs):
         row = cur.fetchone()
         if row:
             cols = [d[0] for d in cur.description]
-            return dict(zip(cols, row))
+            return dict(row)
         cur.execute("SELECT attempt_no, detected_skills, primary_skill, secondary_skills, role_detected FROM interviews WHERE id = %s", (interview_id,))
         intv_row = cur.fetchone()
         attempt_no = 1
@@ -2057,7 +2057,7 @@ def get_or_generate_question(*args, **kwargs):
         cur.execute("SELECT * FROM interview_questions WHERE interview_id = %s AND question_no = %s", (interview_id, question_no))
         row = cur.fetchone()
         cols = [d[0] for d in cur.description]
-        return dict(zip(cols, row))
+        return dict(row)
     finally:
         cur.close()
         conn.close()
@@ -2441,11 +2441,11 @@ def run_completion(intv_id):
     conn = get_db_connection()
     cur = conn.cursor()
     try:
-        cur.execute("SELECT user_email, full_name, phone, role_applied, warning_count, start_time, detected_skills FROM interviews WHERE id = %s", (intv_id,))
+        cur.execute("SELECT user_email, full_name, phone, role_applied, warning_count, start_time, detected_skills, user_id FROM interviews WHERE id = %s", (intv_id,))
         intv_row = cur.fetchone()
         if not intv_row:
             return {"overall_score": 0, "recommendation": "Interview not found"}
-        email, name, phone, role, warnings, start_time, skills = intv_row
+        email, name, phone, role, warnings, start_time, skills, user_id = intv_row
         warnings = warnings or 0
         name = name or "Candidate"
         phone = phone or "N/A"
@@ -2454,13 +2454,83 @@ def run_completion(intv_id):
         ist_now = get_ist_time()
         ist_now_str = ist_now.strftime('%d %b %Y, %I:%M %p')
 
+        # First, ensure all 30 questions from interview_questions exist in answers and answer_evaluations
+        cur.execute("SELECT question_no, question_text, difficulty, topic, expected_answer, skill, id FROM interview_questions WHERE interview_id = %s ORDER BY question_no ASC", (intv_id,))
+        db_questions = cur.fetchall()
+
+        cur.execute("SELECT question_no, id, candidate_answer, answer_text, status FROM answers WHERE interview_id = %s", (intv_id,))
+        db_answers = {r[0]: {"id": r[1], "candidate_answer": r[2], "answer_text": r[3], "status": r[4]} for r in cur.fetchall()}
+
+        for q_no, q_text, q_diff, q_topic, q_expected, q_skill, q_id in db_questions:
+            # Check if answer exists and is not skipped/unanswered
+            ans_info = db_answers.get(q_no)
+            is_unanswered = True
+            if ans_info:
+                ans_val = (ans_info["candidate_answer"] or ans_info["answer_text"] or "").strip()
+                ans_status = (ans_info["status"] or "").strip().lower()
+                if ans_val and ans_val not in ["Skipped", "skipped"] and ans_status not in ["skipped", "unanswered"]:
+                    is_unanswered = False
+            
+            if is_unanswered:
+                # Save unanswered question details in answers table
+                cur.execute("""
+                    INSERT INTO answers (
+                        interview_id, user_email, candidate_email, question_id, question_no, question_text,
+                        answer_text, candidate_answer, answer, expected_answer, status, question_status,
+                        ai_score, correctness_status, technical_accuracy, confidence_level, hesitation_score,
+                        communication_score, feedback, suggestion, response_time_seconds, evaluated_at_ist,
+                        submitted_at_ist, created_at, question_confidence_score, technical_score, difficulty, topic,
+                        score, clarity_score, evaluated
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s, 'Not Answered', 'Not Answered', 'Not Answered', '', 'Unanswered', 'Unanswered',
+                            0, 'Incorrect', 'Needs Improvement', 'Low Confidence', 0, 0, 'Candidate did not answer this question.',
+                            'Review details.', 0.0, %s, %s, %s, 0, 0, %s, %s, 0, 0, true)
+                    ON CONFLICT (interview_id, question_id) DO UPDATE SET
+                        answer_text = 'Not Answered',
+                        candidate_answer = 'Not Answered',
+                        answer = 'Not Answered',
+                        status = 'Unanswered',
+                        question_status = 'Unanswered',
+                        ai_score = 0,
+                        correctness_status = 'Incorrect',
+                        feedback = 'Candidate did not answer this question.',
+                        score = 0,
+                        clarity_score = 0,
+                        technical_score = 0,
+                        evaluated = true
+                """, (intv_id, email, email, q_id, q_no, q_text, ist_now_str, ist_now_str, ist_now, q_diff or "Easy", q_topic or "Technical"))
+
+                # Save in answer_evaluations
+                cur.execute("""
+                    INSERT INTO answer_evaluations (
+                        interview_id, candidate_email, question_no, question_text,
+                        candidate_answer, expected_answer, difficulty, topic,
+                        ai_score, correctness_status, ai_feedback, suggestion,
+                        confidence_reason, evaluated_by, evaluated_at_ist, created_at,
+                        technical_score, communication_score, confidence_score, question_status
+                    )
+                    VALUES (%s, %s, %s, %s, 'Not Answered', '', %s, %s, 0, 'Incorrect', 'Candidate did not answer this question.',
+                            'Review details.', 'System recorded skipped answer', 'System', %s, %s, 0, 0, 0, 'Unanswered')
+                    ON CONFLICT (interview_id, question_no) DO UPDATE SET
+                        candidate_answer = 'Not Answered',
+                        ai_score = 0,
+                        correctness_status = 'Incorrect',
+                        ai_feedback = 'Candidate did not answer this question.',
+                        technical_score = 0,
+                        communication_score = 0,
+                        confidence_score = 0,
+                        question_status = 'Unanswered'
+                """, (intv_id, email, q_no, q_text, q_diff or "Easy", q_topic or "Technical", ist_now_str, ist_now))
+
+        conn.commit()
+
+        # Now select unevaluated answers (which will only be the real answered ones since we set unanswered evaluated=true)
         cur.execute("""
             SELECT id, question_no, question_text, answer_text, candidate_answer, response_time_seconds, question_id, topic, difficulty
             FROM answers
             WHERE interview_id = %s AND (evaluated = false OR score IS NULL)
         """, (intv_id,))
         unevaluated = cur.fetchall()
-        conn.commit()
 
         from evaluation_service import evaluate_answer
         from concurrent.futures import ThreadPoolExecutor
@@ -2469,9 +2539,9 @@ def run_completion(intv_id):
             aid, q_no, q_text, ans_txt, cand_ans, resp_time, q_id, q_topic, q_diff = row_u
             answer = (cand_ans or ans_txt or '').strip()
             section = "Section 1" if q_no <= 10 else ("Section 2" if q_no <= 20 else "Section 3")
-            skipped = answer in ["Skipped", "skipped", ""] or not answer
+            skipped = answer in ["Skipped", "skipped", ""] or not answer or answer.lower() == "not answered"
             if skipped:
-                score, clarity, tech, feedback = 0, 0, 0, "Question was skipped."
+                score, clarity, tech, feedback = 0, 0, 0, "Candidate did not answer this question."
             else:
                 try:
                     res = evaluate_answer(q_text, answer, section, skills)
@@ -2532,6 +2602,7 @@ def run_completion(intv_id):
                 bg_cur.close()
                 bg_conn.close()
 
+        # Query all answers again for score calculations
         cur.execute("SELECT question_no, answer_text, candidate_answer, score, clarity_score, technical_score FROM answers WHERE interview_id = %s", (intv_id,))
         all_ans = cur.fetchall()
 
@@ -2543,7 +2614,7 @@ def run_completion(intv_id):
         for r in all_ans:
             q_no, ans_txt, cand_ans, score, clarity, tech = r
             val = (cand_ans or ans_txt or '').strip()
-            is_skipped = val in ["Skipped", "skipped", ""] or not val
+            is_skipped = val in ["Skipped", "skipped", ""] or not val or val.lower() == "not answered" or val.lower() == "unanswered"
             if not is_skipped:
                 score_val = score if score is not None else 0
                 answered_answers.append(score_val)
@@ -2560,12 +2631,14 @@ def run_completion(intv_id):
 
         if ans_count == 0:
             overall = 0.0
+            sec1_avg = 0.0
+            sec2_avg = 0.0
+            sec3_avg = 0.0
         else:
-            overall = sum(answered_answers) / (ans_count * 100) * 100.0
-
-        sec1_avg = sum(sec1_scores) / len(sec1_scores) if sec1_scores else 0.0
-        sec2_avg = sum(sec2_scores) / len(sec2_scores) if sec2_scores else 0.0
-        sec3_avg = sum(sec3_scores) / len(sec3_scores) if sec3_scores else 0.0
+            overall = sum(answered_answers) / ans_count
+            sec1_avg = sum(sec1_scores) / len(sec1_scores) if sec1_scores else 0.0
+            sec2_avg = sum(sec2_scores) / len(sec2_scores) if sec2_scores else 0.0
+            sec3_avg = sum(sec3_scores) / len(sec3_scores) if sec3_scores else 0.0
 
         conf_avg = overall
         conf_lvl = "High Confidence" if conf_avg >= 80 else ("Moderate Confidence" if conf_avg >= 60 else "Low Confidence")
@@ -2586,35 +2659,59 @@ def run_completion(intv_id):
             mins, secs = divmod(diff.total_seconds(), 60)
             duration_str = f"{int(mins)}m {int(secs)}s"
 
-        overall_pct = round((ans_count / 30.0) * 100, 1)
-
-        if ans_count >= 15:
-            auto_hiring_status = "Shortlisted"
-        else:
-            auto_hiring_status = "Not Shortlisted"
-        overall = float(ans_count) # Score out of 30
+        auto_hiring_status = "Shortlisted" if overall >= 50 else "Not Shortlisted"
         ai_rec = auto_hiring_status
 
-        try:
-            from services.ollama_service import generate_with_ollama
-            ai_sum_prompt = f"Candidate: {name}, Role: {role}, Score: {int(overall)}%, Skills: {skills}, Answered: {ans_count}/30. Write 2 sentence professional performance summary."
-            ai_summary_text = generate_with_ollama(ai_sum_prompt, timeout=20) or f"{name} completed the interview answering {ans_count}/30 questions."
-        except Exception:
-            ai_summary_text = f"{name} completed the interview answering {ans_count}/30 questions."
+        # Query all answer evaluations again to assemble answered_list and unanswered_list JSON
+        cur.execute("""
+            SELECT question_text, candidate_answer, ai_score, ai_feedback, confidence_score, correctness_status, question_status
+            FROM answer_evaluations
+            WHERE interview_id = %s
+            ORDER BY question_no ASC
+        """, (intv_id,))
+        eval_rows = cur.fetchall()
 
-        try:
-            from services.ollama_service import generate_with_ollama
-            weak_skills = ", ".join(improvements[:2]) if improvements else "technical depth and structured communication"
-            ai_sug_prompt = f"Score: {int(overall)}%, weak areas: {weak_skills}. Give exactly 3 short bullet-point improvement tips. Return only the tips, one per line."
-            ai_sug_raw = generate_with_ollama(ai_sug_prompt, timeout=20) or ""
-            ai_suggestions_list = [line.strip().lstrip('*-•123456789. ').strip() for line in ai_sug_raw.strip().split('\n') if line.strip()] if ai_sug_raw else []
-            ai_suggestions_list = [s for s in ai_suggestions_list if len(s) > 5][:3]
-        except Exception:
-            ai_suggestions_list = []
+        import json
+        answered_list = []
+        unanswered_list = []
+        for er in eval_rows:
+            q_text, cand_ans, score_val, feedback_val, conf_val, corr_val, q_status_val = er
+            ans_val = (cand_ans or '').strip()
+            is_skipped = ans_val in ["Skipped", "skipped", ""] or not ans_val or ans_val.lower() == "not answered" or q_status_val == "Unanswered"
+            if is_skipped:
+                unanswered_list.append({
+                    "question": q_text,
+                    "answer": "Not Answered",
+                    "score": 0,
+                    "feedback": "Candidate did not answer this question.",
+                    "status": "Unanswered"
+                })
+            else:
+                answered_list.append({
+                    "question": q_text,
+                    "answer": ans_val,
+                    "score": score_val or 0,
+                    "feedback": feedback_val or "",
+                    "confidence": conf_val or 0,
+                    "correctnessLevel": corr_val or "Incorrect"
+                })
 
-        if not ai_suggestions_list:
-            ai_suggestions_list = ["Use definition, example, and real-world format.", "Keep answers clear and direct.", "Practice mock interviews to improve confidence."]
+        # Calculate violation/tab switch counts from proctoring_logs or warnings
+        cur.execute("SELECT activity_type, message FROM proctoring_logs WHERE interview_id = %s", (intv_id,))
+        log_events = cur.fetchall()
+        tab_switches = 0
+        suspicious_activities = 0
+        for ev_type, msg in log_events:
+            ev_type_lower = (ev_type or "").lower()
+            msg_lower = (msg or "").lower()
+            if "tab" in ev_type_lower or "tab" in msg_lower or "switch" in ev_type_lower:
+                tab_switches += 1
+            if "suspicious" in ev_type_lower or "suspicious" in msg_lower or "cheat" in ev_type_lower:
+                suspicious_activities += 1
 
+        suspicious_activities = max(suspicious_activities, warnings)
+
+        # Update interviews table
         cur.execute("""
             UPDATE interviews
             SET status = 'completed', result_status = 'ready', end_time = %s, attended_count = %s, skipped_count = %s,
@@ -2625,15 +2722,25 @@ def run_completion(intv_id):
                 confidence_score = %s, final_recommendation = %s, ai_recommendation = %s, 
                 recruiter_decision = %s, admin_status = %s, admin_hiring_status = %s, admin_final_status = %s,
                 score_overall = %s, score_technical = %s, score_communication = %s, score_aptitude = %s,
-                completed_at = %s, ai_summary = %s, ai_suggestions = %s
+                completed_at = %s, ai_summary = %s, ai_suggestions = %s,
+                candidate_id = %s, candidate_name = %s, candidate_email = %s, applied_role = %s,
+                answered_questions_count = %s, unanswered_questions_count = %s, hiring_status = 'Pending',
+                started_at = %s, ended_at = %s, questions_and_answers = %s, unanswered_questions = %s,
+                resume_analysis = %s, proctoring_alerts = %s, tab_switch_count = %s, suspicious_activity_count = %s,
+                updated_at = %s
             WHERE id = %s
         """, (
             ist_now, ans_count, skip_count, na_count, overall, int(sec3_avg), int(sec1_avg),
-            conf_lvl, ist_now_str, duration_str, ans_count, skip_count, na_count, (ans_count/30.0)*100,
+            conf_lvl, ist_now_str, duration_str, ans_count, skip_count, na_count, int((ans_count/30.0)*100),
             overall, overall, int(conf_avg), ai_rec, ai_rec,
             auto_hiring_status, auto_hiring_status, auto_hiring_status, auto_hiring_status,
             overall, sec3_avg, sec1_avg, sec2_avg, ist_now,
-            ai_summary_text, json.dumps(ai_suggestions_list), intv_id
+            summary_text, json.dumps(improvements),
+            user_id, name, email, role,
+            ans_count, skip_count,
+            start_time, ist_now, json.dumps(answered_list), json.dumps(unanswered_list),
+            json.dumps({"analysis": recruiter_notes}), warnings, tab_switches, suspicious_activities,
+            ist_now, intv_id
         ))
 
         cur.execute("UPDATE users SET admin_status = %s, admin_hiring_status = %s WHERE email = %s", (auto_hiring_status, auto_hiring_status, email))
@@ -2757,25 +2864,31 @@ def run_completion(intv_id):
             INSERT INTO notifications (user_email, interview_id, title, message, type, event_type, status, target_role, created_at_ist, created_at)
             VALUES (%s, %s, 'Interview Result Ready', 'Your interview result is ready.', 'success', 'Interview Completed', 'unread', 'user', %s, %s)
         """, (email, intv_id, ist_now_str, ist_now))
+
+        if skip_count > 0:
+            notif_msg = f"New interview submitted by {name}. {skip_count} questions were unanswered."
+        else:
+            notif_msg = f"New interview submitted by {name} for {role}."
+
         cur.execute("""
             INSERT INTO notifications (user_email, interview_id, title, message, type, event_type, status, target_role, created_at_ist, created_at)
             VALUES (Null, %s, 'New Interview Submitted', %s, 'success', 'Interview Completed', 'unread', 'admin', %s, %s)
-        """, (intv_id, f"New interview submitted by {name} for {role}.", ist_now_str, ist_now))
+        """, (intv_id, notif_msg, ist_now_str, ist_now))
 
         conn.commit()
         return {"overall_score": overall, "recommendation": ai_rec}
     except Exception as e:
         conn.rollback()
         return {"overall_score": 0, "recommendation": str(e)}
-        cur.execute("""
-            INSERT INTO notifications (user_email, interview_id, title, message, type, event_type, status, target_role, created_at_ist, created_at)
-            VALUES (Null, %s, 'Candidate Interview Result Ready', 'Candidate interview result is ready for review.', 'success', 'Interview Completed', 'unread', 'admin', %s, %s)
-        """, (intv_id, ist_now_str, ist_now))
-        conn.commit()
     finally:
-        cur.close()
-        conn.close()
-    return {"overall_score": overall, "recommendation": ai_rec}
+        try:
+            cur.close()
+        except:
+            pass
+        try:
+            conn.close()
+        except:
+            pass
 
 @bp.route('/interview/evaluate-all-answers', methods=['POST'])
 @bp.route('/interviews/evaluate-all-answers', methods=['POST'])
@@ -2846,7 +2959,7 @@ def get_evaluations_endpoint(interview_id):
         cur.execute("SELECT * FROM answer_evaluations WHERE interview_id = %s ORDER BY question_no ASC", (interview_id,))
         rows = cur.fetchall()
         cols = [d[0] for d in cur.description]
-        return jsonify({"success": True, "evaluations": [dict(zip(cols, r)) for r in rows]})
+        return jsonify({"success": True, "evaluations": [dict(r) for r in rows]})
     finally:
         cur.close()
         conn.close()
@@ -2968,7 +3081,7 @@ def get_results_by_email_endpoint(email):
         row = cur.fetchone()
         if row:
             cols = [d[0] for d in cur.description]
-            result_dict = dict(zip(cols, row))
+            result_dict = dict(row)
             start_time = result_dict.get("start_time")
             started_at_ist = ""
             if start_time:
@@ -3029,7 +3142,7 @@ def get_results_by_email_endpoint(email):
             cur.execute("SELECT * FROM answer_evaluations WHERE interview_id = %s ORDER BY question_no ASC", (result_dict["id"],))
             eval_rows = cur.fetchall()
             eval_cols = [d[0] for d in cur.description]
-            evaluations = [dict(zip(eval_cols, er)) for er in eval_rows]
+            evaluations = [dict(er) for er in eval_rows]
             return jsonify({"success": True, "status": "ready", "data": data, "result": data, "evaluations": evaluations})
         return jsonify({"success": True, "status": "empty", "data": None, "evaluations": [], "message": "No interview result available yet"})
     finally:
@@ -3068,7 +3181,7 @@ def get_results_by_id_endpoint(interview_id):
         row = cur.fetchone()
         if row:
             cols = [d[0] for d in cur.description]
-            result_dict = dict(zip(cols, row))
+            result_dict = dict(row)
             start_time = result_dict.get("start_time")
             started_at_ist = ""
             if start_time:
@@ -3129,7 +3242,7 @@ def get_results_by_id_endpoint(interview_id):
             cur.execute("SELECT * FROM answer_evaluations WHERE interview_id = %s ORDER BY question_no ASC", (result_dict["id"],))
             eval_rows = cur.fetchall()
             eval_cols = [d[0] for d in cur.description]
-            evaluations = [dict(zip(eval_cols, er)) for er in eval_rows]
+            evaluations = [dict(er) for er in eval_rows]
             return jsonify({"success": True, "status": "ready", "data": data, "result": data, "evaluations": evaluations})
         return jsonify({"success": True, "status": "empty", "data": None, "evaluations": [], "message": "No interview result available yet"})
     finally:
@@ -3181,6 +3294,22 @@ def ensure_columns_exist():
     cur = conn.cursor()
     try:
         cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS secondary_skills TEXT")
+        cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS candidate_id INTEGER")
+        cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS candidate_name TEXT")
+        cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS candidate_email TEXT")
+        cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS applied_role TEXT")
+        cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS answered_questions_count INTEGER")
+        cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS unanswered_questions_count INTEGER")
+        cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS hiring_status TEXT DEFAULT 'Pending'")
+        cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS started_at TIMESTAMP WITH TIME ZONE")
+        cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS ended_at TIMESTAMP WITH TIME ZONE")
+        cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS questions_and_answers JSONB")
+        cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS unanswered_questions JSONB")
+        cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS resume_analysis JSONB")
+        cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS proctoring_alerts INTEGER")
+        cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS tab_switch_count INTEGER DEFAULT 0")
+        cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS suspicious_activity_count INTEGER DEFAULT 0")
+        cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE")
         cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS role_detected VARCHAR(255)")
         cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS result_status VARCHAR(50) DEFAULT 'pending'")
         cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS evaluation_error TEXT")
@@ -3498,7 +3627,7 @@ def get_my_results(interview_id):
             return jsonify({"success": False, "message": "Interview not found", "data": None}), 200
         
         cols = [d[0] for d in cur.description]
-        intv = dict(zip(cols, row))
+        intv = dict(row)
         
         if intv.get("user_email") != email:
             return jsonify({"success": False, "message": "Unauthorized access to this interview", "data": None}), 200
@@ -3530,7 +3659,7 @@ def get_my_results(interview_id):
         """, (interview_id,))
         eval_rows = cur.fetchall()
         eval_cols = [d[0] for d in cur.description]
-        evaluations = [dict(zip(eval_cols, er)) for er in eval_rows]
+        evaluations = [dict(er) for er in eval_rows]
 
         if not evaluations:
             cur.execute("""
@@ -3544,7 +3673,7 @@ def get_my_results(interview_id):
             """, (interview_id,))
             ans_rows = cur.fetchall()
             ans_cols = [d[0] for d in cur.description]
-            evaluations = [dict(zip(ans_cols, ar)) for ar in ans_rows]
+            evaluations = [dict(ar) for ar in ans_rows]
 
         chat = []
         scored_technical = []
@@ -3652,7 +3781,7 @@ def get_my_results(interview_id):
         log_cols = [desc[0] for desc in cur.description]
         logs_list = []
         for lr in log_rows:
-            l_dict = dict(zip(log_cols, lr))
+            l_dict = dict(lr)
             if l_dict.get('created_at'):
                 l_dict['created_at_ist'] = l_dict['created_at'].astimezone(ist).strftime('%d %b %Y, %I:%M %p')
                 l_dict['created_at'] = l_dict['created_at'].isoformat()
@@ -4079,39 +4208,58 @@ def evaluate_answer():
 def finish_interview():
     from flask import request
     data = request.json
-    interview_id = data.get('interviewId')
-    evaluations = data.get('evaluations', {})
-    warnings = data.get('warnings', [])
-    status = data.get('status', 'completed')
-    reason = data.get('reason', '')
+    interview_id = data.get('interviewId') or data.get('interview_id')
+    if not interview_id:
+        return jsonify({"success": False, "message": "Missing interviewId"}), 400
+        
+    ensure_columns_exist()
     
+    # Sync status to DB
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("UPDATE interviews SET status = 'completed', result_status = 'ready' WHERE id = %s", (interview_id,))
+        conn.commit()
+    except Exception:
+        pass
+    finally:
+        cur.close()
+        conn.close()
+        
+    # Run completion synchronously so everything is calculated & saved instantly
+    run_completion(interview_id)
+    
+    # Retrieve updated stats
+    conn = get_db_connection()
+    cur = conn.cursor()
     overall = 0
     technical = 0
     communication = 0
-    
-    if evaluations:
-        eval_list = list(evaluations.values())
-        technical = sum(e.get('technicalScore', 0) for e in eval_list) / len(eval_list)
-        communication = sum(e.get('communicationScore', 0) for e in eval_list) / len(eval_list)
-        overall = sum(e.get('score', 0) for e in eval_list) / len(eval_list)
+    warnings = 0
+    rec = "Selected"
+    try:
+        cur.execute("SELECT overall_score, technical_score, communication_score, warning_count, final_recommendation FROM interviews WHERE id = %s", (interview_id,))
+        row = cur.fetchone()
+        if row:
+            overall = row[0] or 0
+            technical = row[1] or 0
+            communication = row[2] or 0
+            warnings = row[3] or 0
+            rec = row[4] or "Selected"
+    except Exception:
+        pass
+    finally:
+        cur.close()
+        conn.close()
         
-    # Auto-Shortlist Logic: 15 questions attended = Shortlisted
-    attended_count = len(evaluations.keys()) if evaluations else 0
-    if attended_count >= 15:
-        final_recommendation = "Selected"
-    else:
-        final_recommendation = "Selected" if overall > 70 else "Review" if overall > 50 else "Rejected"
-        
-    # Update legacy interviews and results table if needed (fire and forget pattern via cursor, but here we just return the payload since ActiveInterview handles it or we could execute db)
-    # Actually, the user just needs the response to say Selected. 
     return jsonify({
         "success": True,
         "interviewId": interview_id,
         "overallScore": round(overall, 2),
         "technicalScore": round(technical, 2),
         "communicationScore": round(communication, 2),
-        "warningCount": len(warnings),
-        "status": status,
-        "terminationReason": reason,
-        "finalRecommendation": final_recommendation
+        "warningCount": warnings,
+        "status": "Completed",
+        "terminationReason": "",
+        "finalRecommendation": rec
     })

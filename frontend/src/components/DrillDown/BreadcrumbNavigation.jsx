@@ -4,7 +4,7 @@ function BreadcrumbNavigation({ items, onNavigate }) {
   return (
     <nav style={{
       background: 'transparent',
-      color: '#4a5568',
+      color: 'var(--text-secondary)',
       padding: '0.5rem 0',
       display: 'flex',
       alignItems: 'center',
@@ -39,7 +39,7 @@ function BreadcrumbNavigation({ items, onNavigate }) {
               {item.label}
             </span>
             {!isLast && (
-              <span style={{ color: '#cbd5e0', padding: '0 4px', userSelect: 'none' }}>
+              <span style={{ color: 'var(--border-color)', padding: '0 4px', userSelect: 'none' }}>
                 &gt;
               </span>
             )}

@@ -110,4 +110,4 @@ def get_violations(id):
     columns = [d[0] for d in cur.description]
     cur.close()
     conn.close()
-    return jsonify({"success": True, "violations": [dict(zip(columns, row)) for row in rows]})
+    return jsonify({"success": True, "violations": [dict(row) for row in rows]})
