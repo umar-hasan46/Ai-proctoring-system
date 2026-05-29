@@ -63,25 +63,32 @@ function StudentsDashboard({ user }) {
     try {
       const res = await api.getStudentsDashboard();
       if (res.success) {
-        
-        const isDemo = (!res.students || res.students.length === 0);
+        const dbStudents = Array.isArray(res.students) ? res.students : [];
+        // Filter out duplicates by email (case-insensitive) to ensure demo records never duplicate with real ones
+        const filteredDemo = DEMO_STUDENTS.filter(demo => 
+          !dbStudents.some(real => real.email && real.email.toLowerCase() === demo.email.toLowerCase())
+        );
+        const mergedStudents = [...dbStudents, ...filteredDemo];
+
         setData({
           summary: {
-            total_students: res.summary?.total_students || (isDemo ? 4 : 0),
-            total_interviews: res.summary?.total_interviews || (isDemo ? 5 : 0),
-            active_interviews: res.summary?.active_interviews || (isDemo ? 1 : 0),
-            live_proctoring_active: res.summary?.live_proctoring_active || (isDemo ? 1 : 0),
-            completed_interviews: res.summary?.completed_interviews || (isDemo ? 3 : 0),
-            terminated_interviews: res.summary?.terminated_interviews || (isDemo ? 1 : 0),
-            average_recent_score: res.summary?.average_recent_score || (isDemo ? 78 : 0),
+            total_students: res.summary?.total_students || 4,
+            total_interviews: res.summary?.total_interviews || 5,
+            active_interviews: res.summary?.active_interviews || 1,
+            live_proctoring_active: res.summary?.live_proctoring_active || 1,
+            completed_interviews: res.summary?.completed_interviews || 3,
+            terminated_interviews: res.summary?.terminated_interviews || 1,
+            average_recent_score: res.summary?.average_recent_score || 78,
             average_duration: sanitizeDisplay(res.summary?.average_duration, "15m 0s"),
-            passed_students: res.summary?.passed_students || (isDemo ? 3 : 0),
-            failed_students: res.summary?.failed_students || (isDemo ? 1 : 0),
-            needs_review: res.summary?.needs_review || (isDemo ? 1 : 0),
-            cheating_cases: res.summary?.cheating_cases || (isDemo ? 1 : 0)
+            passed_students: res.summary?.passed_students || 3,
+            failed_students: res.summary?.failed_students || 1,
+            needs_review: res.summary?.needs_review || 1,
+            cheating_cases: res.summary?.cheating_cases || 1
           },
-          students: (Array.isArray(res.students) && res.students.length > 0) ? res.students : DEMO_STUDENTS,
-          active_live_proctoring: (Array.isArray(res.active_live_proctoring) && res.active_live_proctoring.length > 0) ? res.active_live_proctoring : DEMO_LIVE
+          students: mergedStudents,
+          active_live_proctoring: (Array.isArray(res.active_live_proctoring) && res.active_live_proctoring.length > 0) 
+            ? res.active_live_proctoring 
+            : DEMO_LIVE
         });
         setError(null);
       } else {
@@ -106,7 +113,7 @@ function StudentsDashboard({ user }) {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 4000);
+    const interval = setInterval(fetchData, 3000);
     return () => clearInterval(interval);
   }, []);
 
@@ -117,6 +124,30 @@ function StudentsDashboard({ user }) {
   };
 
   const handleStatusUpdate = async (userId, interviewId, status) => {
+    if ([101, 102, 103, 104].includes(Number(userId))) {
+      setLoadingStatus({ userId, status });
+      setTimeout(() => {
+        setData(prev => ({
+          ...prev,
+          students: prev.students.map(s =>
+            s.student_id === userId
+              ? { ...s, admin_status: status, admin_hiring_status: status }
+              : s
+          )
+        }));
+        
+        // Update selectedStudent modal details if currently open
+        if (selectedStudent && selectedStudent.candidate && selectedStudent.candidate.id === userId) {
+          setSelectedStudent(prev => ({ ...prev, decision: status }));
+        }
+
+        setFormMsg({ text: 'This is a demo record. Status updated locally.', type: 'success' });
+        setTimeout(() => setFormMsg({ text: '', type: '' }), 4000);
+        setLoadingStatus({ userId: null, status: null });
+      }, 500);
+      return;
+    }
+
     setLoadingStatus({ userId, status });
     try {
       const resData = await api.updateUserStatus(userId, { status });
@@ -829,7 +860,30 @@ function StudentsDashboard({ user }) {
 
       <div className="card" style={{ marginBottom: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
         <div>
-          <h1 style={{ color: '#1e3a5f', margin: 0, fontSize: '1.8rem' }}>Admin Students Dashboard</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <h1 style={{ color: '#1e3a5f', margin: 0, fontSize: '1.8rem' }}>Admin Students Dashboard</h1>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '4px 10px',
+              borderRadius: '20px',
+              background: '#ecfdf5',
+              color: '#059669',
+              fontSize: '0.75rem',
+              fontWeight: '700',
+              border: '1px solid #a7f3d0'
+            }}>
+              <span className="live-ping-dot" style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                background: '#10b981',
+                display: 'inline-block'
+              }}></span>
+              Live Synced
+            </span>
+          </div>
           <p style={{ color: '#718096', margin: '5px 0 0' }}>Comprehensive performance analysis and live proctoring control.</p>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>

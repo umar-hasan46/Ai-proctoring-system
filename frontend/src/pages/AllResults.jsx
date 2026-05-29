@@ -5,6 +5,77 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { formatToIST } from '../utils/dateUtils';
 
+const DEMO_REPORTS = [
+  {
+    interview_id: 101,
+    candidate_name: "John Doe",
+    candidate_email: "john@demo.com",
+    role: "Software Engineer",
+    role_applied: "Software Engineer",
+    created_at: "2026-05-26T14:30:00Z",
+    status: "completed",
+    admin_hiring_status: "Pending Review",
+    overall_score: 85,
+    technical_score: 82,
+    communication_score: 88,
+    confidence_score: 90,
+    cheating_alert_count: 0,
+    attempt_no: 1,
+    is_demo: true
+  },
+  {
+    interview_id: 102,
+    candidate_name: "Jane Smith",
+    candidate_email: "jane@demo.com",
+    role: "Data Scientist",
+    role_applied: "Data Scientist",
+    created_at: "2026-05-26T13:15:00Z",
+    status: "completed",
+    admin_hiring_status: "Shortlisted",
+    overall_score: 92,
+    technical_score: 95,
+    communication_score: 90,
+    confidence_score: 95,
+    cheating_alert_count: 1,
+    attempt_no: 1,
+    is_demo: true
+  },
+  {
+    interview_id: 103,
+    candidate_name: "Mike Johnson",
+    candidate_email: "mike@demo.com",
+    role: "Frontend Dev",
+    role_applied: "Frontend Dev",
+    created_at: "2026-05-26T11:45:00Z",
+    status: "terminated",
+    admin_hiring_status: "Not Shortlisted",
+    overall_score: 45,
+    technical_score: 40,
+    communication_score: 50,
+    confidence_score: 40,
+    cheating_alert_count: 4,
+    attempt_no: 1,
+    is_demo: true
+  },
+  {
+    interview_id: 104,
+    candidate_name: "Sarah Williams",
+    candidate_email: "sarah@demo.com",
+    role: "Backend Dev",
+    role_applied: "Backend Dev",
+    created_at: "2026-05-26T10:00:00Z",
+    status: "completed",
+    admin_hiring_status: "Hiring in Process",
+    overall_score: 88,
+    technical_score: 90,
+    communication_score: 85,
+    confidence_score: 88,
+    cheating_alert_count: 0,
+    attempt_no: 1,
+    is_demo: true
+  }
+];
+
 function AllResults({ isReportView = false }) {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,8 +83,8 @@ function AllResults({ isReportView = false }) {
   const [filter, setFilter] = useState('all');
   const navigate = useNavigate();
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = async (silent = false) => {
+    if (!silent) setLoading(true);
     setError(null);
     try {
       const res = isReportView
@@ -21,20 +92,36 @@ function AllResults({ isReportView = false }) {
         : await api.apiRequest('/interview/results');
 
       if (res.success) {
-        setResults(Array.isArray(res.reports || res.results) ? (res.reports || res.results) : []);
+        const dbReports = Array.isArray(res.reports || res.results) ? (res.reports || res.results) : [];
+        if (isReportView) {
+          const filteredDemo = DEMO_REPORTS.filter(demo => 
+            !dbReports.some(real => {
+              const realEmail = real.candidate_email || real.user_email || '';
+              return realEmail.toLowerCase() === demo.candidate_email.toLowerCase();
+            })
+          );
+          setResults([...dbReports, ...filteredDemo]);
+        } else {
+          setResults(dbReports);
+        }
       } else {
         setError(res.message || "Failed to load results");
       }
     } catch (err) {
-      
-      setError("Unable to load results. Please check your connection or login again.");
+      if (isReportView) {
+        setResults(DEMO_REPORTS);
+      } else {
+        setError("Unable to load results. Please check your connection or login again.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    fetchData(false);
+    const interval = setInterval(() => fetchData(true), 3000);
+    return () => clearInterval(interval);
   }, [isReportView]);
 
   const stats = {

@@ -22,7 +22,7 @@ const NotificationBell = React.memo(function NotificationBell({ user }) {
 
   useEffect(() => {
     fetchCount();
-    const interval = setInterval(fetchCount, 10000);
+    const interval = setInterval(fetchCount, 4000);
     return () => clearInterval(interval);
   }, [user?.email, user?.role]);
 

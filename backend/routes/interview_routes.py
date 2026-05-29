@@ -2759,8 +2759,8 @@ def run_completion(intv_id):
         """, (email, intv_id, ist_now_str, ist_now))
         cur.execute("""
             INSERT INTO notifications (user_email, interview_id, title, message, type, event_type, status, target_role, created_at_ist, created_at)
-            VALUES (Null, %s, 'Candidate Interview Result Ready', 'Candidate interview result is ready for review.', 'success', 'Interview Completed', 'unread', 'admin', %s, %s)
-        """, (intv_id, ist_now_str, ist_now))
+            VALUES (Null, %s, 'New Interview Submitted', %s, 'success', 'Interview Completed', 'unread', 'admin', %s, %s)
+        """, (intv_id, f"New interview submitted by {name}.", ist_now_str, ist_now))
 
         conn.commit()
         return {"overall_score": overall, "recommendation": ai_rec}

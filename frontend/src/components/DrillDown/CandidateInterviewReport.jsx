@@ -12,6 +12,94 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
   useEffect(() => {
     const fetchReport = async () => {
       setLoading(true);
+      const isDemoId = ['101', '102', '103', '104', 101, 102, 103, 104].includes(interviewId) || 
+                       (typeof interviewId === 'string' && (interviewId.startsWith('INT-10') || interviewId.startsWith('10')));
+      
+      if (isDemoId) {
+        let mockId = 101;
+        if (typeof interviewId === 'string') {
+          if (interviewId.startsWith('INT-')) {
+            mockId = parseInt(interviewId.split('-')[1]) || 101;
+          } else {
+            mockId = parseInt(interviewId) || 101;
+          }
+        } else {
+          mockId = parseInt(interviewId) || 101;
+        }
+
+        const DEMO_STUDENTS = [
+          { student_id: 101, name: "John Doe", email: "john@demo.com", role_applied: "Software Engineer", date_ist: "26 May 2026, 02:30 PM", admin_status: "Pending Review", admin_hiring_status: "Pending Review", score: 85, technical_score: 82, communication_score: 88, confidence_level: "High", warnings: 0, status: "completed" },
+          { student_id: 102, name: "Jane Smith", email: "jane@demo.com", role_applied: "Data Scientist", date_ist: "26 May 2026, 01:15 PM", admin_status: "Shortlisted", admin_hiring_status: "Shortlisted", score: 92, technical_score: 95, communication_score: 90, confidence_level: "High", warnings: 1, status: "completed" },
+          { student_id: 103, name: "Mike Johnson", email: "mike@demo.com", role_applied: "Frontend Dev", date_ist: "26 May 2026, 11:45 AM", admin_status: "Not Shortlisted", admin_hiring_status: "Not Shortlisted", score: 45, technical_score: 40, communication_score: 50, confidence_level: "Low", warnings: 4, status: "terminated" },
+          { student_id: 104, name: "Sarah Williams", email: "sarah@demo.com", role_applied: "Backend Dev", date_ist: "26 May 2026, 10:00 AM", admin_status: "Hiring in Process", admin_hiring_status: "Hiring in Process", score: 88, technical_score: 90, communication_score: 85, confidence_level: "High", warnings: 0, status: "completed" }
+        ];
+
+        const mockStudent = DEMO_STUDENTS.find(ds => ds.student_id === mockId) || DEMO_STUDENTS[0];
+        const savedDemoStatus = localStorage.getItem(`demo_status_${mockStudent.student_id}`) || mockStudent.admin_status;
+
+        setTimeout(() => {
+          setReport({
+            candidate: {
+              id: mockStudent.student_id,
+              name: mockStudent.name,
+              email: mockStudent.email,
+              phone: "+91 98765 43210",
+              role: mockStudent.role_applied
+            },
+            interview: {
+              id: `INT-${mockStudent.student_id}-99`,
+              overall_score: mockStudent.score,
+              technical_score: mockStudent.technical_score,
+              communication_score: mockStudent.communication_score,
+              confidence_level: `${mockStudent.confidence_level} Confidence`,
+              duration: "18m 42s",
+              warning_count: mockStudent.warnings
+            },
+            summary: `Demo candidate evaluation report for ${mockStudent.name}. High communication clarity, consistent and accurate technical explanations. This is a demo candidate report.`,
+            decision: savedDemoStatus,
+            correct_count: 2,
+            total_technical: 2,
+            answered_count: 2,
+            skipped_count: 0,
+            violations: {
+              no_face: 0,
+              multiple_faces: 0,
+              tab_switches: mockStudent.warnings,
+              audio_muted: 0,
+              camera_off: 0
+            },
+            scored_technical: [
+              {
+                question_no: 1,
+                category: "Self Introduction",
+                skill: "Communication",
+                difficulty: "Easy",
+                question_text: "Please introduce yourself and your technical background.",
+                answer_text: `Hi, I am ${mockStudent.name}. I have worked extensively with React, SQL, and backend integration.`,
+                score: mockStudent.technical_score,
+                feedback: "Fluent speaker, accurate high-level description of background and technical skills.",
+                status: "Answered"
+              },
+              {
+                question_no: 2,
+                category: "Core Technical",
+                skill: "React",
+                difficulty: "Medium",
+                question_text: "Explain the difference between state and props in React.",
+                answer_text: "State is local mutable data managed inside a component. Props are read-only inputs passed down from parent components.",
+                score: mockStudent.technical_score + 5,
+                feedback: "Accurate differentiation between immutable inputs and mutable local state.",
+                status: "Answered"
+              }
+            ]
+          });
+          const savedNotes = localStorage.getItem(`recruiter_notes_${mockStudent.student_id}_${interviewId}`) || '';
+          setRecruiterNotes(savedNotes);
+          setLoading(false);
+        }, 300);
+        return;
+      }
+
       try {
         const res = await api.getDetailedInterviewReport(interviewId);
         if (res && res.success && res.data) {
@@ -47,6 +135,20 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
 
   const handleStatusChange = async (newStatus) => {
     const resolvedCandId = candidateId || report?.candidate?.id || 0;
+    
+    // Intercept status updates for demo candidates to avoid API / DB errors
+    if ([101, 102, 103, 104].includes(Number(resolvedCandId)) || [101, 102, 103, 104].includes(Number(interviewId))) {
+      setReport(prev => ({
+        ...prev,
+        decision: newStatus
+      }));
+      localStorage.setItem(`demo_status_${resolvedCandId}`, newStatus);
+      if (onStatusChange) {
+        onStatusChange(resolvedCandId, newStatus);
+      }
+      return;
+    }
+
     try {
       const res = await api.updateAdminStatus({
         user_id: resolvedCandId,
@@ -162,6 +264,19 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '8px' }}>
             <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: '700' }}>{candidate.name}</h1>
+            {([101, 102, 103, 104].includes(Number(candidate.id)) || [101, 102, 103, 104].includes(Number(interviewId))) && (
+              <span style={{
+                background: '#fff7ed',
+                color: '#c2410c',
+                padding: '4px 10px',
+                borderRadius: '20px',
+                fontSize: '0.75rem',
+                fontWeight: '700',
+                border: '1px solid #ffedd5'
+              }}>
+                Demo Report
+              </span>
+            )}
             {getHiringBadge(decision)}
           </div>
           <p style={{ margin: 0, opacity: 0.85, fontSize: '0.95rem' }}>

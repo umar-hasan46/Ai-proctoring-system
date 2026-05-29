@@ -130,7 +130,7 @@ function App() {
             }
           }
         } catch (err) {}
-      }, 7000);
+      }, 4000);
     }
     return () => interval && clearInterval(interval);
   }, [user]);

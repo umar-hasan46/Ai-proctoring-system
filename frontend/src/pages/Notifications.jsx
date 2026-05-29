@@ -13,10 +13,10 @@ function Notifications({ user }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (silent = false) => {
     if (!user) return;
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const userId = user?.id || localStorage.getItem("userId") || "";
       const userRole = user?.role || localStorage.getItem("userRole") || "";
       const token = localStorage.getItem("token") || "";
@@ -45,8 +45,8 @@ function Notifications({ user }) {
   };
 
   useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 15000);
+    fetchNotifications(false);
+    const interval = setInterval(() => fetchNotifications(true), 4000);
     
   const formatTitle = (type) => {
     if (!type) return "System Notification";
@@ -76,7 +76,7 @@ function Notifications({ user }) {
     createdAt: n.createdAt || n.created_at || n.created_at_ist || new Date().toISOString()
   }));
 
-return () => clearInterval(interval);
+  return () => clearInterval(interval);
   }, [user?.email, user?.role]);
 
   const markRead = async (id) => {

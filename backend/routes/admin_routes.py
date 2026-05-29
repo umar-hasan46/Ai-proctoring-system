@@ -1359,6 +1359,7 @@ def download_timer_report():
 
 
 @bp.route('/interview-detail/<interview_id>', methods=['GET'])
+@bp.route('/reports/<interview_id>', methods=['GET'])
 def get_admin_interview_detail(interview_id):
     conn = get_db_connection()
     if not conn:
@@ -1843,6 +1844,216 @@ def get_admin_notifications_list():
         unread = cur.fetchone()[0] or 0
         return jsonify({"success": True, "notifications": rows, "unread_count": unread})
     except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cur.close()
+        conn.close()
+
+
+@bp.route('/recent-interviews', methods=['GET'])
+def get_recent_interviews():
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"success": False, "message": "Database connection failed"}), 500
+    cur = conn.cursor()
+    try:
+        # Fetch real interviews ordered by newest first
+        cur.execute("""
+            SELECT
+              u.id as student_id,
+              u.name as student_name,
+              u.email,
+              u.phone,
+              COALESCE(i.id, 0) as interview_id,
+              COALESCE(i.status, 'No Interview Yet') as interview_status,
+              COALESCE(u.admin_status, 'Pending Review') as admin_status,
+              COALESCE(i.overall_score, i.final_percentage, 0) as recent_score,
+              CONCAT(COALESCE(i.technical_score, 0), ' / ', COALESCE(i.communication_score, 0), ' / ', COALESCE(i.confidence_score, 0)) as tech_comm_conf,
+              COALESCE(i.warning_count, 0) as cheating_alerts,
+              COALESCE(i.created_at::text, 'N/A') as started_at_ist,
+              COALESCE(i.ended_at_ist, 'N/A') as ended_at_ist,
+              COALESCE(i.duration, '15m 0s') as duration,
+              COALESCE(i.answered_questions, 0) as answered_count,
+              COALESCE(i.skipped_questions, 0) as skipped_count,
+              COALESCE(i.total_questions, 30) as total_technical,
+              COALESCE(i.role_applied, 'Software Engineer') as role
+            FROM users u
+            JOIN interviews i ON i.user_email = u.email
+            WHERE u.role != 'admin'
+            ORDER BY i.id DESC
+        """)
+        rows = cur.fetchall()
+        cols = [desc[0] for desc in cur.description]
+        real_interviews = []
+        for r in rows:
+            s = dict(zip(cols, r))
+            score = float(s.get('recent_score') or 0.0)
+            status = s.get('admin_status') or 'Pending Review'
+            s["final_recommendation"] = status
+            real_interviews.append(s)
+
+        # Merge with DEMO_STUDENTS (filter out duplicates by email)
+        DEMO_STUDENTS = [
+            { "student_id": 101, "student_name": "John Doe", "email": "john@demo.com", "role": "Software Engineer", "role_applied": "Software Engineer", "started_at_ist": "26 May 2026, 02:30 PM", "ended_at_ist": "26 May 2026, 03:00 PM", "admin_status": "Pending Review", "admin_hiring_status": "Pending Review", "final_recommendation": "Pending Review", "recent_score": 85, "score": 85, "technical_score": 82, "communication_score": 88, "confidence_level": "High", "cheating_alerts": 0, "warnings": 0, "interview_status": "completed", "status": "completed", "duration": "30m 0s", "interview_id": 101 },
+            { "student_id": 102, "student_name": "Jane Smith", "email": "jane@demo.com", "role": "Data Scientist", "role_applied": "Data Scientist", "started_at_ist": "26 May 2026, 01:15 PM", "ended_at_ist": "26 May 2026, 01:45 PM", "admin_status": "Shortlisted", "admin_hiring_status": "Shortlisted", "final_recommendation": "Shortlisted", "recent_score": 92, "score": 92, "technical_score": 95, "communication_score": 90, "confidence_level": "High", "cheating_alerts": 1, "warnings": 1, "interview_status": "completed", "status": "completed", "duration": "30m 0s", "interview_id": 102 },
+            { "student_id": 103, "student_name": "Mike Johnson", "email": "mike@demo.com", "role": "Frontend Dev", "role_applied": "Frontend Dev", "started_at_ist": "26 May 2026, 11:45 AM", "ended_at_ist": "26 May 2026, 12:15 PM", "admin_status": "Not Shortlisted", "admin_hiring_status": "Not Shortlisted", "final_recommendation": "Not Shortlisted", "recent_score": 45, "score": 45, "technical_score": 40, "communication_score": 50, "confidence_level": "Low", "cheating_alerts": 4, "warnings": 4, "interview_status": "terminated", "status": "terminated", "duration": "30m 0s", "interview_id": 103 },
+            { "student_id": 104, "student_name": "Sarah Williams", "email": "sarah@demo.com", "role": "Backend Dev", "role_applied": "Backend Dev", "started_at_ist": "26 May 2026, 10:00 AM", "ended_at_ist": "26 May 2026, 10:30 AM", "admin_status": "Hiring in Process", "admin_hiring_status": "Hiring in Process", "final_recommendation": "Hiring in Process", "recent_score": 88, "score": 88, "technical_score": 90, "communication_score": 85, "confidence_level": "High", "cheating_alerts": 0, "warnings": 0, "interview_status": "completed", "status": "completed", "duration": "30m 0s", "interview_id": 104 }
+        ]
+
+        filtered_demo = [d for d in DEMO_STUDENTS if not any(r['email'] == d['email'] for r in real_interviews)]
+        merged = real_interviews + filtered_demo
+
+        return jsonify({"success": True, "interviews": merged})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cur.close()
+        conn.close()
+
+
+@bp.route('/interviews/<interview_id>/status', methods=['PATCH'])
+def patch_interview_status(interview_id):
+    data = request.get_json() or {}
+    status = (data.get('status') or '').strip()
+    if not status:
+        return jsonify({"success": False, "message": "Missing status"}), 400
+
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"success": False, "message": "Database connection failed"}), 500
+    cur = conn.cursor()
+    try:
+        resolved_intv_id = None
+        user_email = None
+        resolved_user_id = None
+        candidate_name = 'Candidate'
+
+        try:
+            int_intv_id = int(float(interview_id))
+            cur.execute("SELECT id, user_email, user_id, full_name FROM interviews WHERE id = %s", (int_intv_id,))
+            intv_row = cur.fetchone()
+            if intv_row:
+                resolved_intv_id = intv_row[0]
+                user_email = intv_row[1]
+                resolved_user_id = intv_row[2]
+                candidate_name = intv_row[3] or 'Candidate'
+        except ValueError:
+            pass
+
+        if not resolved_intv_id:
+            cur.execute("SELECT id, user_email, user_id, full_name FROM interviews WHERE interview_id = %s", (str(interview_id),))
+            intv_row = cur.fetchone()
+            if intv_row:
+                resolved_intv_id = intv_row[0]
+                user_email = intv_row[1]
+                resolved_user_id = intv_row[2]
+                candidate_name = intv_row[3] or 'Candidate'
+
+        if not resolved_intv_id:
+            if '@' in str(interview_id):
+                cur.execute("SELECT id, email, name FROM users WHERE email = %s", (str(interview_id),))
+                u_row = cur.fetchone()
+                if u_row:
+                    resolved_user_id = u_row[0]
+                    user_email = u_row[1]
+                    candidate_name = u_row[2] or 'Candidate'
+            else:
+                try:
+                    int_u_id = int(float(interview_id))
+                    cur.execute("SELECT id, email, name FROM users WHERE id = %s", (int_u_id,))
+                    u_row = cur.fetchone()
+                    if u_row:
+                        resolved_user_id = u_row[0]
+                        user_email = u_row[1]
+                        candidate_name = u_row[2] or 'Candidate'
+                except ValueError:
+                    pass
+
+        # Perform updates
+        updated_something = False
+        previous_status = 'Pending Review'
+
+        if resolved_user_id:
+            cur.execute("SELECT COALESCE(admin_status, 'Pending Review') FROM users WHERE id = %s", (resolved_user_id,))
+            prev_row = cur.fetchone()
+            if prev_row:
+                previous_status = prev_row[0]
+            cur.execute("UPDATE users SET admin_status = %s, admin_hiring_status = %s WHERE id = %s", (status, status, resolved_user_id))
+            updated_something = True
+
+        if user_email and not resolved_user_id:
+            cur.execute("SELECT COALESCE(admin_status, 'Pending Review'), id FROM users WHERE email = %s", (user_email,))
+            prev_row = cur.fetchone()
+            if prev_row:
+                previous_status = prev_row[0]
+                resolved_user_id = prev_row[1]
+            cur.execute("UPDATE users SET admin_status = %s, admin_hiring_status = %s WHERE email = %s", (status, status, user_email))
+            updated_something = True
+
+        if resolved_intv_id:
+            cur.execute("UPDATE interviews SET admin_status = %s, admin_hiring_status = %s, admin_final_status = %s WHERE id = %s", (status, status, status, resolved_intv_id))
+            updated_something = True
+            try:
+                cur.execute("UPDATE results SET final_status = %s WHERE interview_id = %s", (status, resolved_intv_id))
+            except Exception:
+                pass
+            try:
+                cur.execute("UPDATE interview_results SET admin_final_status = %s WHERE interview_id = %s", (status, resolved_intv_id))
+            except Exception:
+                pass
+
+        if not updated_something:
+            return jsonify({"success": False, "message": "Record not found"}), 404
+
+        # Notifications
+        msgs = {
+            "Shortlisted": ("Congratulations! You are Shortlisted", "You have been shortlisted for the next round.", "success"),
+            "Hiring in Process": ("Your Application is in Process", "Your interview is under review. You are in the hiring process.", "info"),
+            "Not Shortlisted": ("Application Status Update", "Thank you for your interview. You have not been shortlisted at this time.", "warning"),
+            "Rejected": ("Application Status Update", "Thank you for your interest. You have not been selected for this position.", "warning")
+        }
+        title, msg, ntype = msgs.get(status, ("Status Updated", status, "info"))
+        ist_now = get_ist_time()
+        ist_now_str = ist_now.strftime('%d %b %Y, %I:%M %p')
+
+        if user_email:
+            try:
+                cur.execute("""
+                    INSERT INTO notifications (user_email, interview_id, title, message, type, event_type, status, target_role, created_at_ist, created_at)
+                    VALUES (%s, %s, %s, %s, %s, 'Status Update', 'unread', 'user', %s, %s)
+                """, (user_email, resolved_intv_id, title, msg, ntype, ist_now_str, ist_now))
+            except Exception:
+                pass
+
+        admin_message = f"You updated {candidate_name}'s status to {status}."
+        try:
+            cur.execute("""
+                INSERT INTO notifications (user_email, interview_id, title, message, type, event_type, status, target_role, created_at_ist, created_at)
+                VALUES (%s, %s, 'Admin Action', %s, %s, 'Status Update', 'unread', 'admin', %s, %s)
+            """, ('admin', resolved_intv_id, admin_message, ntype, ist_now_str, ist_now))
+        except Exception:
+            pass
+
+        try:
+            cur.execute("""
+                INSERT INTO candidate_status_history 
+                (interview_id, candidate_id, user_id, candidate_email, previous_status, new_status, changed_by_admin_id, changed_by_admin_name, changed_at, action_source, note)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                resolved_intv_id, resolved_user_id, resolved_user_id, user_email, 
+                previous_status, status, 1, 'admin', ist_now, 'admin_dashboard', f"Status updated to {status} by admin (PATCH status)"
+            ))
+        except Exception:
+            pass
+
+        conn.commit()
+        return jsonify({
+            "success": True,
+            "message": "Status updated successfully",
+            "status": status
+        })
+    except Exception as e:
+        conn.rollback()
         return jsonify({"success": False, "message": str(e)}), 500
     finally:
         cur.close()
