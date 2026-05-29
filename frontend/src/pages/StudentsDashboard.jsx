@@ -44,6 +44,7 @@ function StudentsDashboard({ user }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterScore, setFilterScore] = useState('all');
+  const [sortBy, setSortBy] = useState('latest');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('performance');
@@ -807,20 +808,46 @@ function StudentsDashboard({ user }) {
 
   const filteredStudents = data.students.filter(s => {
     const search = searchTerm.toLowerCase();
-    const nameMatch = (s.student_name || '').toLowerCase().includes(search);
+    const nameMatch = (s.student_name || s.name || '').toLowerCase().includes(search);
     const emailMatch = (s.email || '').toLowerCase().includes(search);
-    const roleMatch = (s.role || '').toLowerCase().includes(search);
+    const roleMatch = (s.role || s.role_applied || '').toLowerCase().includes(search);
 
     const matchesSearch = nameMatch || emailMatch || roleMatch;
-    const matchesStatus = filterStatus === 'all' || (s.interview_status || '').toLowerCase() === filterStatus.toLowerCase();
+    const matchesStatus = filterStatus === 'all' || 
+      (s.interview_status || s.status || '').toLowerCase() === filterStatus.toLowerCase();
 
-    const scoreVal = parseInt(s.recent_score) || 0;
+    const scoreVal = parseInt(s.recent_score !== null && s.recent_score !== undefined ? s.recent_score : s.score) || 0;
     const matchesScore = filterScore === 'all' ||
       (filterScore === 'strong' && scoreVal >= 80) ||
       (filterScore === 'average' && scoreVal >= 50 && scoreVal < 80) ||
-      (filterScore === 'failed' && scoreVal < 50 && s.interview_status !== 'No Interview Yet');
+      (filterScore === 'failed' && scoreVal < 50 && (s.interview_status || s.status) !== 'No Interview Yet');
 
     return matchesSearch && matchesStatus && matchesScore;
+  });
+
+  const sortedStudents = [...filteredStudents].sort((a, b) => {
+    // Real database records always appear ABOVE demo records
+    const isDemoA = [101, 102, 103, 104].includes(Number(a.student_id));
+    const isDemoB = [101, 102, 103, 104].includes(Number(b.student_id));
+
+    if (!isDemoA && isDemoB) return -1;
+    if (isDemoA && !isDemoB) return 1;
+
+    // Apply specific sorting criteria within the groups
+    if (sortBy === 'score') {
+      const scoreA = parseInt(a.recent_score !== null && a.recent_score !== undefined ? a.recent_score : a.score) || 0;
+      const scoreB = parseInt(b.recent_score !== null && b.recent_score !== undefined ? b.recent_score : b.score) || 0;
+      return scoreB - scoreA;
+    } else if (sortBy === 'alerts') {
+      const alertsA = parseInt(a.cheating_alerts !== null && a.cheating_alerts !== undefined ? a.cheating_alerts : a.warnings) || 0;
+      const alertsB = parseInt(b.cheating_alerts !== null && b.cheating_alerts !== undefined ? b.cheating_alerts : b.warnings) || 0;
+      return alertsB - alertsA;
+    } else {
+      // Default: Sort by latest interview (newest first based on ID)
+      const idA = a.interview_id || a.student_id || 0;
+      const idB = b.interview_id || b.student_id || 0;
+      return String(idB).localeCompare(String(idA));
+    }
   });
 
   if (loading && !data.students.length) {
@@ -983,7 +1010,7 @@ function StudentsDashboard({ user }) {
                 Download All Users Data
               </button>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 200px 200px', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 180px 180px 180px', gap: '20px' }}>
               <div style={{ position: 'relative' }}>
                 <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>🔍</span>
                 <input type="text" placeholder="Search by name, email or role..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ ...inputStyle, paddingLeft: '40px' }} />
@@ -1000,6 +1027,11 @@ function StudentsDashboard({ user }) {
                 <option value="strong">Strong (&gt;= 80%)</option>
                 <option value="average">Average (50-79%)</option>
                 <option value="failed">Failed (&lt; 50%)</option>
+              </select>
+              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={inputStyle}>
+                <option value="latest">Sort: Newest First</option>
+                <option value="score">Sort: Highest Score</option>
+                <option value="alerts">Sort: Most Alerts</option>
               </select>
             </div>
           </div>
@@ -1020,7 +1052,7 @@ function StudentsDashboard({ user }) {
                 </tr>
               </thead>
               <tbody>
-                {filteredStudents.length > 0 ? filteredStudents.map((s, idx) => {
+                {sortedStudents.length > 0 ? sortedStudents.map((s, idx) => {
                   const studentName = s.student_name || s.name || 'Student';
                   const emailVal = s.email || 'Not Provided';
                   const phoneVal = s.phone || 'Not Provided';

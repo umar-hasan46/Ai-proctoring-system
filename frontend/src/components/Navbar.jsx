@@ -54,7 +54,6 @@ const Navbar = React.memo(function Navbar({ user, onLogout }) {
             <Link to="/admin/dashboard" style={navLinkStyle('/admin/dashboard')}>Dashboard</Link>
             <Link to="/admin/live-proctoring" style={navLinkStyle('/admin/live-proctoring')}>Live Proctoring</Link>
             <Link to="/admin/recent-interviews" style={navLinkStyle('/admin/recent-interviews')}>Recent Interviews</Link>
-            <Link to="/admin/reports" style={navLinkStyle('/admin/reports')}>Reports</Link>
             <Link to="/admin/users" style={navLinkStyle('/admin/users')}>Users</Link>
             <Link to="/admin/notifications" style={navLinkStyle('/admin/notifications')}>Notifications</Link>
             <Link to="/admin/settings" style={navLinkStyle('/admin/settings')}>Settings</Link>
