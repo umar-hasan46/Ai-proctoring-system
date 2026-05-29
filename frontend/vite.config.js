@@ -8,12 +8,19 @@ export default defineConfig({
       overlay: false
     }
   },
+  esbuild: {
+    target: "es2020",
+    drop: ["console", "debugger"]
+  },
   build: {
     target: "es2020",
     sourcemap: false,
     minify: "terser",
     cssCodeSplit: true,
     assetsInlineLimit: 4096,
+    modulePreload: {
+      polyfill: false
+    },
     terserOptions: {
       compress: {
         drop_console: true,

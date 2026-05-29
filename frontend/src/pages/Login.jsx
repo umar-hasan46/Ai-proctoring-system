@@ -71,79 +71,88 @@ function Login({ onLogin }) {
   };
 
   return (
-    <div style={{ maxWidth: "450px", margin: "100px auto" }} className="card login-card login-container">
-      <h1 style={{ textAlign: "center", color: "#1e3a5f", marginBottom: "1.5rem" }} className="login-title">
-        AI Proctoring System
-      </h1>
+    <main role="main">
+      <div style={{ maxWidth: "450px", margin: "100px auto" }} className="card login-card login-container">
+        <h1 style={{ textAlign: "center", color: "#1e3a5f", marginBottom: "1.5rem" }} className="login-title">
+          AI Proctoring System
+        </h1>
 
-      <div style={{ display: "flex", gap: "1rem", marginBottom: "2rem" }}>
-        <button
-          className={`btn ${role === "user" ? "btn-primary" : "btn-outline"}`}
-          style={{ flex: 1 }}
-          onClick={() => { setRole("user"); setError(""); }}
-        >
-          User Login
-        </button>
-        <button
-          className={`btn ${role === "admin" ? "btn-primary" : "btn-outline"}`}
-          style={{ flex: 1 }}
-          onClick={() => { setRole("admin"); setError(""); }}
-        >
-          Admin Login
-        </button>
-      </div>
-
-      {/* Backend connection warning will be shown in error state on login attempt */}
-
-      {error && <div className="alert alert-error" style={{ marginBottom: "1.5rem" }}>{error}</div>}
-
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Email Address</label>
-          <input
-            type="email"
-            placeholder="Enter your email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            required
-            autoComplete="email"
-            disabled={loading}
-          />
+        <div style={{ display: "flex", gap: "1rem", marginBottom: "2rem" }}>
+          <button
+            type="button"
+            aria-label="User Login Toggle"
+            className={`btn ${role === "user" ? "btn-primary" : "btn-outline"}`}
+            style={{ flex: 1 }}
+            onClick={() => { setRole("user"); setError(""); }}
+          >
+            User Login
+          </button>
+          <button
+            type="button"
+            aria-label="Admin Login Toggle"
+            className={`btn ${role === "admin" ? "btn-primary" : "btn-outline"}`}
+            style={{ flex: 1 }}
+            onClick={() => { setRole("admin"); setError(""); }}
+          >
+            Admin Login
+          </button>
         </div>
-        <div className="form-group">
-          <label>Password</label>
-          <input
-            type="password"
-            placeholder="Enter your password"
-            value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            required
-            autoComplete="current-password"
-            disabled={loading}
-          />
-        </div>
-        <button
-          type="submit"
-          className="btn btn-primary"
-          style={{ width: "100%", height: "45px", fontSize: "1rem" }}
-          disabled={loading}
-        >
-          {loading ? "Authenticating..." : "Login"}
-        </button>
-      </form>
 
-      <div style={{ marginTop: "1.5rem", textAlign: "center" }}>
-        {role === "user" ? (
-          <p>
-            New user? <Link to="/signup">Create an account</Link>
-          </p>
-        ) : (
-          <p className="hint" style={{ color: "#718096", fontSize: "0.85rem" }}>
-            Default Admin: <strong>admin@gmail.com / admin123</strong>
-          </p>
-        )}
+        {/* Backend connection warning will be shown in error state on login attempt */}
+
+        {error && <div className="alert alert-error" style={{ marginBottom: "1.5rem" }}>{error}</div>}
+
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="email">Email Address</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="Enter your email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
+              autoComplete="email"
+              disabled={loading}
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              required
+              autoComplete="current-password"
+              disabled={loading}
+            />
+          </div>
+          <button
+            type="submit"
+            aria-label="Login"
+            className="btn btn-primary"
+            style={{ width: "100%", height: "45px", fontSize: "1rem" }}
+            disabled={loading}
+          >
+            {loading ? "Authenticating..." : "Login"}
+          </button>
+        </form>
+
+        <div style={{ marginTop: "1.5rem", textAlign: "center" }}>
+          {role === "user" ? (
+            <p>
+              New user? <Link to="/signup">Create an account</Link>
+            </p>
+          ) : (
+            <p className="hint" style={{ color: "#718096", fontSize: "0.85rem" }}>
+              Default Admin: <strong>admin@gmail.com / admin123</strong>
+            </p>
+          )}
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
 
