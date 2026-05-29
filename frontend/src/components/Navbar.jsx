@@ -35,11 +35,13 @@ const Navbar = React.memo(function Navbar({ user, onLogout }) {
   const navLinkStyle = (path) => ({
     color: '#fff',
     textDecoration: 'none',
-    padding: '0.5rem 1rem',
-    borderRadius: '6px',
-    background: isActive(path) ? 'rgba(255,255,255,0.15)' : 'transparent',
-    transition: 'all 0.2s ease',
-    fontWeight: isActive(path) ? 'bold' : 'normal'
+    padding: '0.6rem 1.1rem',
+    borderRadius: '8px',
+    background: isActive(path) ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+    border: isActive(path) ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid transparent',
+    transition: 'var(--transition-smooth)',
+    fontWeight: '600',
+    fontSize: '0.9rem'
   });
 
   return (
@@ -47,22 +49,22 @@ const Navbar = React.memo(function Navbar({ user, onLogout }) {
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
-      padding: '0.8rem 2rem',
-      background: theme === 'light' ? 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)' : 'var(--bg-secondary)',
+      padding: '0.9rem 2.5rem',
+      background: 'var(--navbar-bg)',
       color: '#fff',
-      boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
       position: 'sticky',
       top: 0,
       zIndex: 1000,
-      borderBottom: theme === 'light' ? 'none' : '1px solid var(--border-color)',
-      transition: 'background 0.3s ease, border-color 0.3s ease'
+      borderBottom: '1px solid var(--border-color)',
+      transition: 'var(--transition-smooth)'
     }}>
       <div style={{ fontSize: '1.4rem', fontWeight: 'bold', letterSpacing: '1px' }}>
         <Link to="/dashboard" style={{ color: '#fff', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '1.8rem' }}>🛡️</span> AI PROCTOR
         </Link>
       </div>
-      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
         {user?.role === 'admin' ? (
           <>
             <Link to="/admin/dashboard" style={navLinkStyle('/admin/dashboard')}>Dashboard</Link>

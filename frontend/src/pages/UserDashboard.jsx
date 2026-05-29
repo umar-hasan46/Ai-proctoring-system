@@ -88,52 +88,53 @@ function UserDashboard({ user: initialUser }) {
   };
 
   return (
-    <div style={{ animation: 'fadeIn 0.5s ease-in-out' }}>
-      <div className="card" style={{ display: 'flex', gap: '30px', alignItems: 'center', flexWrap: 'wrap', borderLeft: '5px solid var(--primary-color)' }}>
+    <div className="page-fade-in">
+      <div className="card" style={{ display: 'flex', gap: '30px', alignItems: 'center', flexWrap: 'wrap', borderLeft: '6px solid var(--accent)', boxShadow: 'var(--card-shadow)' }}>
         <Avatar name={displayName} email={user?.email} profile_pic={user?.profile_pic} size={100} />
         <div style={{ flex: 1, minWidth: '300px' }}>
-          <h1 style={{ margin: '0 0 10px 0', color: 'var(--text-primary)' }}>Welcome back, {displayName}</h1>
+          <h1 style={{ margin: '0 0 12px 0', color: 'var(--text-primary)', fontWeight: '800', letterSpacing: '-0.75px' }}>Welcome back, {displayName}</h1>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
             <div style={infoRowStyle}><span style={labelStyle}>Email:</span> {sanitizeDisplay(user?.email, 'Not Provided')}</div>
             <div style={infoRowStyle}><span style={labelStyle}>Phone:</span> {sanitizeDisplay(user?.phone, 'Not Provided')}</div>
-            <div style={infoRowStyle}><span style={labelStyle}>Role:</span> {sanitizeDisplay(user?.role, 'Software Engineer')}</div>
+            <div style={infoRowStyle}><span style={labelStyle}>Role:</span> <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>{sanitizeDisplay(user?.role, 'Software Engineer')}</span></div>
             <div style={infoRowStyle}><span style={labelStyle}>Last Status:</span> {sanitizeDisplay(summary.latest_interview_status, 'No Interview Yet')}</div>
-            <div style={infoRowStyle}><span style={labelStyle}>Score:</span> {summary.latest_interview_score !== null && summary.latest_interview_score !== undefined ? `${summary.latest_interview_score}%` : 'Pending'}</div>
+            <div style={infoRowStyle}><span style={labelStyle}>Score:</span> <strong style={{ color: 'var(--text-primary)' }}>{summary.latest_interview_score !== null && summary.latest_interview_score !== undefined ? `${summary.latest_interview_score}%` : 'Pending'}</strong></div>
           </div>
         </div>
-        <div style={{ textAlign: 'right', borderLeft: '1px solid var(--border-color)', paddingLeft: '20px' }}>
-          <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--primary-hover)' }}>
+        <div style={{ textAlign: 'right', borderLeft: '1.5px solid var(--border-color)', paddingLeft: '20px' }}>
+          <div style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--accent)', letterSpacing: '-0.5px' }}>
             {currentTime.toLocaleString('en-IN', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' })}
           </div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Indian Standard Time</div>
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Indian Standard Time</div>
         </div>
       </div>
 
       <div className="stats-grid">
-        <div className="stat-card" style={{ background: 'var(--card-bg)', borderBottom: '4px solid var(--accent)', border: '1px solid var(--border-color)' }}>
-          <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase' }}>Last Interview</h3>
-          <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)', margin: '10px 0' }}>{summary.latest_interview_status || 'No Interview Yet'}</p>
+        <div className="stat-card" style={{ borderLeft: '4px solid var(--accent)' }}>
+          <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Last Interview</h3>
+          <p style={{ fontSize: '1.6rem', fontWeight: '800', color: 'var(--text-primary)', margin: '10px 0 0 0', letterSpacing: '-0.5px' }}>{summary.latest_interview_status || 'No Interview Yet'}</p>
         </div>
-        <div className="stat-card" style={{ background: 'var(--card-bg)', borderBottom: '4px solid var(--danger)', border: '1px solid var(--border-color)' }}>
-          <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase' }}>Warnings</h3>
-          <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: summary.warnings > 0 ? 'var(--danger)' : 'var(--success)', margin: '10px 0' }}>{summary.warnings || 0}</p>
+        <div className="stat-card" style={{ borderLeft: '4px solid var(--danger)' }}>
+          <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Warnings</h3>
+          <p style={{ fontSize: '1.6rem', fontWeight: '800', color: summary.warnings > 0 ? 'var(--danger)' : 'var(--success)', margin: '10px 0 0 0', letterSpacing: '-0.5px' }}>{summary.warnings || 0}</p>
         </div>
-        <div className="stat-card" style={{ background: 'var(--card-bg)', borderBottom: '4px solid var(--success)', border: '1px solid var(--border-color)' }}>
-          <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase' }}>Confidence Level</h3>
-          <p style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-primary)', margin: '10px 0' }}>{sanitizeDisplay(summary.confidence_level) !== 'Not Provided' ? summary.confidence_level : getConfidenceLabel(summary.confidence_score)}</p>
+        <div className="stat-card" style={{ borderLeft: '4px solid var(--success)' }}>
+          <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Confidence Level</h3>
+          <p style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--text-primary)', margin: '10px 0 0 0', letterSpacing: '-0.5px' }}>{sanitizeDisplay(summary.confidence_level) !== 'Not Provided' ? summary.confidence_level : getConfidenceLabel(summary.confidence_score)}</p>
         </div>
-        <div className="stat-card" style={{ background: 'var(--card-bg)', borderBottom: '4px solid #805ad5', border: '1px solid var(--border-color)' }}>
-          <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textTransform: 'uppercase' }}>Notifications</h3>
-          <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--text-primary)', margin: '10px 0' }}>{summary.notifications_count || 0}</p>
+        <div className="stat-card" style={{ borderLeft: '4px solid #8b5cf6' }}>
+          <h3 style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Notifications</h3>
+          <p style={{ fontSize: '1.6rem', fontWeight: '800', color: 'var(--text-primary)', margin: '10px 0 0 0', letterSpacing: '-0.5px' }}>{summary.notifications_count || 0}</p>
         </div>
       </div>
 
-      <div className="card" style={{ textAlign: 'center', padding: '40px', background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
-        <h2 style={{ color: 'var(--text-primary)' }}>Ready for your next challenge?</h2>
-        <p style={{ marginBottom: '2rem', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto 2rem' }}>
+      <div className="card" style={{ textAlign: 'center', padding: '50px 40px', background: 'var(--card-bg)', border: '1px solid var(--border-color)', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '4px', background: 'linear-gradient(90deg, var(--primary-color) 0%, var(--accent) 100%)' }}></div>
+        <h2 style={{ color: 'var(--text-primary)', fontSize: '1.75rem', fontWeight: '800', marginBottom: '0.5rem', letterSpacing: '-0.5px' }}>Ready for your next challenge?</h2>
+        <p style={{ marginBottom: '2.25rem', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto 2.25rem', fontSize: '1rem', lineHeight: '1.6' }}>
           Start a proctored AI interview to analyze your skills. Please ensure your camera and microphone are connected.
         </p>
-        <Link to="/active-interview" className="btn btn-primary" style={{ fontSize: '1.1rem', padding: '0.8rem 2.5rem', borderRadius: '30px', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)' }}>
+        <Link to="/active-interview" className="btn btn-primary" style={{ fontSize: '1rem', padding: '0.9rem 3rem', borderRadius: '30px', boxShadow: '0 10px 25px rgba(37, 99, 235, 0.25)' }}>
           Start Interview Now
         </Link>
       </div>

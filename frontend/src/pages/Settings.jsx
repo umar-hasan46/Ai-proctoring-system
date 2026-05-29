@@ -161,7 +161,7 @@ function Settings({ user: propUser, onUpdate }) {
   };
 
   return (
-    <div style={{ maxWidth: '700px', margin: '40px auto' }} className="card">
+    <div style={{ maxWidth: '700px', margin: '40px auto' }} className="card page-fade-in">
       <div style={{ padding: '20px' }}>
         <h2 style={{ color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Account Settings</h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Update your personal information and profile security.</p>

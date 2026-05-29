@@ -97,7 +97,7 @@ function LiveProctoring() {
   }
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '30px auto', padding: '0 20px' }}>
+    <div className="page-fade-in" style={{ maxWidth: '1400px', margin: '30px auto', padding: '0 20px' }}>
       {msg.text && (
         <div style={{
           position: 'fixed', top: '90px', right: '24px', padding: '15px 25px', borderRadius: '8px',
@@ -108,27 +108,27 @@ function LiveProctoring() {
         </div>
       )}
 
-      <div className="card" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="card" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
         <div>
-          <h1 style={{ color: 'var(--text-primary)', margin: 0 }}>Live Proctoring Dashboard</h1>
+          <h1 style={{ color: 'var(--text-primary)', margin: 0, fontWeight: '800', letterSpacing: '-0.75px' }}>Live Proctoring Dashboard</h1>
           <p style={{ margin: '0.5rem 0 0', color: 'var(--text-secondary)' }}>Real-time monitoring of candidates currently in session.</p>
         </div>
-        <div style={{ background: activeInterviews.length > 0 ? '#38a169' : 'var(--text-secondary)', color: '#fff', padding: '0.5rem 1.2rem', borderRadius: '20px', fontSize: '0.9rem', fontWeight: 'bold' }}>
+        <div className="badge badge-completed" style={{ padding: '0.5rem 1.2rem', fontSize: '0.9rem', background: activeInterviews.length > 0 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(100, 116, 139, 0.15)', color: activeInterviews.length > 0 ? '#10b981' : '#64748b' }}>
           {activeInterviews.length} CANDIDATES ACTIVE
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(480px, 1fr))', gap: '20px' }}>
         {activeInterviews.length > 0 ? activeInterviews.map((intv) => (
-          <div key={intv.interview_id} className="card" style={{ padding: '0', overflow: 'hidden', border: intv.warning_count >= 3 ? '2px solid #e53e3e' : '1px solid #e2e8f0' }}>
-            <div style={{ background: 'var(--text-primary)', color: '#fff', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div key={intv.interview_id} className="card" style={{ padding: '0', overflow: 'hidden', border: intv.warning_count >= 3 ? '2px solid #ef4444' : '1px solid var(--border-color)', margin: '0 0 20px 0' }}>
+            <div style={{ background: 'var(--navbar-bg)', color: '#fff', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)' }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: '1.1rem' }}>{intv.candidate_name || 'N/A'}</h3>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '700' }}>{intv.candidate_name || 'N/A'}</h3>
                 <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>ID: #{intv.interview_id} | {intv.candidate_email}</span>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <span style={{ fontSize: '0.7rem', display: 'block', opacity: 0.8 }}>WARNINGS</span>
-                <span style={{ fontWeight: 'bold', color: intv.warning_count >= 3 ? '#feb2b2' : '#fff', fontSize: '1.2rem' }}>{intv.warning_count}/3</span>
+                <span style={{ fontSize: '0.7rem', display: 'block', opacity: 0.8, fontWeight: '700' }}>WARNINGS</span>
+                <span style={{ fontWeight: '800', color: intv.warning_count >= 3 ? '#fca5a5' : '#fff', fontSize: '1.2rem' }}>{intv.warning_count}/3</span>
               </div>
             </div>
 

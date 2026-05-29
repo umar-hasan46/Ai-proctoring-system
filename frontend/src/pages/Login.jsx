@@ -76,52 +76,54 @@ function Login({ onLogin }) {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      background: "linear-gradient(135deg, #020617 0%, #0f172a 40%, #1e3a8a 100%)",
+      background: "radial-gradient(circle at top right, #1e3a8a 0%, #020617 60%, #000000 100%)",
       padding: "20px",
       position: "fixed",
       top: 0,
       left: 0,
       width: "100%",
-      zIndex: 999
+      zIndex: 999,
+      overflowY: "auto"
     }}>
-      <main role="main" style={{ width: "100%", maxWidth: "450px" }}>
-        <div className="card" style={{
-          padding: "2.5rem 2rem",
-          borderRadius: "20px",
-          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-          border: "1px solid rgba(255, 255, 255, 0.08)",
-          background: "rgba(15, 23, 42, 0.85)",
-          backdropFilter: "blur(12px)",
+      <main role="main" className="page-fade-in" style={{ width: "100%", maxWidth: "450px" }}>
+        <div className="card glass-card" style={{
+          padding: "3rem 2.25rem",
+          borderRadius: "24px",
+          boxShadow: "0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px rgba(37, 99, 235, 0.15)",
+          border: "1px solid rgba(255, 255, 255, 0.12)",
+          background: "rgba(10, 15, 30, 0.8)",
+          backdropFilter: "blur(20px)",
           color: "#ffffff"
         }}>
-          <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-            <span style={{ fontSize: "3rem", display: "block", marginBottom: "0.5rem" }}>🛡️</span>
-            <h1 style={{ color: "#ffffff", fontSize: "2rem", fontWeight: "800", letterSpacing: "-0.5px", margin: 0 }}>
+          <div style={{ textAlign: "center", marginBottom: "2.25rem" }}>
+            <span style={{ fontSize: "3.5rem", display: "block", marginBottom: "0.5rem", filter: "drop-shadow(0 0 10px rgba(37,99,235,0.4))" }}>🛡️</span>
+            <h1 style={{ color: "#ffffff", fontSize: "2.25rem", fontWeight: "800", letterSpacing: "-1px", margin: 0 }}>
               AI Proctoring
             </h1>
-            <p style={{ color: "#94a3b8", fontSize: "0.9rem", marginTop: "0.25rem" }}>
+            <p style={{ color: "#94a3b8", fontSize: "0.95rem", marginTop: "0.5rem", fontWeight: "500" }}>
               Secure Online Examination & Monitoring
             </p>
           </div>
 
           <div style={{
             display: "flex",
-            background: "rgba(2, 6, 23, 0.6)",
-            padding: "4px",
-            borderRadius: "10px",
+            background: "rgba(2, 6, 23, 0.7)",
+            padding: "5px",
+            borderRadius: "12px",
             marginBottom: "2rem",
-            border: "1px solid rgba(255, 255, 255, 0.05)"
+            border: "1px solid rgba(255, 255, 255, 0.08)"
           }}>
             <button
               type="button"
-              className={`btn`}
+              className="btn"
               style={{
                 flex: 1,
-                padding: "8px 16px",
+                padding: "10px 16px",
                 borderRadius: "8px",
                 fontSize: "0.9rem",
-                background: role === "user" ? "#2563eb" : "transparent",
-                color: "#ffffff"
+                background: role === "user" ? "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)" : "transparent",
+                color: "#ffffff",
+                boxShadow: role === "user" ? "0 4px 12px rgba(37, 99, 235, 0.25)" : "none"
               }}
               onClick={() => { setRole("user"); setError(""); }}
             >
@@ -129,14 +131,15 @@ function Login({ onLogin }) {
             </button>
             <button
               type="button"
-              className={`btn`}
+              className="btn"
               style={{
                 flex: 1,
-                padding: "8px 16px",
+                padding: "10px 16px",
                 borderRadius: "8px",
                 fontSize: "0.9rem",
-                background: role === "admin" ? "#2563eb" : "transparent",
-                color: "#ffffff"
+                background: role === "admin" ? "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)" : "transparent",
+                color: "#ffffff",
+                boxShadow: role === "admin" ? "0 4px 12px rgba(37, 99, 235, 0.25)" : "none"
               }}
               onClick={() => { setRole("admin"); setError(""); }}
             >
@@ -145,14 +148,14 @@ function Login({ onLogin }) {
           </div>
 
           {error && (
-            <div className="alert alert-error" style={{ marginBottom: "1.5rem", fontSize: "0.9rem" }}>
+            <div className="alert alert-error" style={{ marginBottom: "1.5rem", fontSize: "0.9rem", borderLeft: "4px solid var(--danger)" }}>
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit}>
             <div className="form-group" style={{ marginBottom: "1.25rem" }}>
-              <label htmlFor="email" style={{ color: "#e2e8f0", fontSize: "0.85rem", fontWeight: "600" }}>Email Address</label>
+              <label htmlFor="email" style={{ color: "#cbd5e1", fontSize: "0.85rem", fontWeight: "600" }}>Email Address</label>
               <input
                 id="email"
                 type="email"
@@ -163,15 +166,16 @@ function Login({ onLogin }) {
                 autoComplete="email"
                 disabled={loading}
                 style={{
-                  background: "rgba(2, 6, 23, 0.4)",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                  background: "rgba(2, 6, 23, 0.5)",
+                  border: "1.5px solid rgba(255, 255, 255, 0.1)",
                   color: "#ffffff",
-                  marginTop: "0.5rem"
+                  marginTop: "0.5rem",
+                  height: "46px"
                 }}
               />
             </div>
-            <div className="form-group" style={{ marginBottom: "1.75rem", position: "relative" }}>
-              <label htmlFor="password" style={{ color: "#e2e8f0", fontSize: "0.85rem", fontWeight: "600" }}>Password</label>
+            <div className="form-group" style={{ marginBottom: "2rem", position: "relative" }}>
+              <label htmlFor="password" style={{ color: "#cbd5e1", fontSize: "0.85rem", fontWeight: "600" }}>Password</label>
               <div style={{ position: "relative", marginTop: "0.5rem" }}>
                 <input
                   id="password"
@@ -183,10 +187,11 @@ function Login({ onLogin }) {
                   autoComplete="current-password"
                   disabled={loading}
                   style={{
-                    background: "rgba(2, 6, 23, 0.4)",
-                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                    background: "rgba(2, 6, 23, 0.5)",
+                    border: "1.5px solid rgba(255, 255, 255, 0.1)",
                     color: "#ffffff",
-                    paddingRight: "45px"
+                    paddingRight: "45px",
+                    height: "46px"
                   }}
                 />
                 <button
@@ -201,7 +206,7 @@ function Login({ onLogin }) {
                     border: "none",
                     cursor: "pointer",
                     color: "#94a3b8",
-                    fontSize: "1.1rem",
+                    fontSize: "1.2rem",
                     padding: "4px"
                   }}
                   title={showPassword ? "Hide password" : "Show password"}
@@ -212,31 +217,31 @@ function Login({ onLogin }) {
             </div>
             <button
               type="submit"
-              className="btn"
+              className="btn btn-primary"
               style={{
                 width: "100%",
                 height: "48px",
                 fontSize: "1rem",
-                background: "#2563eb",
-                color: "#ffffff",
-                borderRadius: "10px",
+                borderRadius: "12px",
                 fontWeight: "700"
               }}
               disabled={loading}
             >
-              {loading ? "Authenticating..." : "Login"}
+              {loading ? "Authenticating..." : "Sign In"}
             </button>
           </form>
 
-          <div style={{ marginTop: "1.5rem", textAlign: "center" }}>
+          <div style={{ marginTop: "1.75rem", textAlign: "center" }}>
             {role === "user" ? (
               <p style={{ color: "#94a3b8", fontSize: "0.9rem" }}>
-                New user? <Link to="/signup" style={{ color: "#60a5fa", fontWeight: "600", textDecoration: "none" }}>Create an account</Link>
+                New user? <Link to="/signup" style={{ color: "#38bdf8", fontWeight: "600", textDecoration: "none" }}>Create an account</Link>
               </p>
             ) : (
-              <p className="hint" style={{ color: "#94a3b8", fontSize: "0.85rem" }}>
-                Default Admin: <strong>admin@gmail.com / admin123</strong>
-              </p>
+              <div style={{ background: "rgba(2,6,23,0.5)", padding: "10px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.05)" }}>
+                <p style={{ color: "#cbd5e1", fontSize: "0.85rem", margin: 0 }}>
+                  Default Admin: <strong style={{ color: "#38bdf8" }}>admin@gmail.com / admin123</strong>
+                </p>
+              </div>
             )}
           </div>
         </div>

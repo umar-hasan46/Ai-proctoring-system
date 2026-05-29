@@ -874,7 +874,7 @@ function StudentsDashboard({ user }) {
   }
 
   return (
-    <div style={{ maxWidth: '1600px', margin: '30px auto', padding: '0 20px' }}>
+    <div className="page-fade-in" style={{ maxWidth: '1600px', margin: '30px auto', padding: '0 20px' }}>
       {formMsg.text && (
           <div style={{
               position: 'fixed', top: '90px', right: '24px', padding: '15px 25px', borderRadius: '8px',
@@ -885,7 +885,7 @@ function StudentsDashboard({ user }) {
           </div>
       )}
 
-      <div className="card" style={{ marginBottom: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+      <div className="card" style={{ marginBottom: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <h1 style={{ color: 'var(--text-primary)', margin: 0, fontSize: '1.8rem' }}>Admin Students Dashboard</h1>

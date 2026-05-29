@@ -108,7 +108,7 @@ function Notifications({ user }) {
   }));
 
   return (
-    <div style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px' }}>
+    <div className="page-fade-in" style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px' }}>
       <div className="card" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
         <div>
           <h2 style={{ color: 'var(--text-primary)', margin: 0 }}>System Notifications</h2>
