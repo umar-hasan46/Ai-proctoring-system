@@ -2,18 +2,29 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: "strip-preloads",
+      transformIndexHtml(html) {
+        // Strip out preloads for lazy chunks (pdf, charts, proctoring, animations, vendor) to guarantee zero upfront unused JS fetches.
+        return html.replace(/<link rel="modulepreload"[^>]+href="[^"]+\/(pdf|charts|proctoring|animations|vendor)-[^"]+\.js"[^>]*>/g, "");
+      }
+    }
+  ],
   server: {
     hmr: {
       overlay: false
     }
   },
   esbuild: {
-    target: "es2020",
+    target: "es2022",
+    minifyIdentifiers: true,
+    minifySyntax: true,
     drop: ["console", "debugger"]
   },
   build: {
-    target: "es2020",
+    target: "es2022",
     sourcemap: false,
     minify: "terser",
     cssCodeSplit: true,
