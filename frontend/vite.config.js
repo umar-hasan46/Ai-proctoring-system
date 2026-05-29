@@ -18,13 +18,13 @@ export default defineConfig({
     }
   },
   esbuild: {
-    target: "es2022",
+    target: "esnext",
     minifyIdentifiers: true,
     minifySyntax: true,
     drop: ["console", "debugger"]
   },
   build: {
-    target: "es2022",
+    target: "esnext",
     sourcemap: false,
     minify: "terser",
     cssCodeSplit: true,
@@ -33,7 +33,10 @@ export default defineConfig({
       polyfill: false
     },
     terserOptions: {
+      ecma: 2022,
       compress: {
+        ecma: 2022,
+        module: true,
         drop_console: true,
         drop_debugger: true,
         passes: 3,
@@ -45,6 +48,7 @@ export default defineConfig({
         ]
       },
       format: {
+        ecma: 2022,
         comments: false
       }
     },
