@@ -1,4 +1,7 @@
+
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../api/api';
 
 import BreadcrumbNavigation from '../components/DrillDown/BreadcrumbNavigation';
@@ -10,24 +13,48 @@ import CandidateDetailsTable from '../components/DrillDown/CandidateDetailsTable
 import CandidateInterviewReport from '../components/DrillDown/CandidateInterviewReport';
 
 function DrillDownAnalyticsDashboard() {
-  const [level, setLevel] = useState('dashboard'); // 'dashboard' | 'chartDetails' | 'candidateReport'
+  const navigate = useNavigate();
+  const [level, setLevel] = useState(() => sessionStorage.getItem('drill-down-level') || 'dashboard'); // 'dashboard' | 'chartDetails' | 'candidateReport'
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Drill segment configuration
-  const [drillFilter, setDrillFilter] = useState(null); // { type: 'month' | 'role' | 'status' | 'score' | 'confidence', value: any, label: string }
+  const [drillFilter, setDrillFilter] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('drill-down-drillFilter');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  }); // { type: 'month' | 'role' | 'status' | 'score' | 'confidence', value: any, label: string }
 
   // Search & Filter Panel Configurations
-  const [filters, setFilters] = useState({
-    searchName: '',
-    searchEmail: '',
-    role: '',
-    status: '',
-    confidence: '',
-    minScore: 0,
-    month: '',
-    sortBy: 'latest'
+  const [filters, setFilters] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('drill-down-filters');
+      return saved ? JSON.parse(saved) : {
+        searchName: '',
+        searchEmail: '',
+        role: '',
+        status: '',
+        confidence: '',
+        minScore: 0,
+        month: '',
+        sortBy: 'latest'
+      };
+    } catch {
+      return {
+        searchName: '',
+        searchEmail: '',
+        role: '',
+        status: '',
+        confidence: '',
+        minScore: 0,
+        month: '',
+        sortBy: 'latest'
+      };
+    }
   });
 
   // Level 3 candidate detailed details
@@ -78,6 +105,37 @@ function DrillDownAnalyticsDashboard() {
     }, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem('drill-down-level', level);
+  }, [level]);
+
+  useEffect(() => {
+    sessionStorage.setItem('drill-down-drillFilter', JSON.stringify(drillFilter));
+  }, [drillFilter]);
+
+  useEffect(() => {
+    sessionStorage.setItem('drill-down-filters', JSON.stringify(filters));
+  }, [filters]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      sessionStorage.setItem('drill-down-scrollPos', window.pageYOffset);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (loading === false) {
+      const scrollPos = sessionStorage.getItem('drill-down-scrollPos');
+      if (scrollPos) {
+        setTimeout(() => {
+          window.scrollTo(0, parseInt(scrollPos));
+        }, 150);
+      }
+    }
+  }, [loading]);
 
   // FALLBACK STUNNING MOCK DATA
   const getMockData = () => [
@@ -280,24 +338,12 @@ function DrillDownAnalyticsDashboard() {
     window.scrollTo(0, 0);
   };
 
+
   // HANDLE CANDIDATE DETAIL REPORT CLICKS (Transition to Level 3)
   const handleViewCandidateReport = (candId, intvId, email) => {
-    const cand = students.find(s => s.student_id === candId);
-    historyStack.current.push({
-      level,
-      drillFilter,
-      filters: { ...filters },
-      scrollPos: window.pageYOffset
-    });
-
-    setSelectedCandidate({
-      id: candId,
-      interviewId: intvId,
-      email: email,
-      name: cand ? cand.student_name : 'Candidate'
-    });
-    setLevel('candidateReport');
-    window.scrollTo(0, 0);
+    if (intvId && intvId !== 0 && intvId !== 'No Interview Yet') {
+      navigate(`/admin/reports/${intvId}`);
+    }
   };
 
   // HANDLE RECRUITER CHANGE OF STATUS SAVED PERSISTENCY

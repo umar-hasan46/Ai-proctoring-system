@@ -16,8 +16,9 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
         const res = await api.getDetailedInterviewReport(interviewId);
         if (res && res.success && res.data) {
           setReport(res.data);
-          // Load recruiter notes from localStorage
-          const savedNotes = localStorage.getItem(`recruiter_notes_${candidateId}_${interviewId}`) || '';
+          // Load recruiter notes from localStorage using resolved candidate ID
+          const resolvedCandId = candidateId || res.data.candidate?.id || 0;
+          const savedNotes = localStorage.getItem(`recruiter_notes_${resolvedCandId}_${interviewId}`) || '';
           setRecruiterNotes(savedNotes);
         } else {
           setError(res.message || 'Failed to retrieve detailed report.');
@@ -35,8 +36,9 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
 
   const handleSaveNotes = () => {
     setSavingNotes(true);
+    const resolvedCandId = candidateId || report?.candidate?.id || 0;
     setTimeout(() => {
-      localStorage.setItem(`recruiter_notes_${candidateId}_${interviewId}`, recruiterNotes);
+      localStorage.setItem(`recruiter_notes_${resolvedCandId}_${interviewId}`, recruiterNotes);
       setSavingNotes(false);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
@@ -44,9 +46,10 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
   };
 
   const handleStatusChange = async (newStatus) => {
+    const resolvedCandId = candidateId || report?.candidate?.id || 0;
     try {
       const res = await api.updateAdminStatus({
-        user_id: candidateId,
+        user_id: resolvedCandId,
         interview_id: interviewId,
         status: newStatus
       });
@@ -56,7 +59,7 @@ function CandidateInterviewReport({ candidateId, interviewId, candidateEmail, on
           decision: newStatus
         }));
         if (onStatusChange) {
-          onStatusChange(candidateId, newStatus);
+          onStatusChange(resolvedCandId, newStatus);
         }
       } else {
         alert(res.message || 'Failed to update hiring status.');

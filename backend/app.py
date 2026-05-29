@@ -104,13 +104,16 @@ def db_health():
 def health():
     return jsonify({"success": True, "message": "Backend running"})
 
-@app.route('/api/users/<int:user_id>/status', methods=['PUT', 'OPTIONS'])
+@app.route('/api/users/<user_id>/status', methods=['PUT', 'OPTIONS'])
 def api_update_user_status(user_id):
     if request.method == 'OPTIONS':
         return jsonify({"success": True}), 200
     
     data = request.get_json() or {}
     status = (data.get('status') or '').strip()
+    interview_id = data.get('interview_id')
+    email = data.get('email')
+    
     if not status:
         return jsonify({"success": False, "message": "Missing status"}), 400
 
@@ -120,32 +123,110 @@ def api_update_user_status(user_id):
         return jsonify({"success": False, "message": "Database connection failed"}), 500
     cur = conn.cursor()
     try:
-        cur.execute("SELECT COALESCE(admin_status, 'Pending Review'), COALESCE(name, full_name, email) FROM users WHERE id = %s", (user_id,))
-        user_row = cur.fetchone()
-        previous_status = user_row[0] if user_row else 'Pending Review'
-        candidate_name = user_row[1] if user_row else 'Candidate'
-
-        cur.execute("UPDATE users SET admin_status = %s, admin_hiring_status = %s WHERE id = %s RETURNING email", (status, status, user_id))
-        row = cur.fetchone()
-        if not row:
-            return jsonify({"success": False, "message": "User not found"}), 404
-        user_email = row[0]
-
-        cur.execute("SELECT id FROM interviews WHERE user_email = %s ORDER BY created_at DESC LIMIT 1", (user_email,))
-        intv_row = cur.fetchone()
-        intv_id = intv_row[0] if intv_row else None
-
-        if intv_id:
-            cur.execute("UPDATE interviews SET admin_status = %s, admin_hiring_status = %s, admin_final_status = %s WHERE id = %s", (status, status, status, intv_id))
+        user_row = None
+        resolved_user_id = None
+        user_email = email
+        candidate_name = 'Candidate'
+        
+        # 1. Try to find user by integer ID
+        if user_id:
             try:
-                cur.execute("UPDATE results SET final_status = %s WHERE interview_id = %s", (status, intv_id))
+                int_user_id = int(float(user_id))
+                cur.execute("SELECT id, email, name FROM users WHERE id = %s", (int_user_id,))
+                user_row = cur.fetchone()
+                if user_row:
+                    resolved_user_id = user_row[0]
+                    user_email = user_row[1]
+                    candidate_name = user_row[2] or 'Candidate'
+            except ValueError:
+                pass
+
+        # 2. Try to find user by email if not found by ID
+        if not user_row and user_id and '@' in str(user_id):
+            cur.execute("SELECT id, email, name FROM users WHERE email = %s", (str(user_id),))
+            user_row = cur.fetchone()
+            if user_row:
+                resolved_user_id = user_row[0]
+                user_email = user_row[1]
+                candidate_name = user_row[2] or 'Candidate'
+                
+        if not user_row and email:
+            cur.execute("SELECT id, email, name FROM users WHERE email = %s", (str(email),))
+            user_row = cur.fetchone()
+            if user_row:
+                resolved_user_id = user_row[0]
+                user_email = user_row[1]
+                candidate_name = user_row[2] or 'Candidate'
+
+        # 3. If interview_id is provided, try to find the interview
+        resolved_intv_id = None
+        intv_email = None
+        intv_user_id = None
+        
+        if interview_id:
+            try:
+                int_intv_id = int(float(interview_id))
+                cur.execute("SELECT id, user_email, user_id FROM interviews WHERE id = %s", (int_intv_id,))
+                intv_row = cur.fetchone()
+                if intv_row:
+                    resolved_intv_id = intv_row[0]
+                    intv_email = intv_row[1]
+                    intv_user_id = intv_row[2]
+            except ValueError:
+                pass
+                
+        # 4. If interview_id not resolved, lookup by user_email
+        if not resolved_intv_id and user_email:
+            cur.execute("SELECT id, user_email, user_id FROM interviews WHERE user_email = %s ORDER BY created_at DESC LIMIT 1", (user_email,))
+            intv_row = cur.fetchone()
+            if intv_row:
+                resolved_intv_id = intv_row[0]
+                intv_email = intv_row[1]
+                intv_user_id = intv_row[2]
+                
+        # 5. Fallbacks
+        if not user_email and intv_email:
+            user_email = intv_email
+        if not resolved_user_id and intv_user_id:
+            resolved_user_id = intv_user_id
+
+        # 6. Perform Updates
+        updated_something = False
+        previous_status = 'Pending Review'
+        
+        if resolved_user_id:
+            cur.execute("SELECT COALESCE(admin_status, 'Pending Review') FROM users WHERE id = %s", (resolved_user_id,))
+            prev_row = cur.fetchone()
+            if prev_row:
+                previous_status = prev_row[0]
+            cur.execute("UPDATE users SET admin_status = %s, admin_hiring_status = %s WHERE id = %s", (status, status, resolved_user_id))
+            updated_something = True
+            
+        if user_email and not resolved_user_id:
+            cur.execute("SELECT COALESCE(admin_status, 'Pending Review'), id FROM users WHERE email = %s", (user_email,))
+            prev_row = cur.fetchone()
+            if prev_row:
+                previous_status = prev_row[0]
+                resolved_user_id = prev_row[1]
+            cur.execute("UPDATE users SET admin_status = %s, admin_hiring_status = %s WHERE email = %s", (status, status, user_email))
+            updated_something = True
+
+        if resolved_intv_id:
+            cur.execute("UPDATE interviews SET admin_status = %s, admin_hiring_status = %s, admin_final_status = %s WHERE id = %s", (status, status, status, resolved_intv_id))
+            updated_something = True
+            try:
+                cur.execute("UPDATE results SET final_status = %s WHERE interview_id = %s", (status, resolved_intv_id))
             except Exception:
                 pass
             try:
-                cur.execute("UPDATE interview_results SET admin_final_status = %s WHERE interview_id = %s", (status, intv_id))
+                cur.execute("UPDATE interview_results SET admin_final_status = %s WHERE interview_id = %s", (status, resolved_intv_id))
             except Exception:
                 pass
 
+        if not updated_something:
+            return jsonify({"success": False, "message": "Neither user nor interview record could be located in database"}), 404
+
+        # 7. Notifications
         msgs = {
             "Shortlisted": ("Congratulations! You are Shortlisted", "You have been shortlisted for the next round.", "success"),
             "Hiring in Process": ("Your Application is in Process", "Your interview is under review. You are in the hiring process.", "info"),
@@ -157,10 +238,14 @@ def api_update_user_status(user_id):
         ist_now_str = ist_now.strftime('%d %b %Y, %I:%M %p')
         
         # User notification
-        cur.execute("""
-            INSERT INTO notifications (user_email, interview_id, title, message, type, event_type, status, target_role, created_at_ist, created_at)
-            VALUES (%s, %s, %s, %s, %s, 'Status Update', 'unread', 'user', %s, %s)
-        """, (user_email, intv_id, title, msg, ntype, ist_now_str, ist_now))
+        if user_email:
+            try:
+                cur.execute("""
+                    INSERT INTO notifications (user_email, interview_id, title, message, type, event_type, status, target_role, created_at_ist, created_at)
+                    VALUES (%s, %s, %s, %s, %s, 'Status Update', 'unread', 'user', %s, %s)
+                """, (user_email, resolved_intv_id, title, msg, ntype, ist_now_str, ist_now))
+            except Exception as n_err:
+                print("Failed user notification insert:", n_err)
 
         # Admin notification
         admin_msgs = {
@@ -170,21 +255,44 @@ def api_update_user_status(user_id):
             "Rejected": f"You marked {candidate_name} as rejected."
         }
         admin_message = admin_msgs.get(status, f"You updated {candidate_name}'s status to {status}.")
-        cur.execute("""
-            INSERT INTO notifications (user_email, interview_id, title, message, type, event_type, status, target_role, created_at_ist, created_at)
-            VALUES (%s, %s, %s, %s, %s, 'Status Update', 'unread', 'admin', %s, %s)
-        """, ('admin', intv_id, "Admin Action", admin_message, ntype, ist_now_str, ist_now))
+        try:
+            cur.execute("""
+                INSERT INTO notifications (user_email, interview_id, title, message, type, event_type, status, target_role, created_at_ist, created_at)
+                VALUES (%s, %s, %s, %s, %s, 'Status Update', 'unread', 'admin', %s, %s)
+            """, ('admin', resolved_intv_id, "Admin Action", admin_message, ntype, ist_now_str, ist_now))
+        except Exception as n_err:
+            print("Failed admin notification insert:", n_err)
 
-        # Status History
-        cur.execute("""
-            INSERT INTO candidate_status_history (candidate_id, previous_status, new_status, changed_by, action_note)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (user_id, previous_status, status, 'admin', f"Status updated to {status} by admin"))
+        # Status History Log (all 11 fields)
+        try:
+            cur.execute("""
+                INSERT INTO candidate_status_history 
+                (interview_id, candidate_id, user_id, candidate_email, previous_status, new_status, changed_by_admin_id, changed_by_admin_name, changed_at, action_source, note)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                resolved_intv_id, resolved_user_id, resolved_user_id, user_email, 
+                previous_status, status, 1, 'admin', ist_now, 'admin_recent_evaluations', f"Status updated to {status} by admin"
+            ))
+        except Exception as h_err:
+            print("Failed status history insert:", h_err)
 
         conn.commit()
-        return jsonify({"success": True, "message": "Status updated successfully", "status": status})
+        return jsonify({
+            "success": True, 
+            "message": "Status updated successfully", 
+            "status": status,
+            "data": {
+                "interviewId": resolved_intv_id,
+                "candidateId": resolved_user_id,
+                "candidateName": candidate_name,
+                "email": user_email,
+                "status": status,
+                "updatedAt": ist_now_str
+            }
+        })
     except Exception as e:
         conn.rollback()
+        import traceback; traceback.print_exc()
         return jsonify({"success": False, "message": str(e)}), 500
     finally:
         cur.close()

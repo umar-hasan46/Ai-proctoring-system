@@ -518,6 +518,14 @@ def init_db():
         cur.execute("ALTER TABLE results ADD COLUMN IF NOT EXISTS technical_score INTEGER DEFAULT 0;")
         cur.execute("ALTER TABLE results ADD COLUMN IF NOT EXISTS communication_score INTEGER DEFAULT 0;")
 
+        # candidate_status_history migrations
+        cur.execute("ALTER TABLE candidate_status_history ADD COLUMN IF NOT EXISTS interview_id INTEGER;")
+        cur.execute("ALTER TABLE candidate_status_history ADD COLUMN IF NOT EXISTS user_id INTEGER;")
+        cur.execute("ALTER TABLE candidate_status_history ADD COLUMN IF NOT EXISTS candidate_email VARCHAR(255);")
+        cur.execute("ALTER TABLE candidate_status_history ADD COLUMN IF NOT EXISTS changed_by_admin_id INTEGER;")
+        cur.execute("ALTER TABLE candidate_status_history ADD COLUMN IF NOT EXISTS changed_by_admin_name VARCHAR(255);")
+        cur.execute("ALTER TABLE candidate_status_history ADD COLUMN IF NOT EXISTS action_source VARCHAR(255) DEFAULT 'admin_dashboard';")
+        cur.execute("ALTER TABLE candidate_status_history ADD COLUMN IF NOT EXISTS note TEXT;")
 
         cur.execute("""
             DO $$

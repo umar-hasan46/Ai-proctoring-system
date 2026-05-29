@@ -14,6 +14,7 @@ const Reports = React.lazy(() => import("./pages/AllResults"));
 const StudentsDashboard = React.lazy(() => import("./pages/StudentsDashboard"));
 const RegisterInterview = React.lazy(() => import("./pages/RegisterInterview"));
 const DrillDownAnalyticsDashboard = React.lazy(() => import("./pages/DrillDownAnalyticsDashboard"));
+const AdminCandidateReport = React.lazy(() => import("./pages/AdminCandidateReport"));
 
 const AdminNotifications = Notifications;
 const AdminSettings = Settings;
@@ -181,7 +182,14 @@ function App() {
             
             <Route path="/admin/dashboard" element={adminWrap(AdminDashboard, user)} />
             <Route path="/admin/live-proctoring" element={adminWrap(LiveProctoring, user)} />
-            <Route path="/admin/reports" element={adminWrap(Reports, user)} />
+            <Route path="/admin/reports" element={
+              <AdminProtectedRoute>
+                <ErrorBoundary>
+                  <Reports user={user} isReportView={true} />
+                </ErrorBoundary>
+              </AdminProtectedRoute>
+            } />
+            <Route path="/admin/reports/:interviewId" element={adminWrap(AdminCandidateReport, user)} />
             <Route path="/admin/recent-interviews" element={adminWrap(StudentsDashboard, user)} />
             <Route path="/admin/users" element={adminWrap(StudentsDashboard, user)} />
             <Route path="/admin/notifications" element={adminWrap(AdminNotifications, user)} />

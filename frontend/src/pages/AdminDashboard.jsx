@@ -129,7 +129,8 @@ function AdminDashboard({ user }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <Link to="/admin/live-proctoring" className="btn btn-primary" style={{ padding: '1.5rem', textAlign: 'center', textDecoration: 'none' }}>Live Monitor</Link>
             <Link to="/admin/reports" className="btn btn-outline" style={{ padding: '1.5rem', textAlign: 'center', textDecoration: 'none' }}>View Reports</Link>
-            <Link to="/admin/students-dashboard" className="btn btn-outline" style={{ padding: '1.5rem', textAlign: 'center', textDecoration: 'none' }}>Manage Users</Link>
+
+            <Link to="/admin/recent-interviews" className="btn btn-outline" style={{ padding: '1.5rem', textAlign: 'center', textDecoration: 'none' }}>Manage Users</Link>
             <button onClick={handleDownload} className="btn btn-outline" style={{ padding: '1.5rem', textAlign: 'center' }}>Download Reports</button>
             <Link to="/admin/drill-down" className="btn btn-primary" style={{ padding: '1.5rem', textAlign: 'center', textDecoration: 'none', background: 'linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%)', gridColumn: 'span 2', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

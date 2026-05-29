@@ -34,54 +34,187 @@ def update_status():
     user_id = data.get('user_id')
     intv_id = data.get('interview_id')
     status = (data.get('status') or '').strip()
+    email = data.get('email')
+    
     print(f"update_status called: user_id={user_id} interview_id={intv_id} status={status}")
-    if not user_id or not status:
-        return jsonify({"success": False, "message": f"Missing: user_id={user_id} status={status}"}), 400
+    if not status:
+        return jsonify({"success": False, "message": "Missing status"}), 400
 
     conn = get_db_connection()
+    if not conn:
+        return jsonify({"success": False, "message": "Database connection failed"}), 500
     cur = conn.cursor()
     try:
-        cur.execute("UPDATE users SET admin_status = %s, admin_hiring_status = %s WHERE id = %s RETURNING email", (status, status, user_id))
-        row = cur.fetchone()
-        if not row:
-            return jsonify({"success": False, "message": "User not found"}), 404
-        user_email = row[0]
+        user_row = None
+        resolved_user_id = None
+        user_email = email
+        candidate_name = 'Candidate'
+        
+        # 1. Try to find user by integer ID
+        if user_id:
+            try:
+                int_user_id = int(float(user_id))
+                cur.execute("SELECT id, email, name FROM users WHERE id = %s", (int_user_id,))
+                user_row = cur.fetchone()
+                if user_row:
+                    resolved_user_id = user_row[0]
+                    user_email = user_row[1]
+                    candidate_name = user_row[2] or 'Candidate'
+            except ValueError:
+                pass
 
-        if not intv_id:
-            cur.execute("SELECT id FROM interviews WHERE user_email = %s ORDER BY created_at DESC LIMIT 1", (user_email,))
+        # 2. Try to find user by email if not found by ID
+        if not user_row and user_id and '@' in str(user_id):
+            cur.execute("SELECT id, email, name FROM users WHERE email = %s", (str(user_id),))
+            user_row = cur.fetchone()
+            if user_row:
+                resolved_user_id = user_row[0]
+                user_email = user_row[1]
+                candidate_name = user_row[2] or 'Candidate'
+                
+        if not user_row and email:
+            cur.execute("SELECT id, email, name FROM users WHERE email = %s", (str(email),))
+            user_row = cur.fetchone()
+            if user_row:
+                resolved_user_id = user_row[0]
+                user_email = user_row[1]
+                candidate_name = user_row[2] or 'Candidate'
+
+        # 3. If interview_id is provided, try to find the interview
+        resolved_intv_id = None
+        intv_email = None
+        intv_user_id = None
+        
+        if intv_id:
+            try:
+                int_intv_id = int(float(intv_id))
+                cur.execute("SELECT id, user_email, user_id FROM interviews WHERE id = %s", (int_intv_id,))
+                intv_row = cur.fetchone()
+                if intv_row:
+                    resolved_intv_id = intv_row[0]
+                    intv_email = intv_row[1]
+                    intv_user_id = intv_row[2]
+            except ValueError:
+                pass
+                
+        # 4. If interview_id not resolved, lookup by user_email
+        if not resolved_intv_id and user_email:
+            cur.execute("SELECT id, user_email, user_id FROM interviews WHERE user_email = %s ORDER BY created_at DESC LIMIT 1", (user_email,))
             intv_row = cur.fetchone()
             if intv_row:
-                intv_id = intv_row[0]
+                resolved_intv_id = intv_row[0]
+                intv_email = intv_row[1]
+                intv_user_id = intv_row[2]
+                
+        # 5. Fallbacks
+        if not user_email and intv_email:
+            user_email = intv_email
+        if not resolved_user_id and intv_user_id:
+            resolved_user_id = intv_user_id
 
-        if intv_id:
-            cur.execute("UPDATE interviews SET admin_status = %s, admin_hiring_status = %s, admin_final_status = %s WHERE id = %s", (status, status, status, intv_id))
+        # 6. Perform Updates
+        updated_something = False
+        previous_status = 'Pending Review'
+        
+        if resolved_user_id:
+            cur.execute("SELECT COALESCE(admin_status, 'Pending Review') FROM users WHERE id = %s", (resolved_user_id,))
+            prev_row = cur.fetchone()
+            if prev_row:
+                previous_status = prev_row[0]
+            cur.execute("UPDATE users SET admin_status = %s, admin_hiring_status = %s WHERE id = %s", (status, status, resolved_user_id))
+            updated_something = True
+            
+        if user_email and not resolved_user_id:
+            cur.execute("SELECT COALESCE(admin_status, 'Pending Review'), id FROM users WHERE email = %s", (user_email,))
+            prev_row = cur.fetchone()
+            if prev_row:
+                previous_status = prev_row[0]
+                resolved_user_id = prev_row[1]
+            cur.execute("UPDATE users SET admin_status = %s, admin_hiring_status = %s WHERE email = %s", (status, status, user_email))
+            updated_something = True
+
+        if resolved_intv_id:
+            cur.execute("UPDATE interviews SET admin_status = %s, admin_hiring_status = %s, admin_final_status = %s WHERE id = %s", (status, status, status, resolved_intv_id))
+            updated_something = True
             try:
-                cur.execute("UPDATE results SET final_status = %s WHERE interview_id = %s", (status, intv_id))
+                cur.execute("UPDATE results SET final_status = %s WHERE interview_id = %s", (status, resolved_intv_id))
             except Exception:
                 pass
             try:
-                cur.execute("UPDATE interview_results SET admin_final_status = %s WHERE interview_id = %s", (status, intv_id))
+                cur.execute("UPDATE interview_results SET admin_final_status = %s WHERE interview_id = %s", (status, resolved_intv_id))
             except Exception:
                 pass
 
+        if not updated_something:
+            return jsonify({"success": False, "message": "Neither user nor interview record could be located in database"}), 404
+
+        # 7. Notifications
         msgs = {
             "Shortlisted": ("Congratulations! You are Shortlisted", "You have been shortlisted for the next round.", "success"),
             "Hiring in Process": ("Your Application is in Process", "Your interview is under review. You are in the hiring process.", "info"),
-            "Not Shortlisted": ("Application Status Update", "Thank you for your interview. You have not been shortlisted at this time.", "warning")
+            "Not Shortlisted": ("Application Status Update", "Thank you for your interview. You have not been shortlisted at this time.", "warning"),
+            "Rejected": ("Application Status Update", "Thank you for your interest. You have not been selected for this position.", "warning")
         }
         title, msg, ntype = msgs.get(status, ("Status Updated", status, "info"))
         ist_now = get_ist_time()
         ist_now_str = ist_now.strftime('%d %b %Y, %I:%M %p')
-        cur.execute("""
-            INSERT INTO notifications (user_email, interview_id, title, message, type, event_type, status, target_role, created_at_ist, created_at)
-            VALUES (%s, %s, %s, %s, %s, 'Status Update', 'unread', 'user', %s, %s)
-        """, (user_email, intv_id, title, msg, ntype, ist_now_str, ist_now))
+        
+        # User notification
+        if user_email:
+            try:
+                cur.execute("""
+                    INSERT INTO notifications (user_email, interview_id, title, message, type, event_type, status, target_role, created_at_ist, created_at)
+                    VALUES (%s, %s, %s, %s, %s, 'Status Update', 'unread', 'user', %s, %s)
+                """, (user_email, resolved_intv_id, title, msg, ntype, ist_now_str, ist_now))
+            except Exception as n_err:
+                print("Failed user notification insert:", n_err)
+
+        # Admin notification
+        admin_msgs = {
+            "Shortlisted": f"You shortlisted {candidate_name}.",
+            "Hiring in Process": f"You moved {candidate_name} to hiring process.",
+            "Not Shortlisted": f"You marked {candidate_name} as not shortlisted.",
+            "Rejected": f"You marked {candidate_name} as rejected."
+        }
+        admin_message = admin_msgs.get(status, f"You updated {candidate_name}'s status to {status}.")
+        try:
+            cur.execute("""
+                INSERT INTO notifications (user_email, interview_id, title, message, type, event_type, status, target_role, created_at_ist, created_at)
+                VALUES (%s, %s, %s, %s, %s, 'Status Update', 'unread', 'admin', %s, %s)
+            """, ('admin', resolved_intv_id, "Admin Action", admin_message, ntype, ist_now_str, ist_now))
+        except Exception as n_err:
+            print("Failed admin notification insert:", n_err)
+
+        # Status History Log (all 11 fields)
+        try:
+            cur.execute("""
+                INSERT INTO candidate_status_history 
+                (interview_id, candidate_id, user_id, candidate_email, previous_status, new_status, changed_by_admin_id, changed_by_admin_name, changed_at, action_source, note)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                resolved_intv_id, resolved_user_id, resolved_user_id, user_email, 
+                previous_status, status, 1, 'admin', ist_now, 'admin_dashboard', f"Status updated to {status} by admin"
+            ))
+        except Exception as h_err:
+            print("Failed status history insert:", h_err)
 
         conn.commit()
-        return jsonify({"success": True, "message": "Status updated"})
+        return jsonify({
+            "success": True, 
+            "message": "Status updated successfully", 
+            "status": status,
+            "data": {
+                "interviewId": resolved_intv_id,
+                "candidateId": resolved_user_id,
+                "candidateName": candidate_name,
+                "email": user_email,
+                "status": status,
+                "updatedAt": ist_now_str
+            }
+        })
     except Exception as e:
-        import traceback; traceback.print_exc()
         conn.rollback()
+        import traceback; traceback.print_exc()
         return jsonify({"success": False, "message": str(e)}), 500
     finally:
         cur.close()
@@ -972,19 +1105,25 @@ def get_all_reports():
         cur.execute("""
             SELECT 
                 u.full_name, u.email, u.phone, u.role,
-                r.interview_id, r.status, r.final_percentage as overall_score,
-                r.technical_score, r.communication_score, r.confidence_score,
-                r.confidence_level, r.warning_count as cheating_alerts,
-                r.duration, r.started_at_ist, r.ended_at_ist, r.final_recommendation,
+                i.id as interview_id, i.status, COALESCE(r.final_percentage, i.final_percentage, i.overall_score, 0) as overall_score,
+                COALESCE(r.technical_score, i.technical_score, 0) as technical_score,
+                COALESCE(r.communication_score, i.communication_score, 0) as communication_score,
+                COALESCE(r.confidence_score, i.confidence_score, 0) as confidence_score,
+                COALESCE(r.confidence_level, i.confidence_level, 'Moderate Confidence') as confidence_level,
+                COALESCE(r.warning_count, i.warning_count, 0) as cheating_alerts,
+                COALESCE(r.duration, i.duration, '15m 0s') as duration,
+                COALESCE(r.started_at_ist, i.started_at_ist, 'N/A') as started_at_ist,
+                COALESCE(r.ended_at_ist, i.ended_at_ist, 'N/A') as ended_at_ist,
+                COALESCE(r.final_recommendation, i.final_recommendation, 'Review') as final_recommendation,
                 COALESCE(r.attended_count, i.answered_questions, 0) as answered_questions,
                 COALESCE(r.skipped_count, i.skipped_questions, 0) as skipped_questions,
                 COALESCE(r.unanswered_count, i.not_attempted_questions, 30) as not_attempted_questions,
                 COALESCE(i.completion_percentage, 0.0) as completion_percentage,
                 i.admin_hiring_status, i.admin_note, i.admin_status_updated_at_ist, i.attempt_no
             FROM users u
-            LEFT JOIN results r ON u.email = r.user_email
-            LEFT JOIN interviews i ON r.interview_id = i.id
-            WHERE u.role != 'admin'
+            LEFT JOIN interviews i ON u.email = i.user_email
+            LEFT JOIN results r ON i.id = r.interview_id
+            WHERE u.role != 'admin' AND i.id IS NOT NULL
             ORDER BY u.created_at DESC, i.attempt_no DESC
         """)
         rows = cur.fetchall()
@@ -1219,7 +1358,7 @@ def download_timer_report():
     return response
 
 
-@bp.route('/interview-detail/<int:interview_id>', methods=['GET'])
+@bp.route('/interview-detail/<interview_id>', methods=['GET'])
 def get_admin_interview_detail(interview_id):
     conn = get_db_connection()
     if not conn:
@@ -1227,20 +1366,119 @@ def get_admin_interview_detail(interview_id):
     cur = conn.cursor()
     try:
         import pytz
-        cur.execute("""
-            SELECT i.id, i.user_id, i.user_email, i.full_name, i.phone, i.role_applied, i.status, 
-                   i.warning_count, i.attended_count, i.skipped_count, i.unanswered_count, 
-                   i.total_questions, i.final_percentage, i.confidence_level, i.technical_score, 
-                   i.communication_score, i.suspicious_score, i.result_status, i.termination_reason, 
-                   i.camera_status, i.audio_status, i.face_status, i.last_activity_at, i.created_at,
-                   i.start_time, i.end_time, i.duration, i.ended_at_ist, i.started_at_ist,
-                   i.final_recommendation, i.ai_recommendation, i.admin_status
-            FROM interviews i
-            WHERE i.id = %s
-        """, (interview_id,))
-        row = cur.fetchone()
+        
+        row = None
+        # 1. Try search by integer primary key
+        try:
+            int_id = int(float(interview_id))
+            cur.execute("""
+                SELECT i.id, i.user_id, i.user_email, i.full_name, i.phone, i.role_applied, i.status, 
+                       i.warning_count, i.attended_count, i.skipped_count, i.unanswered_count, 
+                       i.total_questions, i.final_percentage, i.confidence_level, i.technical_score, 
+                       i.communication_score, i.suspicious_score, i.result_status, i.termination_reason, 
+                       i.camera_status, i.audio_status, i.face_status, i.last_activity_at, i.created_at,
+                       i.start_time, i.end_time, i.duration, i.ended_at_ist, i.started_at_ist,
+                       i.final_recommendation, i.ai_recommendation, i.admin_status
+                FROM interviews i
+                WHERE i.id = %s
+            """, (int_id,))
+            row = cur.fetchone()
+        except ValueError:
+            pass
+            
+        # 2. Try search by interview_id column
+        if not row:
+            cur.execute("""
+                SELECT i.id, i.user_id, i.user_email, i.full_name, i.phone, i.role_applied, i.status, 
+                       i.warning_count, i.attended_count, i.skipped_count, i.unanswered_count, 
+                       i.total_questions, i.final_percentage, i.confidence_level, i.technical_score, 
+                       i.communication_score, i.suspicious_score, i.result_status, i.termination_reason, 
+                       i.camera_status, i.audio_status, i.face_status, i.last_activity_at, i.created_at,
+                       i.start_time, i.end_time, i.duration, i.ended_at_ist, i.started_at_ist,
+                       i.final_recommendation, i.ai_recommendation, i.admin_status
+                FROM interviews i
+                WHERE i.interview_id = %s
+            """, (str(interview_id),))
+            row = cur.fetchone()
+            
+        # 3. Try search by session_id column
+        if not row:
+            cur.execute("""
+                SELECT i.id, i.user_id, i.user_email, i.full_name, i.phone, i.role_applied, i.status, 
+                       i.warning_count, i.attended_count, i.skipped_count, i.unanswered_count, 
+                       i.total_questions, i.final_percentage, i.confidence_level, i.technical_score, 
+                       i.communication_score, i.suspicious_score, i.result_status, i.termination_reason, 
+                       i.camera_status, i.audio_status, i.face_status, i.last_activity_at, i.created_at,
+                       i.start_time, i.end_time, i.duration, i.ended_at_ist, i.started_at_ist,
+                       i.final_recommendation, i.ai_recommendation, i.admin_status
+                FROM interviews i
+                WHERE i.session_id = %s
+            """, (str(interview_id),))
+            row = cur.fetchone()
+
+        # 4. Fallback: Parse out student/candidate ID if it's like 'INT-101-99'
+        if not row and 'INT-' in str(interview_id):
+            try:
+                parts = str(interview_id).split('-')
+                if len(parts) >= 2:
+                    cand_id = int(parts[1])
+                    cur.execute("""
+                        SELECT i.id, i.user_id, i.user_email, i.full_name, i.phone, i.role_applied, i.status, 
+                               i.warning_count, i.attended_count, i.skipped_count, i.unanswered_count, 
+                               i.total_questions, i.final_percentage, i.confidence_level, i.technical_score, 
+                               i.communication_score, i.suspicious_score, i.result_status, i.termination_reason, 
+                               i.camera_status, i.audio_status, i.face_status, i.last_activity_at, i.created_at,
+                               i.start_time, i.end_time, i.duration, i.ended_at_ist, i.started_at_ist,
+                               i.final_recommendation, i.ai_recommendation, i.admin_status
+                        FROM interviews i
+                        WHERE i.user_id = %s OR i.user_email = (SELECT email FROM users WHERE id = %s)
+                        ORDER BY i.id DESC LIMIT 1
+                    """, (cand_id, cand_id))
+                    row = cur.fetchone()
+            except Exception:
+                pass
+
+        # 5. Fallback: Check if it's a candidate ID directly
+        if not row:
+            try:
+                cand_id = int(float(interview_id))
+                cur.execute("""
+                    SELECT i.id, i.user_id, i.user_email, i.full_name, i.phone, i.role_applied, i.status, 
+                           i.warning_count, i.attended_count, i.skipped_count, i.unanswered_count, 
+                           i.total_questions, i.final_percentage, i.confidence_level, i.technical_score, 
+                           i.communication_score, i.suspicious_score, i.result_status, i.termination_reason, 
+                           i.camera_status, i.audio_status, i.face_status, i.last_activity_at, i.created_at,
+                           i.start_time, i.end_time, i.duration, i.ended_at_ist, i.started_at_ist,
+                           i.final_recommendation, i.ai_recommendation, i.admin_status
+                    FROM interviews i
+                    WHERE i.user_id = %s
+                    ORDER BY i.id DESC LIMIT 1
+                """, (cand_id,))
+                row = cur.fetchone()
+            except ValueError:
+                pass
+
+        # 6. Fallback: Check if it's an email
+        if not row and '@' in str(interview_id):
+            cur.execute("""
+                SELECT i.id, i.user_id, i.user_email, i.full_name, i.phone, i.role_applied, i.status, 
+                       i.warning_count, i.attended_count, i.skipped_count, i.unanswered_count, 
+                       i.total_questions, i.final_percentage, i.confidence_level, i.technical_score, 
+                       i.communication_score, i.suspicious_score, i.result_status, i.termination_reason, 
+                       i.camera_status, i.audio_status, i.face_status, i.last_activity_at, i.created_at,
+                       i.start_time, i.end_time, i.duration, i.ended_at_ist, i.started_at_ist,
+                       i.final_recommendation, i.ai_recommendation, i.admin_status
+                FROM interviews i
+                WHERE i.user_email = %s
+                ORDER BY i.id DESC LIMIT 1
+            """, (str(interview_id),))
+            row = cur.fetchone()
+
         if not row:
             return jsonify({"success": False, "message": "Interview not found", "data": None}), 200
+        
+        # Resolve the actual primary key interview id for all subsequent queries in the endpoint
+        interview_id = row[0]
         
         cols = [d[0] for d in cur.description]
         intv = dict(zip(cols, row))
@@ -1419,6 +1657,7 @@ def get_admin_interview_detail(interview_id):
 
         response_data = {
             "candidate": {
+                "id": intv.get("user_id") or 0,
                 "name": intv.get("full_name") or "Candidate",
                 "email": intv.get("user_email") or "",
                 "phone": intv.get("phone") or "",

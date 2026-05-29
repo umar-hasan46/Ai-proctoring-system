@@ -177,7 +177,7 @@ function AllResults({ isReportView = false }) {
                   <td style={{ padding: '15px', textAlign: 'right' }}>
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                       <button
-                        onClick={() => navigate(isReportView ? `/admin/ai-report/${r.interview_id}` : `/results`)}
+                        onClick={() => navigate(isReportView ? `/admin/reports/${r.interview_id}` : `/results`)}
                         className="btn btn-primary"
                         style={{ fontSize: '0.75rem', padding: '6px 12px' }}
                       >

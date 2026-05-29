@@ -1094,11 +1094,35 @@ function StudentsDashboard({ user }) {
                       </td>
                       <td style={{ padding: '15px', textAlign: 'center' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
-                          <button onClick={() => handleViewDetails(s.student_id)} className="btn btn-outline" style={{ fontSize: '0.7rem', padding: '4px 10px', width: '110px' }}>View Details</button>
-                          {interviewId && (
+                          <button 
+                            onClick={() => {
+                              if (s.interview_id && s.interview_id !== 0 && s.interview_id !== 'No Interview Yet') {
+                                navigate(`/admin/reports/${s.interview_id}`);
+                              } else {
+                                handleViewDetails(s.student_id);
+                              }
+                            }} 
+                            className="btn btn-outline" 
+                            style={{ fontSize: '0.7rem', padding: '4px 10px', width: '110px' }}
+                          >
+                            View Details
+                          </button>
+                          {s.interview_id && s.interview_id !== 0 && s.interview_id !== 'No Interview Yet' && (
                             <>
-                              <button onClick={() => navigate(`/admin/ai-report/${interviewId}`)} className="btn btn-primary" style={{ fontSize: '0.7rem', padding: '4px 10px', width: '110px', background: '#4f46e5', borderColor: '#4f46e5', color: '#fff' }}>View AI Report</button>
-                              <button onClick={() => handleDownloadPDF(interviewId, studentName)} className="btn btn-outline" style={{ fontSize: '0.7rem', padding: '4px 10px', width: '110px', color: '#0f766e', borderColor: '#0f766e' }}>Download</button>
+                              <button 
+                                onClick={() => navigate(`/admin/reports/${s.interview_id}`)} 
+                                className="btn btn-primary" 
+                                style={{ fontSize: '0.7rem', padding: '4px 10px', width: '110px', background: '#4f46e5', borderColor: '#4f46e5', color: '#fff' }}
+                              >
+                                View AI Report
+                              </button>
+                              <button 
+                                onClick={() => handleDownloadPDF(s.interview_id, studentName)} 
+                                className="btn btn-outline" 
+                                style={{ fontSize: '0.7rem', padding: '4px 10px', width: '110px', color: '#0f766e', borderColor: '#0f766e' }}
+                              >
+                                Download
+                              </button>
                             </>
                           )}
                         </div>
