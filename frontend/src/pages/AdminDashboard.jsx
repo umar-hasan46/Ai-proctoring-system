@@ -42,7 +42,7 @@ function AdminDashboard({ user }) {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 20000);
+    const interval = setInterval(fetchData, 4000);
     return () => clearInterval(interval);
   }, []);
 
@@ -131,6 +131,14 @@ function AdminDashboard({ user }) {
             <Link to="/admin/reports" className="btn btn-outline" style={{ padding: '1.5rem', textAlign: 'center', textDecoration: 'none' }}>View Reports</Link>
             <Link to="/admin/students-dashboard" className="btn btn-outline" style={{ padding: '1.5rem', textAlign: 'center', textDecoration: 'none' }}>Manage Users</Link>
             <button onClick={handleDownload} className="btn btn-outline" style={{ padding: '1.5rem', textAlign: 'center' }}>Download Reports</button>
+            <Link to="/admin/drill-down" className="btn btn-primary" style={{ padding: '1.5rem', textAlign: 'center', textDecoration: 'none', background: 'linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%)', gridColumn: 'span 2', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+              View Drill-Down Analytics
+            </Link>
           </div>
         </div>
       </div>

@@ -489,6 +489,17 @@ def init_db():
                 uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
             );
+            """),
+            ("candidate_status_history", """
+            CREATE TABLE IF NOT EXISTS candidate_status_history (
+                id SERIAL PRIMARY KEY,
+                candidate_id INTEGER,
+                previous_status VARCHAR(50),
+                new_status VARCHAR(50),
+                changed_by VARCHAR(255) DEFAULT 'admin',
+                changed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                action_note TEXT
+            );
             """)
         ]
 

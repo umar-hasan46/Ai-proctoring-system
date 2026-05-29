@@ -120,6 +120,11 @@ def api_update_user_status(user_id):
         return jsonify({"success": False, "message": "Database connection failed"}), 500
     cur = conn.cursor()
     try:
+        cur.execute("SELECT COALESCE(admin_status, 'Pending Review'), COALESCE(name, full_name, email) FROM users WHERE id = %s", (user_id,))
+        user_row = cur.fetchone()
+        previous_status = user_row[0] if user_row else 'Pending Review'
+        candidate_name = user_row[1] if user_row else 'Candidate'
+
         cur.execute("UPDATE users SET admin_status = %s, admin_hiring_status = %s WHERE id = %s RETURNING email", (status, status, user_id))
         row = cur.fetchone()
         if not row:
@@ -150,10 +155,31 @@ def api_update_user_status(user_id):
         title, msg, ntype = msgs.get(status, ("Status Updated", status, "info"))
         ist_now = get_ist_time()
         ist_now_str = ist_now.strftime('%d %b %Y, %I:%M %p')
+        
+        # User notification
         cur.execute("""
             INSERT INTO notifications (user_email, interview_id, title, message, type, event_type, status, target_role, created_at_ist, created_at)
             VALUES (%s, %s, %s, %s, %s, 'Status Update', 'unread', 'user', %s, %s)
         """, (user_email, intv_id, title, msg, ntype, ist_now_str, ist_now))
+
+        # Admin notification
+        admin_msgs = {
+            "Shortlisted": f"You shortlisted {candidate_name}.",
+            "Hiring in Process": f"You moved {candidate_name} to hiring process.",
+            "Not Shortlisted": f"You marked {candidate_name} as not shortlisted.",
+            "Rejected": f"You marked {candidate_name} as rejected."
+        }
+        admin_message = admin_msgs.get(status, f"You updated {candidate_name}'s status to {status}.")
+        cur.execute("""
+            INSERT INTO notifications (user_email, interview_id, title, message, type, event_type, status, target_role, created_at_ist, created_at)
+            VALUES (%s, %s, %s, %s, %s, 'Status Update', 'unread', 'admin', %s, %s)
+        """, ('admin', intv_id, "Admin Action", admin_message, ntype, ist_now_str, ist_now))
+
+        # Status History
+        cur.execute("""
+            INSERT INTO candidate_status_history (candidate_id, previous_status, new_status, changed_by, action_note)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (user_id, previous_status, status, 'admin', f"Status updated to {status} by admin"))
 
         conn.commit()
         return jsonify({"success": True, "message": "Status updated successfully", "status": status})

@@ -106,37 +106,46 @@ function StudentsDashboard({ user }) {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 20000);
+    const interval = setInterval(fetchData, 4000);
     return () => clearInterval(interval);
   }, []);
+
+  const [loadingStatus, setLoadingStatus] = useState({ userId: null, status: null });
 
   const handleDownloadPDF = async (interviewId, studentName) => {
     window.location.href = `/api/admin/export/user/${interviewId}`;
   };
 
   const handleStatusUpdate = async (userId, interviewId, status) => {
-    setData(prev => ({
-      ...prev,
-      students: prev.students.map(s =>
-        s.student_id === userId
-          ? { ...s, admin_status: status, admin_hiring_status: status }
-          : s
-      )
-    }));
+    setLoadingStatus({ userId, status });
     try {
       const resData = await api.updateUserStatus(userId, { status });
       if (resData.success) {
-        setFormMsg({ text: 'Status updated to ' + status, type: 'success' });
-        setTimeout(() => setFormMsg({ text: '', type: '' }), 3000);
-        fetchData();
+        setData(prev => ({
+          ...prev,
+          students: prev.students.map(s =>
+            s.student_id === userId
+              ? { ...s, admin_status: status, admin_hiring_status: status }
+              : s
+          )
+        }));
+        
+        // Update selectedStudent modal details if currently open
+        if (selectedStudent && selectedStudent.candidate && selectedStudent.candidate.id === userId) {
+          setSelectedStudent(prev => ({ ...prev, decision: status }));
+        }
+
+        setFormMsg({ text: 'Status updated to ' + status + ' successfully.', type: 'success' });
+        setTimeout(() => setFormMsg({ text: '', type: '' }), 4000);
       } else {
         setFormMsg({ text: 'Failed to update status: ' + resData.message, type: 'error' });
         setTimeout(() => setFormMsg({ text: '', type: '' }), 5000);
-        fetchData();
       }
     } catch (err) {
-      setFormMsg({ text: 'Error updating status', type: 'error' });
+      setFormMsg({ text: 'Error communicating with database: ' + err.message, type: 'error' });
       setTimeout(() => setFormMsg({ text: '', type: '' }), 5000);
+    } finally {
+      setLoadingStatus({ userId: null, status: null });
       fetchData();
     }
   };
@@ -1013,19 +1022,58 @@ function StudentsDashboard({ user }) {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                           <button 
                             className="btn-shortlist" 
-                            style={{ background: s.admin_status === 'Shortlisted' ? '#059669' : '#e5e7eb', color: s.admin_status === 'Shortlisted' ? 'white' : '#1f2937', border: 'none', padding: '5px 10px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}
+                            style={{ 
+                              background: s.admin_status === 'Shortlisted' ? '#059669' : '#e5e7eb', 
+                              color: s.admin_status === 'Shortlisted' ? 'white' : '#1f2937', 
+                              border: 'none', 
+                              padding: '5px 10px', 
+                              borderRadius: '6px', 
+                              fontSize: '0.75rem', 
+                              fontWeight: 'bold', 
+                              cursor: s.admin_status === 'Shortlisted' ? 'default' : 'pointer',
+                              opacity: (loadingStatus.userId === s.student_id && loadingStatus.status !== 'Shortlisted') ? 0.5 : 1
+                            }}
+                            disabled={s.admin_status === 'Shortlisted' || loadingStatus.userId === s.student_id}
                             onClick={() => handleStatusUpdate(s.student_id, interviewId, 'Shortlisted')}
-                          >Shortlisted</button>
+                          >
+                            {loadingStatus.userId === s.student_id && loadingStatus.status === 'Shortlisted' ? 'Updating...' : 'Shortlisted'}
+                          </button>
                           <button 
                             className="btn-hiring" 
-                            style={{ background: s.admin_status === 'Hiring in Process' ? '#d97706' : '#e5e7eb', color: s.admin_status === 'Hiring in Process' ? 'white' : '#1f2937', border: 'none', padding: '5px 10px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}
+                            style={{ 
+                              background: s.admin_status === 'Hiring in Process' ? '#d97706' : '#e5e7eb', 
+                              color: s.admin_status === 'Hiring in Process' ? 'white' : '#1f2937', 
+                              border: 'none', 
+                              padding: '5px 10px', 
+                              borderRadius: '6px', 
+                              fontSize: '0.75rem', 
+                              fontWeight: 'bold', 
+                              cursor: s.admin_status === 'Hiring in Process' ? 'default' : 'pointer',
+                              opacity: (loadingStatus.userId === s.student_id && loadingStatus.status !== 'Hiring in Process') ? 0.5 : 1
+                            }}
+                            disabled={s.admin_status === 'Hiring in Process' || loadingStatus.userId === s.student_id}
                             onClick={() => handleStatusUpdate(s.student_id, interviewId, 'Hiring in Process')}
-                          >Hiring in Process</button>
+                          >
+                            {loadingStatus.userId === s.student_id && loadingStatus.status === 'Hiring in Process' ? 'Updating...' : 'Hiring in Process'}
+                          </button>
                           <button 
                             className="btn-reject" 
-                            style={{ background: s.admin_status === 'Not Shortlisted' ? '#dc2626' : '#e5e7eb', color: s.admin_status === 'Not Shortlisted' ? 'white' : '#1f2937', border: 'none', padding: '5px 10px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 'bold', cursor: 'pointer' }}
+                            style={{ 
+                              background: s.admin_status === 'Not Shortlisted' ? '#dc2626' : '#e5e7eb', 
+                              color: s.admin_status === 'Not Shortlisted' ? 'white' : '#1f2937', 
+                              border: 'none', 
+                              padding: '5px 10px', 
+                              borderRadius: '6px', 
+                              fontSize: '0.75rem', 
+                              fontWeight: 'bold', 
+                              cursor: s.admin_status === 'Not Shortlisted' ? 'default' : 'pointer',
+                              opacity: (loadingStatus.userId === s.student_id && loadingStatus.status !== 'Not Shortlisted') ? 0.5 : 1
+                            }}
+                            disabled={s.admin_status === 'Not Shortlisted' || loadingStatus.userId === s.student_id}
                             onClick={() => handleStatusUpdate(s.student_id, interviewId, 'Not Shortlisted')}
-                          >Not Shortlisted</button>
+                          >
+                            {loadingStatus.userId === s.student_id && loadingStatus.status === 'Not Shortlisted' ? 'Updating...' : 'Not Shortlisted'}
+                          </button>
                         </div>
                       </td>
                       <td style={{ padding: '15px', textAlign: 'center', fontSize: '0.75rem', color: '#475569' }}>
@@ -1748,43 +1796,52 @@ function StudentsDashboard({ user }) {
                 <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: '600' }}>Admin Final Hiring Decision:</span>
                 <div style={{ display: 'flex', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
                   <button
+                    disabled={selectedStudent.decision === 'Shortlisted' || loadingStatus.userId === selectedStudent.candidate.id}
                     onClick={async () => {
                       await handleStatusUpdate(selectedStudent.candidate.id, selectedStudent.interview.id === 'N/A' ? null : selectedStudent.interview.id, 'Shortlisted');
-                      setSelectedStudent(prev => ({ ...prev, decision: 'Shortlisted' }));
                     }}
                     style={{
                       background: selectedStudent.decision === 'Shortlisted' ? '#059669' : '#e2e8f0',
                       color: selectedStudent.decision === 'Shortlisted' ? 'white' : '#475569',
-                      border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s'
+                      border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 'bold', 
+                      cursor: (selectedStudent.decision === 'Shortlisted' || loadingStatus.userId === selectedStudent.candidate.id) ? 'default' : 'pointer', 
+                      transition: 'all 0.2s',
+                      opacity: (loadingStatus.userId === selectedStudent.candidate.id && loadingStatus.status !== 'Shortlisted') ? 0.5 : 1
                     }}
                   >
-                    Shortlisted
+                    {loadingStatus.userId === selectedStudent.candidate.id && loadingStatus.status === 'Shortlisted' ? 'Updating...' : 'Shortlisted'}
                   </button>
                   <button
+                    disabled={selectedStudent.decision === 'Hiring in Process' || loadingStatus.userId === selectedStudent.candidate.id}
                     onClick={async () => {
                       await handleStatusUpdate(selectedStudent.candidate.id, selectedStudent.interview.id === 'N/A' ? null : selectedStudent.interview.id, 'Hiring in Process');
-                      setSelectedStudent(prev => ({ ...prev, decision: 'Hiring in Process' }));
                     }}
                     style={{
                       background: selectedStudent.decision === 'Hiring in Process' ? '#d97706' : '#e2e8f0',
                       color: selectedStudent.decision === 'Hiring in Process' ? 'white' : '#475569',
-                      border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s'
+                      border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 'bold', 
+                      cursor: (selectedStudent.decision === 'Hiring in Process' || loadingStatus.userId === selectedStudent.candidate.id) ? 'default' : 'pointer', 
+                      transition: 'all 0.2s',
+                      opacity: (loadingStatus.userId === selectedStudent.candidate.id && loadingStatus.status !== 'Hiring in Process') ? 0.5 : 1
                     }}
                   >
-                    Hiring in Process
+                    {loadingStatus.userId === selectedStudent.candidate.id && loadingStatus.status === 'Hiring in Process' ? 'Updating...' : 'Hiring in Process'}
                   </button>
                   <button
+                    disabled={selectedStudent.decision === 'Not Shortlisted' || loadingStatus.userId === selectedStudent.candidate.id}
                     onClick={async () => {
                       await handleStatusUpdate(selectedStudent.candidate.id, selectedStudent.interview.id === 'N/A' ? null : selectedStudent.interview.id, 'Not Shortlisted');
-                      setSelectedStudent(prev => ({ ...prev, decision: 'Not Shortlisted' }));
                     }}
                     style={{
                       background: selectedStudent.decision === 'Not Shortlisted' ? '#dc2626' : '#e2e8f0',
                       color: selectedStudent.decision === 'Not Shortlisted' ? 'white' : '#475569',
-                      border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s'
+                      border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 'bold', 
+                      cursor: (selectedStudent.decision === 'Not Shortlisted' || loadingStatus.userId === selectedStudent.candidate.id) ? 'default' : 'pointer', 
+                      transition: 'all 0.2s',
+                      opacity: (loadingStatus.userId === selectedStudent.candidate.id && loadingStatus.status !== 'Not Shortlisted') ? 0.5 : 1
                     }}
                   >
-                    Not Shortlisted
+                    {loadingStatus.userId === selectedStudent.candidate.id && loadingStatus.status === 'Not Shortlisted' ? 'Updating...' : 'Not Shortlisted'}
                   </button>
                 </div>
               </div>

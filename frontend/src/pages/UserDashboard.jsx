@@ -45,7 +45,7 @@ function UserDashboard({ user: initialUser }) {
 
   useEffect(() => {
     fetchDashboardData();
-    const pollInterval = setInterval(fetchDashboardData, 20000);
+    const pollInterval = setInterval(fetchDashboardData, 4000);
     const clockInterval = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => {
       clearInterval(pollInterval);
