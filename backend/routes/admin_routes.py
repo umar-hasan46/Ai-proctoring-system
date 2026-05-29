@@ -813,7 +813,7 @@ def get_user_full_detail(user_id):
                 cur.execute("""
                     SELECT question_no, question_text, COALESCE(candidate_answer, answer_text) as candidate_answer,
                            expected_answer, difficulty, COALESCE(score, ai_score, 0) as ai_score, 
-                           technical_score, clarity_score as communication_score, score as confidence_score,
+                           COALESCE(technical_score, 0) as technical_score, COALESCE(clarity_score, communication_score, 0) as communication_score, COALESCE(score, confidence_score, 0) as confidence_score,
                            correctness_status, status as question_status, feedback as ai_feedback, suggestion, topic, skill, created_at
                     FROM answers
                     WHERE interview_id = %s
@@ -1517,7 +1517,7 @@ def get_admin_interview_detail(interview_id):
             cur.execute("""
                 SELECT question_no, question_text, COALESCE(candidate_answer, answer_text) as candidate_answer,
                        expected_answer, difficulty, COALESCE(score, ai_score, 0) as ai_score, 
-                       technical_score, clarity_score as communication_score, score as confidence_score,
+                       COALESCE(technical_score, 0) as technical_score, COALESCE(clarity_score, communication_score, 0) as communication_score, COALESCE(score, confidence_score, 0) as confidence_score,
                        correctness_status, status as question_status, feedback as ai_feedback, suggestion, topic, skill
                 FROM answers
                 WHERE interview_id = %s

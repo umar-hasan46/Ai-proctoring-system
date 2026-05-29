@@ -71,7 +71,24 @@ function AdminDashboard({ user }) {
 
   return (
     <div>
-      <div className="card" style={{ background: 'linear-gradient(135deg, var(--text-primary) 0%, #152b47 100%)', color: '#fff', marginBottom: '2rem', display: 'flex', gap: '25px', alignItems: 'center', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '10px' }}>
+        <h2 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.5rem', fontWeight: '700' }}>Admin Dashboard Overview</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(34, 197, 94, 0.12)', padding: '6px 14px', borderRadius: '20px', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
+          <span className="pulse-dot" style={{ width: '8px', height: '8px', background: '#22c55e', borderRadius: '50%', display: 'inline-block', boxShadow: '0 0 8px #22c55e' }}></span>
+          <span style={{ fontSize: '0.8rem', color: '#22c55e', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Live Sync Active</span>
+        </div>
+      </div>
+      <style>{`
+        .pulse-dot {
+          animation: pulseAnim 1.8s infinite ease-in-out;
+        }
+        @keyframes pulseAnim {
+          0% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+          50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+          100% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+      `}</style>
+      <div className="card" style={{ background: 'linear-gradient(135deg, #1e3a5f 0%, #152b47 100%)', color: '#fff', marginBottom: '2rem', display: 'flex', gap: '25px', alignItems: 'center', flexWrap: 'wrap' }}>
         <Avatar name={displayName} email={user?.email} profile_pic={user?.profile_pic} size={80} />
         <div style={{ flex: 1, minWidth: '250px' }}>
           <h1 style={{ margin: 0, fontSize: '1.8rem' }}>Welcome back, {displayName}</h1>

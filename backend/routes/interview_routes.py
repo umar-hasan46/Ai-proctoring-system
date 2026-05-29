@@ -3419,6 +3419,9 @@ def ensure_columns_exist():
         cur.execute("ALTER TABLE answers ADD COLUMN IF NOT EXISTS topic TEXT")
         cur.execute("ALTER TABLE answers ADD COLUMN IF NOT EXISTS score INTEGER DEFAULT 0")
         cur.execute("ALTER TABLE answers ADD COLUMN IF NOT EXISTS clarity_score INTEGER DEFAULT 0")
+        cur.execute("ALTER TABLE answers ADD COLUMN IF NOT EXISTS technical_score INTEGER DEFAULT 0")
+        cur.execute("ALTER TABLE answers ADD COLUMN IF NOT EXISTS communication_score INTEGER DEFAULT 0")
+        cur.execute("ALTER TABLE answers ADD COLUMN IF NOT EXISTS confidence_score INTEGER DEFAULT 0")
         cur.execute("ALTER TABLE answers ADD COLUMN IF NOT EXISTS evaluated BOOLEAN DEFAULT FALSE")
         cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS score_overall FLOAT DEFAULT 0.0")
         cur.execute("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS score_technical FLOAT DEFAULT 0.0")
@@ -3665,7 +3668,7 @@ def get_my_results(interview_id):
             cur.execute("""
                 SELECT question_no, question_text, COALESCE(candidate_answer, answer_text) as candidate_answer,
                        expected_answer, difficulty, COALESCE(score, ai_score, 0) as ai_score, 
-                       technical_score, clarity_score as communication_score, score as confidence_score,
+                       COALESCE(technical_score, 0) as technical_score, COALESCE(clarity_score, communication_score, 0) as communication_score, COALESCE(score, confidence_score, 0) as confidence_score,
                        correctness_status, status as question_status, feedback as ai_feedback, suggestion, topic, skill
                 FROM answers
                 WHERE interview_id = %s
